@@ -4,11 +4,7 @@
     "version":         "0.0.1",
     "keywords":        "oVirt ovirt rest api",
     "homepage":        "https://github.com/Sitin/node-ovirt",
-    "author":          {
-        "name":  "Mikhail Zyatin",
-        "email": "mikhail.zyatin@gmail.com",
-        "url":   "https://twitter.com/vivisjatin/"
-    },
+    "author":          "Mikhail Zyatin <mikhail.zyatin@gmail.com> (https://twitter.com/vivisjatin/)",
     "repository":      {
         "type": "git",
         "url":  "http://github.com/Sitin/node-ovirt.git"
@@ -38,5 +34,12 @@
         "grunt-contrib-clean": "~0.3.1",
         "chai":                "~1.4.2",
         "chai-spies":          "~0.5.1"
-    }
+    },
+    "readmeFilename":  "README.md",
+    "main":            "index.js",
+    "directories":     {
+        "test": "test",
+        "doc":  "doc"
+    },
+    "license":         "MIT"
 }
