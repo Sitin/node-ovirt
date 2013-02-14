@@ -1,9 +1,25 @@
 {
-    "name":            "vm-disposer",
+    "name":            "ovirt",
+    "description":     "A Node.js driver for oVirt REST API",
     "version":         "0.0.1",
-    "private":         true,
+    "keywords":        "oVirt ovirt rest api",
+    "homepage":        "https://github.com/Sitin/node-ovirt",
+    "author":          {
+        "name":  "Mikhail Zyatin",
+        "email": "mikhail.zyatin@gmail.com",
+        "url":   "https://twitter.com/vivisjatin/"
+    },
+    "repository":      {
+        "type": "git",
+        "url":  "http://github.com/Sitin/node-ovirt.git"
+    },
+    "engines":         {
+        "node": ">=0.8.14"
+    },
     "scripts":         {
-        "start": "node index"
+        "start":      "node index",
+        "test":       "grunt test",
+        "prepublish": "grunt publish"
     },
     "dependencies":    {
         "xml2js":  "~0.2.3",
@@ -12,15 +28,15 @@
         "eyes":    "~0.1.8"
     },
     "devDependencies": {
+        "mocha":               "~1.8.0",
+        "codo":                "~1.5.4",
         "grunt":               "~0.3.17",
         "grunt-bg-shell":      "~1.0.2",
-        "grunt-coffee":        "*",
-        "grunt-coffeelint":    "*",
+        "grunt-coffee":        "~0.0.6",
+        "grunt-coffeelint":    "~0.0.4",
         "grunt-mocha-test":    "~0.1.1",
         "grunt-contrib-clean": "~0.3.1",
         "chai":                "~1.4.2",
-        "chai-spies":          "~0.5.1",
-        "mocha":               "~1.8.0",
-        "codo":                "~1.5.4"
+        "chai-spies":          "~0.5.1"
     }
 }

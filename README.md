@@ -1,4 +1,4 @@
-OK here are the Node.js to oVirt driver specs.
+OK. Here are the Node.js to oVirt driver specs.
 
 Connection
 ========
