@@ -24,3 +24,5 @@ src
 test
 *.coffee
 grunt.js
+
+private.json

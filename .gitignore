@@ -22,6 +22,7 @@ node_modules
 
 lib
 test/*.test.js
-/*.js
+/index.js
+private.json
 
 /doc/
