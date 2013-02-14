@@ -1,0 +1,26 @@
+{
+    "name":            "vm-disposer",
+    "version":         "0.0.1",
+    "private":         true,
+    "scripts":         {
+        "start": "node index"
+    },
+    "dependencies":    {
+        "xml2js":  "~0.2.3",
+        "lodash":  "~1.0.0",
+        "request": "~2.12.0",
+        "eyes":    "~0.1.8"
+    },
+    "devDependencies": {
+        "grunt":               "~0.3.17",
+        "grunt-bg-shell":      "~1.0.2",
+        "grunt-coffee":        "*",
+        "grunt-coffeelint":    "*",
+        "grunt-mocha-test":    "~0.1.1",
+        "grunt-contrib-clean": "~0.3.1",
+        "chai":                "~1.4.2",
+        "chai-spies":          "~0.5.1",
+        "mocha":               "~1.8.0",
+        "codo":                "~1.5.4"
+    }
+}

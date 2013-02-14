@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<disks>
+    <disk href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/disks/3278059e-ea73-4253-a8ae-9cd1dd6078b2" id="3278059e-ea73-4253-a8ae-9cd1dd6078b2">
+        <name>east-vm_Disk1</name>
+        <actions>
+            <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/disks/3278059e-ea73-4253-a8ae-9cd1dd6078b2/deactivate" rel="deactivate"/>
+            <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/disks/3278059e-ea73-4253-a8ae-9cd1dd6078b2/activate" rel="activate"/>
+        </actions>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/disks/3278059e-ea73-4253-a8ae-9cd1dd6078b2/statistics" rel="statistics"/>
+        <vm href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7" id="aa4ea946-0a71-489e-abed-40136c84e4e7"/>
+        <image_id>856e39dd-e61b-4067-a01a-46ddaf3652be</image_id>
+        <storage_domains>
+            <storage_domain id="388ef2f0-2ae8-49d2-867b-7b56fdb11a2a"/>
+        </storage_domains>
+        <size>10737418240</size>
+        <provisioned_size>10737418240</provisioned_size>
+        <actual_size>3271991296</actual_size>
+        <status>
+            <state>ok</state>
+        </status>
+        <interface>virtio</interface>
+        <format>raw</format>
+        <sparse>true</sparse>
+        <bootable>true</bootable>
+        <shareable>false</shareable>
+        <allow_snapshot>true</allow_snapshot>
+        <wipe_after_delete>false</wipe_after_delete>
+        <propagate_errors>false</propagate_errors>
+        <active>true</active>
+        <quota id="61095ffa-e4ac-4ecc-bbb2-fe48399a410e"/>
+    </disk>
+</disks>

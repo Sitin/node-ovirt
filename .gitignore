@@ -12,3 +12,15 @@ logs
 results
 
 npm-debug.log
+
+.idea
+.c9revisions
+.DS_Store
+
+node_modules
+
+lib
+test/*.test.js
+/*.js
+
+/doc/

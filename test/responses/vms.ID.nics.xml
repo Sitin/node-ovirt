@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<nics>
+    <nic href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/nics/6b2ed173-5e03-44e8-9b01-ff878cb896a1" id="6b2ed173-5e03-44e8-9b01-ff878cb896a1">
+        <name>nic1</name>
+        <actions>
+            <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/nics/6b2ed173-5e03-44e8-9b01-ff878cb896a1/deactivate" rel="deactivate"/>
+            <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/nics/6b2ed173-5e03-44e8-9b01-ff878cb896a1/activate" rel="activate"/>
+        </actions>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/nics/6b2ed173-5e03-44e8-9b01-ff878cb896a1/statistics" rel="statistics"/>
+        <vm href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7" id="aa4ea946-0a71-489e-abed-40136c84e4e7"/>
+        <network href="/api/networks/924a2dcf-7853-4a82-8795-44b9cad2e78d" id="924a2dcf-7853-4a82-8795-44b9cad2e78d"/>
+        <interface>virtio</interface>
+        <mac address="00:1a:4a:a8:02:01"/>
+        <active>true</active>
+    </nic>
+</nics>

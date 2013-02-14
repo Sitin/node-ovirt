@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<vm href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7" id="aa4ea946-0a71-489e-abed-40136c84e4e7">
+    <name>east-vm</name>
+    <actions>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/ticket" rel="ticket"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/cancelmigration" rel="cancelmigration"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/migrate" rel="migrate"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/shutdown" rel="shutdown"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/start" rel="start"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/stop" rel="stop"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/suspend" rel="suspend"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/detach" rel="detach"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/export" rel="export"/>
+        <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/move" rel="move"/>
+    </actions>
+    <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/disks" rel="disks"/>
+    <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/nics" rel="nics"/>
+    <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/cdroms" rel="cdroms"/>
+    <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/snapshots" rel="snapshots"/>
+    <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/tags" rel="tags"/>
+    <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/permissions" rel="permissions"/>
+    <link href="/api/vms/aa4ea946-0a71-489e-abed-40136c84e4e7/statistics" rel="statistics"/>
+    <type>desktop</type>
+    <status>
+        <state>down</state>
+    </status>
+    <memory>1073741824</memory>
+    <cpu>
+        <topology sockets="1" cores="1"/>
+    </cpu>
+    <os type="rhel_6x64">
+        <boot dev="hd"/>
+        <kernel></kernel>
+        <initrd></initrd>
+        <cmdline></cmdline>
+    </os>
+    <high_availability>
+        <enabled>false</enabled>
+        <priority>1</priority>
+    </high_availability>
+    <display>
+        <type>spice</type>
+        <address>virtmanager.tigerrr.int</address>
+        <port>5900</port>
+        <secure_port>5901</secure_port>
+        <monitors>1</monitors>
+        <allow_reconnect>false</allow_reconnect>
+    </display>
+    <cluster href="/api/clusters/0fda9d72-7430-11e2-9d4e-3085a99aa783" id="0fda9d72-7430-11e2-9d4e-3085a99aa783"/>
+    <template href="/api/templates/00000000-0000-0000-0000-000000000000" id="00000000-0000-0000-0000-000000000000"/>
+    <creation_time>2013-02-11T12:20:29.664+02:00</creation_time>
+    <origin>ovirt</origin>
+    <stateless>false</stateless>
+    <placement_policy>
+        <affinity>migratable</affinity>
+    </placement_policy>
+    <memory_policy>
+        <guaranteed>536870912</guaranteed>
+        <ballooning>true</ballooning>
+    </memory_policy>
+    <quota id="61095ffa-e4ac-4ecc-bbb2-fe48399a410e"/>
+    <usb>
+        <enabled>false</enabled>
+    </usb>
+</vm>

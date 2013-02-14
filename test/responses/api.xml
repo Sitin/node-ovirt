@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<api>
+    <link href="/api/capabilities" rel="capabilities"/>
+    <link href="/api/clusters" rel="clusters"/>
+    <link href="/api/clusters?search={query}" rel="clusters/search"/>
+    <link href="/api/datacenters" rel="datacenters"/>
+    <link href="/api/datacenters?search={query}" rel="datacenters/search"/>
+    <link href="/api/events" rel="events"/>
+    <link href="/api/events;from={event_id}?search={query}" rel="events/search"/>
+    <link href="/api/hosts" rel="hosts"/>
+    <link href="/api/hosts?search={query}" rel="hosts/search"/>
+    <link href="/api/networks" rel="networks"/>
+    <link href="/api/roles" rel="roles"/>
+    <link href="/api/storagedomains" rel="storagedomains"/>
+    <link href="/api/storagedomains?search={query}" rel="storagedomains/search"/>
+    <link href="/api/tags" rel="tags"/>
+    <link href="/api/templates" rel="templates"/>
+    <link href="/api/templates?search={query}" rel="templates/search"/>
+    <link href="/api/users" rel="users"/>
+    <link href="/api/users?search={query}" rel="users/search"/>
+    <link href="/api/groups" rel="groups"/>
+    <link href="/api/groups?search={query}" rel="groups/search"/>
+    <link href="/api/domains" rel="domains"/>
+    <link href="/api/vmpools" rel="vmpools"/>
+    <link href="/api/vmpools?search={query}" rel="vmpools/search"/>
+    <link href="/api/vms" rel="vms"/>
+    <link href="/api/vms?search={query}" rel="vms/search"/>
+    <link href="/api/disks" rel="disks"/>
+    <link href="/api/disks?search={query}" rel="disks/search"/>
+    <special_objects>
+        <link href="/api/templates/00000000-0000-0000-0000-000000000000" rel="templates/blank"/>
+        <link href="/api/tags/00000000-0000-0000-0000-000000000000" rel="tags/root"/>
+    </special_objects>
+    <product_info>
+        <name>oVirt Engine</name>
+        <vendor>ovirt.org</vendor>
+        <version major="3" minor="1" build="0" revision="0"/>
+    </product_info>
+    <summary>
+        <vms>
+            <total>5</total>
+            <active>0</active>
+        </vms>
+        <hosts>
+            <total>2</total>
+            <active>1</active>
+        </hosts>
+        <users>
+            <total>3</total>
+            <active>2</active>
+        </users>
+        <storage_domains>
+            <total>3</total>
+            <active>2</active>
+        </storage_domains>
+    </summary>
+    <time>2013-02-11T18:05:33.554+02:00</time>
+</api>

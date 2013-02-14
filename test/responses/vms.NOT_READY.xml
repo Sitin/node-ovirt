@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<vm href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca" id="00b6c933-02e9-4ff5-9a88-95cca0e1afca">
+    <name>not-ready-vm</name>
+    <actions>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/ticket" rel="ticket"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/cancelmigration" rel="cancelmigration"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/migrate" rel="migrate"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/shutdown" rel="shutdown"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/start" rel="start"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/stop" rel="stop"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/suspend" rel="suspend"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/detach" rel="detach"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/export" rel="export"/>
+        <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/move" rel="move"/>
+    </actions>
+    <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/disks" rel="disks"/>
+    <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/nics" rel="nics"/>
+    <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/cdroms" rel="cdroms"/>
+    <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/snapshots" rel="snapshots"/>
+    <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/tags" rel="tags"/>
+    <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/permissions" rel="permissions"/>
+    <link href="/api/vms/00b6c933-02e9-4ff5-9a88-95cca0e1afca/statistics" rel="statistics"/>
+    <type>server</type>
+    <status>
+        <state>down</state>
+    </status>
+    <memory>536870912</memory>
+    <cpu>
+        <topology sockets="1" cores="1"/>
+    </cpu>
+    <os type="other_linux">
+        <boot dev="hd"/>
+        <kernel></kernel>
+        <initrd></initrd>
+        <cmdline></cmdline>
+    </os>
+    <high_availability>
+        <enabled>false</enabled>
+        <priority>1</priority>
+    </high_availability>
+    <display>
+        <type>spice</type>
+        <monitors>1</monitors>
+        <allow_reconnect>true</allow_reconnect>
+    </display>
+    <cluster href="/api/clusters/0fda9d72-7430-11e2-9d4e-3085a99aa783" id="0fda9d72-7430-11e2-9d4e-3085a99aa783"/>
+    <template href="/api/templates/00000000-0000-0000-0000-000000000000" id="00000000-0000-0000-0000-000000000000"/>
+    <creation_time>2013-02-11T18:03:42.778+02:00</creation_time>
+    <origin>ovirt</origin>
+    <stateless>false</stateless>
+    <placement_policy>
+        <affinity>migratable</affinity>
+    </placement_policy>
+    <memory_policy>
+        <guaranteed>268435456</guaranteed>
+        <ballooning>true</ballooning>
+    </memory_policy>
+    <quota id="61095ffa-e4ac-4ecc-bbb2-fe48399a410e"/>
+    <usb>
+        <enabled>false</enabled>
+    </usb>
+</vm>
