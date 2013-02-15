@@ -10,7 +10,7 @@ chai.use spies
 _ = require 'lodash'
 fs = require 'fs'
 
-{OVirtResponseParser, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource} = require '../lib/'
+{OVirtResponseParser, OVirtApi, OVirtApiNode} = require '../lib/'
 
 loadResponse = (name) ->
   fs.readFileSync "#{__dirname}/responses/#{name}.xml"
