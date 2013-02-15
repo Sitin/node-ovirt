@@ -81,17 +81,41 @@ class OVirtResponseHydrator
   #
   # @param rel [String] rel attribute of the collection search link
   #
-  # @return [Boolean]
+  # @return [String]
   #
   getSearchOptionCollectionName: (rel) ->
     matches = rel.match /^(\w+)\/search$/
     matches[1] if _.isArray(matches) and matches.length is 2
 
-  findArrayOfCollections: (hash) ->
+  #
+  # Passes searchabilities to exact collections.
+  #
+  # @param collections [Object<OVirtCollection>] collections hash
+  # @param searchabilities [Object] search options for selected collections
+  #
+  _makeCollectionsSearchabe: (collections, searchabilities) ->
+    for key of searchabilities
+      collections[key].searchOptions = searchabilities[key]
+
+  #
+  # Returns a hash of top-level collections with properly setup search
+  # capabilities.
+  #
+  # @overload findCollections()
+  #   Uses instance hash property as an input value.
+  #
+  # @overload findCollections(hash)
+  #   Accepts hash as an argument
+  #   @param hash [Object] hash
+  #
+  # @return [Object<OVirtCollection>] hash of collections
+  #
+  findCollections: (hash) ->
     hash = @_hash unless hash?
     hash = @getRootElement hash
-    list = {}
-    searchables = {}
+    list = []
+    collections = {}
+    searchabilities = {}
 
     if _.isArray hash.link
       list = hash.link
@@ -100,9 +124,14 @@ class OVirtResponseHydrator
       name = entry.$.rel
       href = entry.$.href
       if @isSearchOption name
-        searchables
+        name = @getSearchOptionCollectionName name
+        searchabilities[name] = entry.$
       else
-        list.name new OVirtCollection name, href
+        collections[name] = new OVirtCollection name, href
+
+    @_makeCollectionsSearchabe collections, searchabilities
+
+    collections
 
   #
   # Returns the name of the hash's root key if exist.

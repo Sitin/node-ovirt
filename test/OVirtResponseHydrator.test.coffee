@@ -20,6 +20,36 @@ describe 'OVirtResponseHydrator', ->
     target = new OVirtApi unless target?
     new OVirtResponseHydrator target, hash
 
+  getHash = ->
+    api:
+      time: [ '2013-02-11T18:05:33.554+02:00' ]
+      link: [
+        { $: href: '/api/capabilities', rel: 'capabilities' }
+        { $: href: '/api/clusters', rel: 'clusters' }
+        { $: href: '/api/clusters?search={query}', rel: 'clusters/search' }
+        { $: href: '/api/datacenters', rel: 'datacenters' }
+        { $: href: '/api/datacenters?search={query}', rel: 'datacenters/search' }
+        { $: href: '/api/vms', rel: 'vms' }
+        { $: href: '/api/vms?search={query}', rel: 'vms/search' }
+      ]
+      product_info: [
+        vendor: [ 'ovirt.org' ],
+        name: [ 'oVirt Engine' ],
+        version: [
+          $:
+            minor: '1',
+            build: '0',
+            revision: '0',
+            major: '3'
+        ]
+      ]
+      special_objects: [
+        link: [
+          { $: href: '/api/templates/00000000-0000-0000-0000-000000000000', rel: 'templates/blank' }
+          { $: href: '/api/tags/00000000-0000-0000-0000-000000000000', rel: 'tags/root' }
+        ]
+      ]
+
   it "should be a function", ->
     expect(OVirtResponseHydrator).to.be.a 'function'
 
@@ -116,6 +146,63 @@ describe 'OVirtResponseHydrator', ->
       expect(do hydrator.getRootElement).to.be.equal hash.spam
 
 
-  describe "#findArrayOfCollections", ->
+  describe "#findCollections", ->
+    # Defaults:
+    hash = do getHash
+    hydrator = do getHydrator
+    collections = hydrator.findCollections hash
 
+    it "should return a hash", ->
+      expect(collections).to.be.an 'object'
+
+    it "should return a hash of collections", ->
+      for key of collections
+        expect(collections[key]).to.be.an.instanceof OVirtCollection
+
+    it "should return a hash of top-level only collections", ->
+      expect(Object.keys(collections).length).to.be.equal 4
+
+    it "should setup searchable collections", ->
+      expect(collections.vms.isSearchable).to.be.true
+      expect(collections.capabilities.isSearchable).to.be.false
+
+    it "should use ._makeCollectionsSearchabe()", ->
+      hydrator = do getHydrator
+      hydrator._makeCollectionsSearchabe = spy =
+        chai.spy hydrator._makeCollectionsSearchabe
+      hydrator.findCollections hash
+      expect(spy).to.be.called.once
+
+    it "should skip the root element", ->
+      hydrator = do getHydrator
+      hydrator.getRootElement = spy =
+        chai.spy hydrator.getRootElement
+      hydrator.findCollections hash
+      expect(spy).to.be.called.once
+
+    it "should distinguish collections and search options", ->
+      hydrator = do getHydrator
+      hydrator.isSearchOption = spy =
+        chai.spy hydrator.isSearchOption
+      hydrator.findCollections hash
+      expect(spy).to.be.called hash.api.link.length
+
+
+  describe "#_makeCollectionsSearchabe", ->
+    hydrator = do getHydrator
+
+    it "should pass searchabilities to exact collections", ->
+      collections =
+        eggs: {}
+        spam: {}
+        ham: {}
+      searches =
+        spam: spam: 'Spam!'
+        ham: ham: 'Spam!'
+
+      hydrator._makeCollectionsSearchabe collections, searches
+
+      expect(collections.eggs).to.have.not.property 'searchOptions'
+      expect(collections.spam).to.have.property 'searchOptions', searches.spam
+      expect(collections.ham).to.have.property 'searchOptions', searches.ham
 
