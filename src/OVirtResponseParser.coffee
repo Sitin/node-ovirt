@@ -11,6 +11,7 @@ OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 class OVirtResponseParser
   _target: null
   _response: ''
+  _OVirtResponseHydrator: OVirtResponseHydrator
 
   #
   # Utility methods that help to create getters and setters.
@@ -70,7 +71,7 @@ class OVirtResponseParser
   # @param hash [Object] oVirt response as a hash
   #
   _exportParseResults: (hash) ->
-    hydrator = new OVirtResponseHydrator @target, hash
+    hydrator = new @_OVirtResponseHydrator @target, hash
     do hydrator.hydrate
 
   #

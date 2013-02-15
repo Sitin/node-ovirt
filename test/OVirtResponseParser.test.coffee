@@ -10,7 +10,7 @@ chai.use spies
 _ = require 'lodash'
 fs = require 'fs'
 
-{OVirtResponseParser, OVirtApi, OVirtApiNode} = require '../lib/'
+{OVirtResponseParser, OVirtResponseHydrator, OVirtApi, OVirtApiNode} = require '../lib/'
 
 loadResponse = (name) ->
   fs.readFileSync "#{__dirname}/responses/#{name}.xml"
@@ -103,3 +103,23 @@ describe 'OVirtResponseParser', ->
         do done
 
   describe "#_exportParseResults", ->
+
+    it "should use a response hydrator to export parsed hash to target", ->
+      options =
+        hash: api: []
+        target: new OVirtApi
+
+      hydrate = chai.spy ->
+
+      Hydrator = (target, hash) ->
+        expect(target).to.be.equal options.target
+        expect(hash).to.be.equal options.hash
+        @hydrate = hydrate
+        @
+
+      options.OVirtResponseHydrator = Hydrator
+
+      parser = getResponseParser options
+      parser._exportParseResults options.hash
+
+      expect(hydrate).to.be.called.once
