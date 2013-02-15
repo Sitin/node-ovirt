@@ -61,7 +61,7 @@ describe 'OVirtResponseHydrator', ->
       hydrator = do getHydrator
       expect(hydrator.isSearchOption "api/search/").to.be.false
 
-  describe "getSearchHrefBase", ->
+  describe "#getSearchHrefBase", ->
 
     it "should return href base for specified pattern", ->
       hydrator = do getHydrator
@@ -73,5 +73,41 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.getSearchHrefBase "/api/templates={query}").to.be.undefined
       expect(hydrator.getSearchHrefBase "/api/temp????lates?search={query}").to.be.undefined
       expect(hydrator.getSearchHrefBase "?/api/templates?search={query}").to.be.undefined
+
+  describe "#getRootElementName", ->
+
+    it "should simply return the name of the hash's root key", ->
+      hydrator = do getHydrator
+      expect(hydrator.getRootElementName spam: Spam: 'SPAM').to.be.equal 'spam'
+
+    it "should return undefined for hashes without single root element", ->
+      hydrator = do getHydrator
+      expect(hydrator.getRootElementName spam: 'SPAM', eggs: 'SPAM').to.be.undefined
+
+    it "should return undefined for empty hashes", ->
+      hydrator = do getHydrator
+      expect(hydrator.getRootElementName {}).to.be.undefined
+
+    it "should use instance hash property if no parameter specified", ->
+      hash = spam: Spam: 'SPAM'
+      hydrator = getHydrator undefined, hash
+      expect(do hydrator.getRootElementName).to.be.equal 'spam'
+
+  describe "#getRootElement", ->
+
+    it "should return value of the hash root element", ->
+      hydrator = do getHydrator
+      hash = spam: Spam: 'SPAM'
+      expect(hydrator.getRootElement hash).to.be.equal hash.spam
+
+    it "should return a hash itself if there no root element", ->
+      hydrator = do getHydrator
+      hash = spam: 'SPAM', eggs: 'SPAM'
+      expect(hydrator.getRootElement hash).to.be.equal hash
+
+    it "should use instance hash property if no parameter specified", ->
+      hash = spam: Spam: 'SPAM'
+      hydrator = getHydrator undefined, hash
+      expect(do hydrator.getRootElement).to.be.equal hash.spam
 
 

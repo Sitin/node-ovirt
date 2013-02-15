@@ -104,14 +104,38 @@ class OVirtResponseHydrator
       else
         list.name new OVirtCollection name, href
 
+  #
+  # Returns the name of the hash's root key if exist.
+  #
+  # @overload getRootElementName()
+  #   Uses instance hash property as an input value.
+  #
+  # @overload getRootElementName(hash)
+  #   Accepts hash as an argument
+  #   @param hash [Object] hash
+  #
+  # @return [String] hash root key or undefined
+  #
   getRootElementName: (hash) ->
     hash = @_hash unless hash?
     keys = Object.keys(hash)
     if keys.length is 1
-      hash[keys[0]]
+      keys[0]
     else
       undefined
 
+  #
+  # Returns the value of the hash root element.
+  #
+  # @overload getRootElement()
+  #   Uses instance hash property as an input value.
+  #
+  # @overload getRootElement(hash)
+  #   Accepts hash as an argument
+  #   @param hash [Object] hash
+  #
+  # @return [String] hash root key or undefined
+  #
   getRootElement: (hash) ->
     hash = @_hash unless hash?
     rootName = @getRootElementName hash
