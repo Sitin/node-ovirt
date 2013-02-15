@@ -43,7 +43,12 @@ class OVirtResponseParser
   constructor: (options) ->
     # We need only properties those are in the prototype
     for key of options
-      @['_' + key] = options[key] if typeof @['_' + key] isnt 'undefined'
+      if typeof @['_' + key] isnt 'undefined'
+        # Try to set via setter if exists:
+        if typeof @__lookupSetter__(key) isnt 'function'
+          @['_' + key] = options[key]
+        else
+          @[key] = options[key]
 
   #
   # Asynchroniously parses XML and then exports parse results.

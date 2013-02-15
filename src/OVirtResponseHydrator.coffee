@@ -1,7 +1,7 @@
 "use strict"
 
 # Tools.
-xml2js = require 'xml2js'
+_ = require 'lodash'
 
 # Dependencies.
 OVirtApi = require __dirname + '/OVirtApi'
@@ -39,7 +39,11 @@ class OVirtResponseHydrator
   # @param  target [OVirtApiNode] response subject
   # @param  hash [Object] oVirt response as a hash
   #
+  # @throw ["Hydrator's target should be an OVirtApiNode instance"]
+  #
   constructor: (@target, @hash) ->
+    if not (target instanceof OVirtApiNode)
+      throw "Hydrator's target should be an OVirtApiNode instance"
 
   hydrate: ->
 
@@ -47,16 +51,32 @@ class OVirtResponseHydrator
   exportCollections: (list) ->
 
 
+  isCollection: (subject) ->
+
+  isSearchOption: (href) ->
+    /\?search=/.test href
+
+  getSearchOptionCollectionName: (str) ->
+    matches = str.match /^(\w+)\/search$/
+    matches[1] if _.isArray(matches) and matches.length is 2
+
+
   findArrayOfCollections: (hash) ->
-    hash = @getHashRoot hash
-    list = []
+    hash = @_hash unless hash?
+    hash = @getRootElement hash
+    list = {}
+    searchables = {}
 
     if _.isArray hash.link
       list = hash.link
 
     for entry in list
-      key = entry.$.rel
-      uri = entry.$.href
+      name = entry.$.rel
+      href = entry.$.href
+      if @isSearchOption href
+        searchables
+      else
+        list.name new OVirtCollection name, href
 
   getRootElementName: (hash) ->
     hash = @_hash unless hash?

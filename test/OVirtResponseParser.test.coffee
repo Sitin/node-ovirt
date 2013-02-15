@@ -32,6 +32,19 @@ describe 'OVirtResponseParser', ->
       expect(parser).to.have.not.property 'eggs'
       expect(parser).to.have.property 'response', '<vms />'
 
+    it "should set properties via the setters if exists", ->
+      backup = OVirtResponseParser.prototype.setTarget
+      spy = OVirtResponseParser.prototype.setTarget = chai.spy backup
+
+      do getResponseParser
+
+      expect(spy).to.be.called.once
+      OVirtResponseParser.prototype.setTarget = backup
+
+    it "should set properties directly if their setters is not defined", ->
+      parser = getResponseParser OVirtResponseHydrator: "Hydrator"
+      expect(parser._OVirtResponseHydrator).to.be.equal "Hydrator"
+
   describe "#setTarget", ->
 
     it "should throw an error if target couldn't be converted" +
@@ -54,6 +67,7 @@ describe 'OVirtResponseParser', ->
 
     it "should call a callback", (done) ->
       parser = do getResponseParser
+      expect(parser.target).to.be.instanceOf OVirtApiNode
       parser.parse ->
         do done
 
