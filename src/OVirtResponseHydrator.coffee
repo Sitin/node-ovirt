@@ -9,7 +9,19 @@ OVirtApiNode = require __dirname + '/OVirtApiNode'
 OVirtCollection = require __dirname + '/OVirtCollection'
 OVirtResource = require __dirname + '/OVirtResource'
 
-
+#
+# This class hydrates oVirt API responses mapped to hashes by
+# {OVirtResponseParser}.
+#
+# + It tries to find top-level collections links and exports them to target.
+# - Tries to detect construct links to resources.
+# - Investigates for embedded collections links and process them.
+# - Exports all other "plain" properties as hashes.
+#
+# @todo Implement properties hydration
+# @todo Deal with subcollections
+# @todo Implement resource links hydration
+#
 class OVirtResponseHydrator
   _target: null
   _hash: {}
@@ -111,6 +123,8 @@ class OVirtResponseHydrator
   #
   # @param collections [Object<OVirtCollection>] collections hash
   # @param searchabilities [Object] search options for selected collections
+  #
+  # @private
   #
   _makeCollectionsSearchabe: (collections, searchabilities) ->
     for key of searchabilities

@@ -90,7 +90,7 @@ class OVirtResponseParser
   #
   # @param target [String, Function, OVirtApiNode] response subject
   #
-  # @throw ["OVirtResponseParser requires OVirtApiNode as a target"] on invalid target
+  # @throw ["OVirtResponseParser requires OVirtApiNode as a target"]
   #
   setTarget: (target) ->
     if typeof target is 'string'
