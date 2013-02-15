@@ -11,6 +11,7 @@ _ = require 'lodash'
 
 {OVirtConnection, OVirtApi} = require '../lib/'
 
+
 describe 'OVirtConnection', ->
 
   getConnection = (mixin) ->
@@ -29,12 +30,14 @@ describe 'OVirtConnection', ->
       'protocol', 'host', 'uri', 'username', 'password'
     ]
 
+
   describe "#constructor", ->
 
     it "should merge only properties those are already exist in the prototype", ->
       connection = new OVirtConnection eggs: 'spam', protocol: 'http'
       expect(connection).to.have.not.property 'eggs'
       expect(connection).to.have.property 'protocol', 'http'
+
 
   describe "#api", ->
     it "should be an API root resource", ->

@@ -23,6 +23,7 @@ describe 'OVirtResponseHydrator', ->
   it "should be a function", ->
     expect(OVirtResponseHydrator).to.be.a 'function'
 
+
   describe "#constructor", ->
 
     it "should accept target and hash as parameters", ->
@@ -49,6 +50,7 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.getSearchOptionCollectionName "api").to.be.undefined
       expect(hydrator.getSearchOptionCollectionName "").to.be.undefined
 
+
   describe "#isSearchOption", ->
 
     it "should match only valid search rel attributes", ->
@@ -60,6 +62,7 @@ describe 'OVirtResponseHydrator', ->
     it "should treat leading slash as an error", ->
       hydrator = do getHydrator
       expect(hydrator.isSearchOption "api/search/").to.be.false
+
 
   describe "#getSearchHrefBase", ->
 
@@ -73,6 +76,7 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.getSearchHrefBase "/api/templates={query}").to.be.undefined
       expect(hydrator.getSearchHrefBase "/api/temp????lates?search={query}").to.be.undefined
       expect(hydrator.getSearchHrefBase "?/api/templates?search={query}").to.be.undefined
+
 
   describe "#getRootElementName", ->
 
@@ -93,6 +97,7 @@ describe 'OVirtResponseHydrator', ->
       hydrator = getHydrator undefined, hash
       expect(do hydrator.getRootElementName).to.be.equal 'spam'
 
+
   describe "#getRootElement", ->
 
     it "should return value of the hash root element", ->
@@ -109,5 +114,8 @@ describe 'OVirtResponseHydrator', ->
       hash = spam: Spam: 'SPAM'
       hydrator = getHydrator undefined, hash
       expect(do hydrator.getRootElement).to.be.equal hash.spam
+
+
+  describe "#findArrayOfCollections", ->
 
 

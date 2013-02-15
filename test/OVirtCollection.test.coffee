@@ -11,6 +11,7 @@ _ = require 'lodash'
 
 {OVirtCollection, OVirtApiNode, OVirtConnection} = require '../lib/'
 
+
 describe 'OVirtCollection', ->
   getCollection = (mixin) ->
     mixin = {} unless mixin?

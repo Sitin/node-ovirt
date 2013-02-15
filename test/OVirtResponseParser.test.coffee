@@ -15,6 +15,7 @@ fs = require 'fs'
 loadResponse = (name) ->
   fs.readFileSync "#{__dirname}/responses/#{name}.xml"
 
+
 describe 'OVirtResponseParser', ->
   getResponseParser = (mixin) ->
     mixin = {} unless mixin?
@@ -24,6 +25,7 @@ describe 'OVirtResponseParser', ->
 
   it "should be a function", ->
     expect(OVirtResponseParser).to.be.a 'function'
+
 
   describe "#constructor", ->
 
@@ -45,6 +47,7 @@ describe 'OVirtResponseParser', ->
       parser = getResponseParser OVirtResponseHydrator: "Hydrator"
       expect(parser._OVirtResponseHydrator).to.be.equal "Hydrator"
 
+
   describe "#setTarget", ->
 
     it "should throw an error if target couldn't be converted" +
@@ -62,6 +65,7 @@ describe 'OVirtResponseParser', ->
     it "should treat string as a target type", ->
       parser = do getResponseParser
       expect(parser.setTarget 'api').to.be.instanceOf OVirtApi
+
 
   describe "#parse", ->
 
@@ -95,6 +99,7 @@ describe 'OVirtResponseParser', ->
         expect(spy).to.have.not.been.called
         do done
 
+
   describe "#parseXML", ->
 
     it "should call a callback", (done) ->
@@ -115,6 +120,7 @@ describe 'OVirtResponseParser', ->
       parser.parseXML (error, result) ->
         expect(error).to.exist
         do done
+
 
   describe "#_exportParseResults", ->
 

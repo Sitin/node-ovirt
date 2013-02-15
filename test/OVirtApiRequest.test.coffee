@@ -11,6 +11,7 @@ _ = require 'lodash'
 
 {OVirtApiRequest} = require '../lib/'
 
+
 describe 'OVirtApiRequest', ->
 
   it "should be a function", ->
@@ -26,6 +27,7 @@ describe 'OVirtApiRequest', ->
     username: 'username'
     password: 'password'
 
+
   describe "#getRequestUri", ->
 
     it 'should put collection name as a second url element if specified', ->
@@ -34,6 +36,7 @@ describe 'OVirtApiRequest', ->
 
     it 'should treat collection property value as a collection name if it is a string', ->
       url = request.getRequestUri {}
+
 
     describe 'result value (URI)', ->
       it "should start with API root URI", ->

@@ -11,6 +11,7 @@ _ = require 'lodash'
 
 {OVirtApiNode, OVirtApi, OVirtCollection, OVirtConnection, OVirtResource} = require '../lib/'
 
+
 describe 'OVirtApiNode', ->
   getApiNode = (mixin) ->
     mixin = {} unless mixin?
@@ -22,6 +23,7 @@ describe 'OVirtApiNode', ->
 
   it "should have static hash to save their children types", ->
     expect(OVirtApiNode).to.have.property 'API_NODE_TYPES'
+
 
   describe ".API_NODE_TYPES", ->
     it "should have links to api, resource and collection constructors", ->

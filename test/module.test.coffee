@@ -12,6 +12,7 @@ _ = require 'lodash'
 disposer = require '../index'
 lib = require '../lib/'
 
+
 describe 'Node.js oVirt driver as a module', ->
 
   it "should export lib contents", ->
