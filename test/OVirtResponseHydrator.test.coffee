@@ -37,7 +37,7 @@ describe 'OVirtResponseHydrator', ->
         to.throw "Hydrator's target should be an OVirtApiNode instance"
 
 
-  describe "getSearchOptionCollectionName", ->
+  describe "#getSearchOptionCollectionName", ->
 
     it "should extract first element of the collection search link 'rel'", ->
       hydrator = do getHydrator
@@ -45,8 +45,33 @@ describe 'OVirtResponseHydrator', ->
 
     it "should return udefined for non searchable paths", ->
       hydrator = do getHydrator
-      expect(hydrator.getSearchOptionCollectionName "api/").to.be.equal undefined
-      expect(hydrator.getSearchOptionCollectionName "api").to.be.equal undefined
-      expect(hydrator.getSearchOptionCollectionName "").to.be.equal undefined
+      expect(hydrator.getSearchOptionCollectionName "api/").to.be.undefined
+      expect(hydrator.getSearchOptionCollectionName "api").to.be.undefined
+      expect(hydrator.getSearchOptionCollectionName "").to.be.undefined
+
+  describe "#isSearchOption", ->
+
+    it "should match only valid search rel attributes", ->
+      hydrator = do getHydrator
+      expect(hydrator.isSearchOption "api/search").to.be.true
+      expect(hydrator.isSearchOption "apisearch").to.be.false
+      expect(hydrator.isSearchOption "api/search!").to.be.false
+
+    it "should treat leading slash as an error", ->
+      hydrator = do getHydrator
+      expect(hydrator.isSearchOption "api/search/").to.be.false
+
+  describe "getSearchHrefBase", ->
+
+    it "should return href base for specified pattern", ->
+      hydrator = do getHydrator
+      expect(hydrator.getSearchHrefBase "/api/templates?search={query}").to.be.equal "/api/templates?search="
+
+    it "should return undefined for invalid patterns", ->
+      hydrator = do getHydrator
+      expect(hydrator.getSearchHrefBase "").to.be.undefined
+      expect(hydrator.getSearchHrefBase "/api/templates={query}").to.be.undefined
+      expect(hydrator.getSearchHrefBase "/api/temp????lates?search={query}").to.be.undefined
+      expect(hydrator.getSearchHrefBase "?/api/templates?search={query}").to.be.undefined
 
 

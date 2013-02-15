@@ -53,13 +53,39 @@ class OVirtResponseHydrator
 
   isCollection: (subject) ->
 
-  isSearchOption: (href) ->
-    /\?search=/.test href
+  #
+  # Tests if value is a valid search option "rel" attribute.
+  #
+  # Rels with leading slashes treated as invalid.
+  #
+  # @param rel [String] link "rel" attribute
+  #
+  # @return [Boolean]
+  #
+  isSearchOption: (rel) ->
+    /^\w+\/search$/.test rel
 
-  getSearchOptionCollectionName: (str) ->
-    matches = str.match /^(\w+)\/search$/
+  #
+  # Returns href base for specified search pattern.
+  #
+  # @param href [String] serch option link "href" attribute
+  #
+  # @return [String] search href base or undefined
+  #
+  getSearchHrefBase: (href) ->
+    matches = href.match /^([\w\/]+\?search=)/
     matches[1] if _.isArray(matches) and matches.length is 2
 
+  #
+  # Extracts first element of the collection search link 'rel' atribute.
+  #
+  # @param rel [String] rel attribute of the collection search link
+  #
+  # @return [Boolean]
+  #
+  getSearchOptionCollectionName: (rel) ->
+    matches = rel.match /^(\w+)\/search$/
+    matches[1] if _.isArray(matches) and matches.length is 2
 
   findArrayOfCollections: (hash) ->
     hash = @_hash unless hash?
@@ -73,7 +99,7 @@ class OVirtResponseHydrator
     for entry in list
       name = entry.$.rel
       href = entry.$.href
-      if @isSearchOption href
+      if @isSearchOption name
         searchables
       else
         list.name new OVirtCollection name, href
