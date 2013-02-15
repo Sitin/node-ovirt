@@ -149,7 +149,7 @@ describe 'OVirtResponseHydrator', ->
   describe "#findCollections", ->
     # Defaults:
     hash = do getHash
-    hydrator = do getHydrator
+    hydrator = getHydrator undefined, hash
     collections = hydrator.findCollections hash
 
     it "should return a hash", ->
@@ -166,26 +166,32 @@ describe 'OVirtResponseHydrator', ->
       expect(collections.vms.isSearchable).to.be.true
       expect(collections.capabilities.isSearchable).to.be.false
 
-    it "should use ._makeCollectionsSearchabe()", ->
-      hydrator = do getHydrator
-      hydrator._makeCollectionsSearchabe = spy =
-        chai.spy hydrator._makeCollectionsSearchabe
-      hydrator.findCollections hash
-      expect(spy).to.be.called.once
+    it "should use instance hash property if no parameter specified", ->
+      expect(do hydrator.findCollections).to.be.deep.equal collections
 
-    it "should skip the root element", ->
-      hydrator = do getHydrator
-      hydrator.getRootElement = spy =
-        chai.spy hydrator.getRootElement
-      hydrator.findCollections hash
-      expect(spy).to.be.called.once
+    
+    describe "instance methods dependencies", ->
+    
+      it "should use ._makeCollectionsSearchabe()", ->
+        dehydrator = do getHydrator
+        dehydrator._makeCollectionsSearchabe = spy =
+          chai.spy dehydrator._makeCollectionsSearchabe
+        dehydrator.findCollections hash
+        expect(spy).to.be.called.once
 
-    it "should distinguish collections and search options", ->
-      hydrator = do getHydrator
-      hydrator.isSearchOption = spy =
-        chai.spy hydrator.isSearchOption
-      hydrator.findCollections hash
-      expect(spy).to.be.called hash.api.link.length
+      it "should skip the root element", ->
+        dehydrator = do getHydrator
+        dehydrator.getRootElement = spy =
+          chai.spy dehydrator.getRootElement
+        dehydrator.findCollections hash
+        expect(spy).to.be.called.once
+
+      it "should distinguish collections and search options", ->
+        dehydrator = do getHydrator
+        dehydrator.isSearchOption = spy =
+          chai.spy dehydrator.isSearchOption
+        dehydrator.findCollections hash
+        expect(spy).to.be.called hash.api.link.length
 
 
   describe "#_makeCollectionsSearchabe", ->
