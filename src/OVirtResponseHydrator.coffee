@@ -45,12 +45,31 @@ class OVirtResponseHydrator
     if not (target instanceof OVirtApiNode)
       throw "Hydrator's target should be an OVirtApiNode instance"
 
+  #
+  # Hydrates hash to target.
+  #
+  # + Searches hash for collections and exports them to target.
+  #
   hydrate: ->
+    @exportCollections do @findCollections
 
+  #
+  # Exports specified collections to target.
+  #
+  # @param collections [Object<OVirtCollection>] hash of collections
+  #
+  exportCollections: (collections) ->
+    @target.collections = collections
 
-  exportCollections: (list) ->
-
-
+  #
+  # Tests whether specified subject is a collection hash.
+  #
+  # @param subject [Object, Array] tested subject
+  #
+  # @return [Boolean] whether specified subject is a collection hash
+  #
+  # @todo Because we should do something with not top-level collections
+  #
   isCollection: (subject) ->
 
   #

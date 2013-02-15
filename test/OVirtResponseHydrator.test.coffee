@@ -20,7 +20,7 @@ describe 'OVirtResponseHydrator', ->
     target = new OVirtApi unless target?
     new OVirtResponseHydrator target, hash
 
-  getHash = ->
+  getApiHash = ->
     api:
       time: [ '2013-02-11T18:05:33.554+02:00' ]
       link: [
@@ -66,6 +66,29 @@ describe 'OVirtResponseHydrator', ->
     it "should restrict target to OVirtApiNode instances", ->
       expect(-> getHydrator {}).
         to.throw "Hydrator's target should be an OVirtApiNode instance"
+      
+      
+  describe "#hydrate", ->
+    it "should find collections and then export them", ->
+      hydrator = getHydrator undefined, do getApiHash
+      hydrator.findCollections = chai.spy ->
+        return "collections"
+      hydrator.exportCollections = chai.spy (collections) ->
+        expect(collections).to.be.equal "collections"
+        expect(hydrator.findCollections).to.have.been.called.once
+
+      do hydrator.hydrate
+
+      expect(hydrator.exportCollections).to.have.been.called.once
+
+
+  describe "#exportCollections", ->
+
+    it "should export specified collections to target", ->
+      hydrator = do getHydrator
+      hydrator._target = {}
+      hydrator.exportCollections "collections"
+      expect(hydrator._target).to.have.property "collections", "collections"
 
 
   describe "#getSearchOptionCollectionName", ->
@@ -148,7 +171,7 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#findCollections", ->
     # Defaults:
-    hash = do getHash
+    hash = do getApiHash
     hydrator = getHydrator undefined, hash
     collections = hydrator.findCollections hash
 
