@@ -12,7 +12,7 @@ _ = require 'lodash'
 disposer = require '../index'
 lib = require '../lib/'
 
-describe 'Virtual Machine Disposer as a module', ->
+describe 'Node.js oVirt driver as a module', ->
 
   it "should export lib contents", ->
     expect(disposer).to.be.deep.equal lib
