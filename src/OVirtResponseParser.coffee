@@ -86,7 +86,7 @@ class OVirtResponseParser
   # subject.
   #
   # If target is a string then it tries convert it to API node constructor
-  # using {OVirtApiNode.API_NODE_TYPES API node types hash}.
+  # using {OVirtApiNode API node's} types hash (API_NODE_TYPES).
   #
   # @param target [String, Function, OVirtApiNode] response subject
   #
