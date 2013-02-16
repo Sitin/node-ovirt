@@ -29,6 +29,8 @@ describe 'OVirtResponseHydrator', ->
         { $: href: '/api/clusters?search={query}', rel: 'clusters/search' }
         { $: href: '/api/datacenters', rel: 'datacenters' }
         { $: href: '/api/datacenters?search={query}', rel: 'datacenters/search' }
+        { $: href: '/api/events', rel: 'events' }
+        { $: href: '/api/events;from={event_id}?search={query}', rel: 'events/search' }
         { $: href: '/api/vms', rel: 'vms' }
         { $: href: '/api/vms?search={query}', rel: 'vms/search' }
       ]
@@ -183,7 +185,7 @@ describe 'OVirtResponseHydrator', ->
         expect(collections[key]).to.be.an.instanceof OVirtCollection
 
     it "should return a hash of top-level only collections", ->
-      expect(Object.keys(collections).length).to.be.equal 4
+      expect(Object.keys(collections).length).to.be.equal 5
 
     it "should setup searchable collections", ->
       expect(collections.vms.isSearchable).to.be.true

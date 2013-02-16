@@ -153,7 +153,7 @@ class OVirtResponseHydrator
     if _.isArray hash.link
       list = hash.link
 
-    for entry in list
+    for entry in list when @isCollection entry
       name = entry.$.rel
       href = entry.$.href
       if @isSearchOption name
