@@ -130,13 +130,16 @@ module.exports = function (grunt) {
   // Test task.
   grunt.registerTask('test', 'mochaTest clean:tests');
 
+  // Compile task.
+  grunt.registerTask('compile', 'coffeelint coffee');
+
   // Default task.
-  grunt.registerTask('default', 'clean coffeelint coffee test codo');
+  grunt.registerTask('default', 'clean compile test codo');
 
   // Publishing task.
   grunt.registerTask('publish', 'default');
 
   // Standalone execution task.
-  grunt.registerTask('run', 'default bgShell:run');
+  grunt.registerTask('run', 'clean compile bgShell:run');
 
 };
