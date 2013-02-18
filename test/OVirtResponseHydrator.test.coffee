@@ -88,7 +88,12 @@ describe 'OVirtResponseHydrator', ->
 
     it "should export specified collections to target", ->
       hydrator = do getHydrator
-      hydrator._target = {}
+      target = new OVirtApi
+      hydrator.exportCollections "collections", target
+      expect(target).to.have.property "collections", "collections"
+
+    it "should use instance property 'target' if no target specified", ->
+      hydrator = do getHydrator
       hydrator.exportCollections "collections"
       expect(hydrator._target).to.have.property "collections", "collections"
 

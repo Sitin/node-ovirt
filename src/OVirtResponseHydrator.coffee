@@ -67,11 +67,18 @@ class OVirtResponseHydrator
 
   #
   # Exports specified collections to target.
+  # By default uses instance target.
   #
-  # @param collections [Object<OVirtCollection>] hash of collections
+  # @overload exportCollections(collections)
+  #   @param collections [Object<OVirtCollection>] hash of collections
   #
-  exportCollections: (collections) ->
-    @target.collections = collections
+  # @overload exportCollections(collections, target)
+  #   @param collections [Object<OVirtCollection>] hash of collections
+  #   @param target [OVirtApiNode] target API node
+  #
+  exportCollections: (collections, target) ->
+    target = @target unless target
+    target.collections = collections
 
   #
   # Tests whether specified subject is a link to collection.
