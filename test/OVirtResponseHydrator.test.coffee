@@ -290,12 +290,16 @@ describe 'OVirtResponseHydrator', ->
         spam: {}
         ham: {}
       searches =
-        spam: spam: 'Spam!'
-        ham: ham: 'Spam!'
+        spam: href: 'Spam?search='
+        ham: href: 'Spam;from{ham_id}?search='
 
       hydrator._makeCollectionsSearchabe collections, searches
 
       expect(collections.eggs).to.have.not.property 'searchOptions'
-      expect(collections.spam).to.have.property 'searchOptions', searches.spam
-      expect(collections.ham).to.have.property 'searchOptions', searches.ham
+      expect(collections.spam).to.have.property('searchOptions')
+        .that.deep.equals href: searches.spam.href
+      expect(collections.ham).to.have.property('searchOptions')
+        .that.deep.equals href: searches.ham.href
+
+
 

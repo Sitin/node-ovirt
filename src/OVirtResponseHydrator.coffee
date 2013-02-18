@@ -155,7 +155,8 @@ class OVirtResponseHydrator
   #
   _makeCollectionsSearchabe: (collections, searchabilities) ->
     for key of searchabilities
-      collections[key].searchOptions = searchabilities[key]
+      collections[key].searchOptions =
+        href: searchabilities[key].href
 
   #
   # Returns a hash of top-level collections with properly setup search
