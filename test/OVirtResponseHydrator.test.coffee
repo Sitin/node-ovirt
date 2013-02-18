@@ -134,41 +134,46 @@ describe 'OVirtResponseHydrator', ->
 
 
   describe "#getRootElementName", ->
+    hydrator = do getHydrator
 
     it "should simply return the name of the hash's root key", ->
-      hydrator = do getHydrator
       expect(hydrator.getRootElementName spam: Spam: 'SPAM').to.be.equal 'spam'
 
     it "should return undefined for hashes without single root element", ->
-      hydrator = do getHydrator
       expect(hydrator.getRootElementName spam: 'SPAM', eggs: 'SPAM').to.be.undefined
 
     it "should return undefined for empty hashes", ->
-      hydrator = do getHydrator
       expect(hydrator.getRootElementName {}).to.be.undefined
 
     it "should use instance hash property if no parameter specified", ->
-      hash = spam: Spam: 'SPAM'
-      hydrator = getHydrator undefined, hash
+      hydrator.hash = spam: Spam: 'SPAM'
       expect(do hydrator.getRootElementName).to.be.equal 'spam'
+
+    it "should work with non-objects", ->
+      hydrator.hash = null
+      expect(-> hydrator.getRootElement null).to.not.throw Error
+      expect(hydrator.getRootElement null).to.be.undefined
 
 
   describe "#getRootElement", ->
+    hydrator = do getHydrator
 
     it "should return value of the hash root element", ->
-      hydrator = do getHydrator
       hash = spam: Spam: 'SPAM'
       expect(hydrator.getRootElement hash).to.be.equal hash.spam
 
     it "should return a hash itself if there no root element", ->
-      hydrator = do getHydrator
       hash = spam: 'SPAM', eggs: 'SPAM'
       expect(hydrator.getRootElement hash).to.be.equal hash
 
     it "should use instance hash property if no parameter specified", ->
-      hash = spam: Spam: 'SPAM'
-      hydrator = getHydrator undefined, hash
+      hydrator.hash = hash = spam: Spam: 'SPAM'
       expect(do hydrator.getRootElement).to.be.equal hash.spam
+
+    it "should work with non-objects", ->
+      hydrator.hash = null
+      expect(-> hydrator.getRootElement null).to.not.throw Error
+      expect(hydrator.getRootElement null).to.be.undefined
 
 
   describe "#findCollections", ->
@@ -209,7 +214,7 @@ describe 'OVirtResponseHydrator', ->
         dehydrator.getRootElement = spy =
           chai.spy dehydrator.getRootElement
         dehydrator.findCollections hash
-        expect(spy).to.be.called.once
+        expect(spy).to.be.called
 
       it "should distinguish collections and search options", ->
         dehydrator = do getHydrator
@@ -217,6 +222,59 @@ describe 'OVirtResponseHydrator', ->
           chai.spy dehydrator.isSearchOption
         dehydrator.findCollections hash
         expect(spy).to.be.called hash.api.link.length
+
+
+  describe "#isLink", ->
+    hydrator = do getHydrator
+
+    it "should return true if both 'rel' or 'id' " +
+       "and 'href' properties existed", ->
+        expect(hydrator.isLink rel: "rel", href: "/href").to.be.true
+
+    it "should omit the root element", ->
+      expect(hydrator.isLink $: rel: "rel", href: "/href").to.be.true
+
+    it "should return false for everything else", ->
+      expect(hydrator.isLink rel: "rel").to.be.false
+      expect(hydrator.isLink $: "eggs").to.be.false
+      expect(hydrator.isLink null).to.be.false
+
+
+  describe "#isCollectionLink", ->
+    hydrator = do getHydrator
+    id = "00000000-0000-0000-0000-000000000000"
+
+    it "should return true if subject is a collection link", ->
+      expect(hydrator.isCollectionLink rel: "rel", href: "/href").to.be.true
+
+    it "should omit the root element", ->
+      expect(hydrator.isCollectionLink $: rel: "rel", href: "href").to.be.true
+
+    it "should return false if subject is a resource link", ->
+      expect(hydrator.isCollectionLink rel: "rel", href: "/href/#{id}").to.be.false
+      expect(hydrator.isCollectionLink id: id, href: "/href").to.be.false
+
+
+  describe "#isResourceLink", ->
+    hydrator = do getHydrator
+    id = "00000000-0000-0000-0000-000000000000"
+
+    it "should return true if subject is a resource link", ->
+      subject = $: id: "id", href: "/href/#{id}"
+      expect(hydrator.isResourceLink id: "id", href: "/href/#{id}").to.be.true
+
+    it "should omit the root element", ->
+      subject = $: id: "id", href: "/href/#{id}"
+      expect(hydrator.isResourceLink subject).to.be.true
+
+    it "should reflect that some resorce links " +
+       "have 'rel' properties instead 'id'", ->
+        subject = rel: "rel", href: "/href/#{id}"
+        expect(hydrator.isResourceLink subject).to.be.true
+
+    it "should return false for non-valid resource hrefs", ->
+      subject = rel: "id", href: "/href/0000-0000-00000-000"
+      expect(hydrator.isResourceLink subject).to.be.false
 
 
   describe "#_makeCollectionsSearchabe", ->

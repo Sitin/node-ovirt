@@ -74,15 +74,42 @@ class OVirtResponseHydrator
     @target.collections = collections
 
   #
-  # Tests whether specified subject is a collection hash.
+  # Tests whether specified subject is a link to collection.
   #
   # @param subject [Object, Array] tested subject
   #
   # @return [Boolean] whether specified subject is a collection hash
   #
-  # @todo Because we should do something with not top-level collections
+  isCollectionLink: (subject) ->
+    return no unless @isLink subject
+    subject = @getRootElement subject
+    subject.rel? and not @isResourceLink subject
+
   #
-  isCollection: (subject) ->
+  # Tests whether specified subject is a link to resource or collection.
+  #
+  # @param subject [Object, Array] tested subject
+  #
+  # @return [Boolean] whether specified subject is a link
+  #
+  isLink: (subject) ->
+    subject = @getRootElement subject
+    return no unless subject
+    (subject.rel? or subject.id?) and subject.href?
+
+  #
+  # Tests whether specified subject is a link to resource.
+  #
+  # @param subject [Object, Array] tested subject
+  #
+  # @return [Boolean] whether specified subject is a resource link
+  #
+  isResourceLink: (subject) ->
+    return no unless @isLink subject
+    subject = @getRootElement subject
+    return no unless subject
+    /\w+-\w+-\w+-\w+-\w+$/.test subject.href
+
 
   #
   # Tests if value is a valid search option "rel" attribute.
@@ -153,14 +180,14 @@ class OVirtResponseHydrator
     if _.isArray hash.link
       list = hash.link
 
-    for entry in list when @isCollection entry
-      name = entry.$.rel
-      href = entry.$.href
+    for entry in list when @isCollectionLink entry
+      entry = @getRootElement entry
+      name = entry.rel
       if @isSearchOption name
         name = @getSearchOptionCollectionName name
-        searchabilities[name] = entry.$
+        searchabilities[name] = entry
       else
-        collections[name] = new OVirtCollection name, href
+        collections[name] = new OVirtCollection name, entry.href
 
     @_makeCollectionsSearchabe collections, searchabilities
 
@@ -180,6 +207,7 @@ class OVirtResponseHydrator
   #
   getRootElementName: (hash) ->
     hash = @_hash unless hash?
+    return undefined unless hash?
     keys = Object.keys(hash)
     if keys.length is 1
       keys[0]
@@ -200,6 +228,7 @@ class OVirtResponseHydrator
   #
   getRootElement: (hash) ->
     hash = @_hash unless hash?
+    return undefined unless hash?
     rootName = @getRootElementName hash
     hash = hash[rootName] if rootName
     hash
