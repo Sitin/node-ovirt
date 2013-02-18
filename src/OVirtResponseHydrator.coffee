@@ -55,7 +55,7 @@ class OVirtResponseHydrator
   #
   constructor: (@target, @hash) ->
     if not (target instanceof OVirtApiNode)
-      throw "Hydrator's target should be an OVirtApiNode instance"
+      throw new TypeError "Hydrator's target should be an OVirtApiNode instance"
 
   #
   # Hydrates hash to target.

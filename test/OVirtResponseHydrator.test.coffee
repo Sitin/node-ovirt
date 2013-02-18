@@ -67,7 +67,7 @@ describe 'OVirtResponseHydrator', ->
 
     it "should restrict target to OVirtApiNode instances", ->
       expect(-> getHydrator {}).
-        to.throw "Hydrator's target should be an OVirtApiNode instance"
+        to.throw TypeError, "Hydrator's target should be an OVirtApiNode instance"
       
       
   describe "#hydrate", ->

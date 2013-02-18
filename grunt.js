@@ -15,9 +15,6 @@ module.exports = function (grunt) {
       main: {
         files: [options.coffeePath + '/**/*.coffee', './*.coffee'],
         options: {
-          "no_throwing_strings": {
-            "level": "warn"
-          },
           "max_line_length": {
             "level": "warn"
           }

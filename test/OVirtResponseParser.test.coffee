@@ -54,7 +54,7 @@ describe 'OVirtResponseParser', ->
       "to OVirtApiNode", ->
         parser = do getResponseParser
         expect(-> parser.setTarget "something wrong")
-          .to.throw "OVirtResponseParser requires OVirtApiNode as a target"
+          .to.throw TypeError, "OVirtResponseParser requires OVirtApiNode as a target"
 
     it "should try to construct target if function specified", ->
       parser = do getResponseParser

@@ -100,7 +100,8 @@ class OVirtResponseParser
       target = new target connection: @connection
 
     if not (target instanceof OVirtApiNode)
-      throw "OVirtResponseParser requires OVirtApiNode as a target"
+      throw new
+        TypeError "OVirtResponseParser requires OVirtApiNode as a target"
 
     @_target = target
 
