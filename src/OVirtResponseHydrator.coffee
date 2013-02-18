@@ -131,7 +131,7 @@ class OVirtResponseHydrator
   # @return [String] search href base or undefined
   #
   getSearchHrefBase: (href) ->
-    matches = href.match /^([\w\/]+\?search=)/
+    matches = href.match /^([\w\/;{}=]+\?search=)/
     matches[1] if _.isArray(matches) and matches.length is 2
 
   #

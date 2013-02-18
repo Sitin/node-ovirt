@@ -125,6 +125,10 @@ describe 'OVirtResponseHydrator', ->
       hydrator = do getHydrator
       expect(hydrator.getSearchHrefBase "/api/templates?search={query}").to.be.equal "/api/templates?search="
 
+    it "should properly process hrefs with from parts", ->
+      hydrator = do getHydrator
+      expect(hydrator.getSearchHrefBase "/api/events;from={event_id}?search={query}").to.be.equal "/api/events;from={event_id}?search="
+
     it "should return undefined for invalid patterns", ->
       hydrator = do getHydrator
       expect(hydrator.getSearchHrefBase "").to.be.undefined
