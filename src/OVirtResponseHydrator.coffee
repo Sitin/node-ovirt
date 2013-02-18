@@ -23,6 +23,12 @@ OVirtResource = require __dirname + '/OVirtResource'
 # @todo Implement resource links hydration
 #
 class OVirtResponseHydrator
+  # Static properties
+  @SPECIAL_PROPERTIES = ['link', 'action', 'special_objects']
+  @LINK_PROPERTY = 'link'
+  @ACTION_PROPERTY = 'action'
+
+  # Defaults
   _target: null
   _hash: {}
 
@@ -64,6 +70,10 @@ class OVirtResponseHydrator
   #
   hydrate: ->
     @exportCollections do @findCollections
+    @exportProperties do @findProperties
+
+  exportProperties: ->
+    undefined
 
   #
   # Exports specified collections to target.
@@ -131,6 +141,16 @@ class OVirtResponseHydrator
     /^\w+\/search$/.test rel
 
   #
+  # Tests if specified value is a property key.
+  #
+  # @param name [String] supject name
+  #
+  # @return [Boolean]
+  #
+  isProperty: (name) ->
+    OVirtResponseHydrator.SPECIAL_PROPERTIES.indexOf name > -1
+
+  #
   # Returns href base for specified search pattern.
   #
   # @param href [String] serch option link "href" attribute
@@ -148,8 +168,36 @@ class OVirtResponseHydrator
   #
   # @return [String]
   #
-  getSearchOptionCollectionName: (rel) ->
+  # @private
+  #
+  _getSearchOptionCollectionName: (rel) ->
     matches = rel.match /^(\w+)\/search$/
+    matches[1] if _.isArray(matches) and matches.length is 2
+
+  #
+  # Extracts special object collection name from the 'rel' attribute.
+  #
+  # @param rel [String] rel attribute of the special object link
+  #
+  # @return [String]
+  #
+  # @private
+  #
+  _getSpecialObjectCollection: (rel) ->
+    matches = rel.match /([\w\/]+)\/\w+$/
+    matches[1] if _.isArray(matches) and matches.length is 2
+
+  #
+  # Extracts special object name from the 'rel' attribute.
+  #
+  # @param rel [String] rel attribute of the special object link
+  #
+  # @return [String]
+  #
+  # @private
+  #
+  _getSpecialObjectName: (rel) ->
+    matches = rel.match /[\w\/]+\/(\w+)$/
     matches[1] if _.isArray(matches) and matches.length is 2
 
   #
@@ -164,6 +212,24 @@ class OVirtResponseHydrator
     for key of searchabilities
       collections[key].searchOptions =
         href: searchabilities[key].href
+
+  #
+  # Adds special objects to exact collections.
+  #
+  # @param collections [Object<OVirtCollection>] collections hash
+  # @param specialities [Object] collections special objects
+  #
+  # @private
+  #
+  _addSpecialObjects: (collections, specialities) ->
+    try
+      for obj in specialities[0].link
+        obj = @getRootElement obj
+        collection = @_getSpecialObjectCollection obj.rel
+        name = @_getSpecialObjectName obj.rel
+
+        if collections[collection]?
+          collections[collection].addSpecialObject name, obj.href
 
   #
   # Returns a hash of top-level collections with properly setup search
@@ -181,25 +247,66 @@ class OVirtResponseHydrator
   findCollections: (hash) ->
     hash = @_hash unless hash?
     hash = @getRootElement hash
-    list = []
+    list = hash[OVirtResponseHydrator.LINK_PROPERTY]
     collections = {}
     searchabilities = {}
 
-    if _.isArray hash.link
-      list = hash.link
+    list = [] unless _.isArray list
 
     for entry in list when @isCollectionLink entry
       entry = @getRootElement entry
       name = entry.rel
       if @isSearchOption name
-        name = @getSearchOptionCollectionName name
+        name = @_getSearchOptionCollectionName name
         searchabilities[name] = entry
       else
         collections[name] = new OVirtCollection name, entry.href
 
     @_makeCollectionsSearchabe collections, searchabilities
+    @_addSpecialObjects collections, hash.special_objects
 
     collections
+
+  #
+  # Return a hash of hydrated properties.
+  #
+  # @overload findProperties()
+  #   Uses instance hash property as an input value.
+  #
+  # @overload findProperties(hash)
+  #   Accepts hash as an argument
+  #   @param hash [Object] hash
+  #
+  # @return [Object] hash of hydrated properties
+  #
+  findProperties: (hash) ->
+    hash = @_hash unless hash?
+    hash = @getRootElement hash
+    properties = {}
+
+    for name, value of hash when @isProperty name
+      properties.name = @hydrateProperty value
+
+    properties
+
+  #
+  # Hydrates specified value.
+  #
+  # @param value [mixed]
+  #
+  # @return [mixed]
+  #
+  hydrateProperty: (value) ->
+    if _.isArray value
+      if value.length is 1
+        value = value[0]
+      value =
+        @hydrateProperty entry for entry in value
+    else if _.isObject value
+      # @todo Deal with object properties
+      do nop
+
+    value
 
   #
   # Returns the name of the hash's root key if exist.
@@ -217,7 +324,7 @@ class OVirtResponseHydrator
     hash = @_hash unless hash?
     return undefined unless hash?
     keys = Object.keys(hash)
-    if keys.length is 1
+    if keys.length is 1 and not _.isArray hash[keys[0]]
       keys[0]
     else
       undefined

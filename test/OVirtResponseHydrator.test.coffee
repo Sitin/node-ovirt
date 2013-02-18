@@ -98,17 +98,17 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator._target).to.have.property "collections", "collections"
 
 
-  describe "#getSearchOptionCollectionName", ->
+  describe "#_getSearchOptionCollectionName", ->
 
     it "should extract first element of the collection search link 'rel'", ->
       hydrator = do getHydrator
-      expect(hydrator.getSearchOptionCollectionName "api/search").to.be.equal "api"
+      expect(hydrator._getSearchOptionCollectionName "api/search").to.be.equal "api"
 
     it "should return udefined for non searchable paths", ->
       hydrator = do getHydrator
-      expect(hydrator.getSearchOptionCollectionName "api/").to.be.undefined
-      expect(hydrator.getSearchOptionCollectionName "api").to.be.undefined
-      expect(hydrator.getSearchOptionCollectionName "").to.be.undefined
+      expect(hydrator._getSearchOptionCollectionName "api/").to.be.undefined
+      expect(hydrator._getSearchOptionCollectionName "api").to.be.undefined
+      expect(hydrator._getSearchOptionCollectionName "").to.be.undefined
 
 
   describe "#isSearchOption", ->
@@ -157,6 +157,10 @@ describe 'OVirtResponseHydrator', ->
     it "should use instance hash property if no parameter specified", ->
       hydrator.hash = spam: Spam: 'SPAM'
       expect(do hydrator.getRootElementName).to.be.equal 'spam'
+
+    it "shouldn't expand a hash that contains just one array property", ->
+      hydrator.hash = spam: ['SPAM']
+      expect(do hydrator.getRootElementName).to.be.undefined
 
     it "should work with non-objects", ->
       hydrator.hash = null
