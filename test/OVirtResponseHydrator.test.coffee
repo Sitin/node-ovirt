@@ -73,11 +73,11 @@ describe 'OVirtResponseHydrator', ->
   describe "#hydrate", ->
     it "should find collections and then export them", ->
       hydrator = getHydrator undefined, do getApiHash
-      hydrator.findCollections = chai.spy ->
+      hydrator.getHydratedCollections = chai.spy ->
         return "collections"
       hydrator.exportCollections = chai.spy (collections) ->
         expect(collections).to.be.equal "collections"
-        expect(hydrator.findCollections).to.have.been.called.once
+        expect(hydrator.getHydratedCollections).to.have.been.called.once
 
       do hydrator.hydrate
 
@@ -96,19 +96,6 @@ describe 'OVirtResponseHydrator', ->
       hydrator = do getHydrator
       hydrator.exportCollections "collections"
       expect(hydrator._target).to.have.property "collections", "collections"
-
-
-  describe "#_getSearchOptionCollectionName", ->
-
-    it "should extract first element of the collection search link 'rel'", ->
-      hydrator = do getHydrator
-      expect(hydrator._getSearchOptionCollectionName "api/search").to.be.equal "api"
-
-    it "should return udefined for non searchable paths", ->
-      hydrator = do getHydrator
-      expect(hydrator._getSearchOptionCollectionName "api/").to.be.undefined
-      expect(hydrator._getSearchOptionCollectionName "api").to.be.undefined
-      expect(hydrator._getSearchOptionCollectionName "").to.be.undefined
 
 
   describe "#isSearchOption", ->
@@ -189,11 +176,11 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.getRootElement null).to.be.undefined
 
 
-  describe "#findCollections", ->
+  describe "#getHydratedCollections", ->
     # Defaults:
     hash = do getApiHash
     hydrator = getHydrator undefined, hash
-    collections = hydrator.findCollections hash
+    collections = hydrator.getHydratedCollections hash
 
     it "should return a hash", ->
       expect(collections).to.be.an 'object'
@@ -210,7 +197,7 @@ describe 'OVirtResponseHydrator', ->
       expect(collections.capabilities.isSearchable).to.be.false
 
     it "should use instance hash property if no parameter specified", ->
-      expect(do hydrator.findCollections).to.be.deep.equal collections
+      expect(do hydrator.getHydratedCollections).to.be.deep.equal collections
 
     
     describe "instance methods dependencies", ->
@@ -219,21 +206,21 @@ describe 'OVirtResponseHydrator', ->
         dehydrator = do getHydrator
         dehydrator._makeCollectionsSearchabe = spy =
           chai.spy dehydrator._makeCollectionsSearchabe
-        dehydrator.findCollections hash
+        dehydrator.getHydratedCollections hash
         expect(spy).to.be.called.once
 
       it "should skip the root element", ->
         dehydrator = do getHydrator
         dehydrator.getRootElement = spy =
           chai.spy dehydrator.getRootElement
-        dehydrator.findCollections hash
+        dehydrator.getHydratedCollections hash
         expect(spy).to.be.called
 
       it "should distinguish collections and search options", ->
         dehydrator = do getHydrator
         dehydrator.isSearchOption = spy =
           chai.spy dehydrator.isSearchOption
-        dehydrator.findCollections hash
+        dehydrator.getHydratedCollections hash
         expect(spy).to.be.called hash.api.link.length
 
 
@@ -290,6 +277,17 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.isResourceLink subject).to.be.false
 
 
+  describe "#isProperty", ->
+    hydrator = do getHydrator
+
+    it "should return false for special properies", ->
+      for special in OVirtResponseHydrator.SPECIAL_PROPERTIES
+        expect(hydrator.isProperty special).to.be.false
+
+    it "should return true for everything else", ->
+      expect(hydrator.isProperty "just_property").to.be.true
+
+
   describe "#_makeCollectionsSearchabe", ->
     hydrator = do getHydrator
 
@@ -309,6 +307,105 @@ describe 'OVirtResponseHydrator', ->
         .that.deep.equals href: searches.spam.href
       expect(collections.ham).to.have.property('searchOptions')
         .that.deep.equals href: searches.ham.href
+
+
+  describe "#_addSpecialObjects", ->
+    hydrator = do getHydrator
+    hash = hydrator.getRootElement do getApiHash
+    specialities = hash.special_objects
+    specialsCount = specialities[0].link.length
+    {collections} = hydrator._findCollections hash
+
+    it "should loop over special objects and add them to collections", ->
+      dehydrator = do getHydrator
+      spy = dehydrator._addSpecialObject = chai.spy ->
+
+      dehydrator._addSpecialObjects collections, specialities
+      expect(spy).to.be.called specialsCount
+
+    it "should clone objects before adding them", ->
+      backup = _.clone
+      spy = _.clone = chai.spy _.clone
+
+      hydrator._addSpecialObjects collections, specialities
+      expect(spy).to.be.called specialsCount
+
+      _.clone = backup
+
+
+  describe.skip "#_addSpecialObject", ->
+    # @todo Add tests for ._addSpecialObject()
+
+
+  describe.skip "#_setupCollections", ->
+    # @todo Add tests for ._setupCollections()
+
+
+  describe.skip "#_findCollections", ->
+    # @todo Add tests for ._findCollections()
+
+
+  describe.skip "#_hydrateArray", ->
+    # @todo Add tests for ._hydrateArray()
+
+
+  describe.skip "#_mergeAttributes", ->
+    # @todo Add tests for ._mergeAttributes()
+
+
+  describe.skip "#_removeSpecialProperties", ->
+    # @todo Add tests for ._removeSpecialProperties()
+
+
+  describe.skip "#_hydrateHash", ->
+    # @todo Add tests for ._hydrateHash()
+
+
+  describe.skip "#hydrateProperty", ->
+    # @todo Add tests for .hydrateProperty()
+
+
+  describe "#_getSearchOptionCollectionName", ->
+
+    it "should extract first element of the collection search link 'rel'", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSearchOptionCollectionName "api/search").to.be.equal "api"
+
+    it "should return udefined for non searchable paths", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSearchOptionCollectionName "api/").to.be.undefined
+      expect(hydrator._getSearchOptionCollectionName "api").to.be.undefined
+      expect(hydrator._getSearchOptionCollectionName "").to.be.undefined
+
+
+  describe "#_getSpecialObjectCollection", ->
+
+    it "should extract base path from the special object's 'rel'", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSpecialObjectCollection "api/spam").to.be.equal "api"
+      expect(hydrator._getSpecialObjectCollection "if/you/want/ham/say/SPAM")
+        .to.be.equal "if/you/want/ham/say"
+
+    it "should return udefined for other paths", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSpecialObjectCollection "api/").to.be.undefined
+      expect(hydrator._getSpecialObjectCollection "api").to.be.undefined
+      expect(hydrator._getSpecialObjectCollection "").to.be.undefined
+
+
+  describe "#_getSpecialObjectName", ->
+
+    it "should extract last element the special object's 'rel'", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSpecialObjectName "eggs/spam").to.be.equal "spam"
+      expect(hydrator._getSpecialObjectName "if/you/want/ham/say/SPAM")
+        .to.be.equal "SPAM"
+
+    it "should return udefined for other paths", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSpecialObjectName "api/").to.be.undefined
+      expect(hydrator._getSpecialObjectName "api").to.be.undefined
+      expect(hydrator._getSpecialObjectName "").to.be.undefined
 
 
 

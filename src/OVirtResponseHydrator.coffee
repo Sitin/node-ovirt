@@ -27,6 +27,7 @@ class OVirtResponseHydrator
   @SPECIAL_PROPERTIES = ['link', 'action', 'special_objects']
   @LINK_PROPERTY = 'link'
   @ACTION_PROPERTY = 'action'
+  @ATTRIBUTE_KEY = '$'
 
   # Defaults
   _target: null
@@ -69,11 +70,11 @@ class OVirtResponseHydrator
   # + Searches hash for collections and exports them to target.
   #
   hydrate: ->
-    @exportCollections do @findCollections
+    @exportCollections do @getHydratedCollections
     @exportProperties do @findProperties
 
-  exportProperties: ->
-    undefined
+  exportProperties: (properties) ->
+    @target.properties = properties
 
   #
   # Exports specified collections to target.
@@ -148,7 +149,7 @@ class OVirtResponseHydrator
   # @return [Boolean]
   #
   isProperty: (name) ->
-    OVirtResponseHydrator.SPECIAL_PROPERTIES.indexOf name > -1
+    (OVirtResponseHydrator.SPECIAL_PROPERTIES.indexOf name) < 0
 
   #
   # Returns href base for specified search pattern.
@@ -214,7 +215,7 @@ class OVirtResponseHydrator
         href: searchabilities[key].href
 
   #
-  # Adds special objects to exact collections.
+  # Adds special objects to corresponding collections.
   #
   # @param collections [Object<OVirtCollection>] collections hash
   # @param specialities [Object] collections special objects
@@ -223,30 +224,75 @@ class OVirtResponseHydrator
   #
   _addSpecialObjects: (collections, specialities) ->
     try
-      for obj in specialities[0].link
-        obj = @getRootElement obj
-        collection = @_getSpecialObjectCollection obj.rel
-        name = @_getSpecialObjectName obj.rel
+      for object in specialities[0].link
+        @_addSpecialObject collections, _.clone object
 
-        if collections[collection]?
-          collections[collection].addSpecialObject name, obj.href
+  #
+  # Adds special object to exact collections.
+  #
+  # @param collections [OVirtCollection] collections hash
+  # @param specialities [Object] collection special objects
+  #
+  # @private
+  #
+  _addSpecialObject: (collections, object) ->
+    object = @_mergeAttributes object
+    collection = @_getSpecialObjectCollection object.rel
+    name = @_getSpecialObjectName object.rel
+
+    if collections[collection]?
+      collections[collection].addSpecialObject name, object.href
 
   #
   # Returns a hash of top-level collections with properly setup search
-  # capabilities.
+  # capabilities and special objects.
   #
-  # @overload findCollections()
+  # @overload getHydratedCollections()
   #   Uses instance hash property as an input value.
   #
-  # @overload findCollections(hash)
+  # @overload getHydratedCollections(hash)
   #   Accepts hash as an argument
   #   @param hash [Object] hash
   #
   # @return [Object<OVirtCollection>] hash of collections
   #
-  findCollections: (hash) ->
+  getHydratedCollections: (hash) ->
     hash = @_hash unless hash?
     hash = @getRootElement hash
+
+    {collections, searchabilities} = @_findCollections hash
+
+    @_setupCollections collections
+    @_makeCollectionsSearchabe collections, searchabilities
+    @_addSpecialObjects collections, hash.special_objects
+
+    collections
+
+  #
+  # Replaces collections property hash with corresponding collection instances.
+  #
+  # @param hash [Object<String>] hash
+  #
+  # @return [Object<OVirtCollection>] hash of collections instances
+  #
+  # @private
+  #
+  _setupCollections: (collections) ->
+    for name, href of collections
+      collections[name] = new OVirtCollection name, href
+
+  #
+  # Returns top-level collections an their search options.
+  #
+  # The result is a hash with two properties: colections and searchabilities.
+  #
+  # @param hash [Object] hash
+  #
+  # @return [Object] hash of collections and their search options
+  #
+  # @private
+  #
+  _findCollections: (hash) ->
     list = hash[OVirtResponseHydrator.LINK_PROPERTY]
     collections = {}
     searchabilities = {}
@@ -260,12 +306,10 @@ class OVirtResponseHydrator
         name = @_getSearchOptionCollectionName name
         searchabilities[name] = entry
       else
-        collections[name] = new OVirtCollection name, entry.href
+        collections[name] = entry.href
 
-    @_makeCollectionsSearchabe collections, searchabilities
-    @_addSpecialObjects collections, hash.special_objects
-
-    collections
+    collections: collections
+    searchabilities: searchabilities
 
   #
   # Return a hash of hydrated properties.
@@ -285,9 +329,74 @@ class OVirtResponseHydrator
     properties = {}
 
     for name, value of hash when @isProperty name
-      properties.name = @hydrateProperty value
+      properties[name] = @hydrateProperty value
+
+    @_mergeAttributes properties
 
     properties
+
+  #
+  # Hydrates specified array.
+  # Unfolds singular array element.
+  #
+  # @param value [Array]
+  #
+  # @return [Array,mixed]
+  #
+  # @private
+  #
+  _hydrateArray: (subject) ->
+    if subject.length is 1
+      @hydrateProperty subject[0]
+    else
+      @hydrateProperty entry for entry in subject
+
+  #
+  # Merges attributes into element.
+  # Attribute key is defined by {.ATTRIBUTE_KEY}
+  #
+  # @param value [Object]
+  #
+  # @return [Object]
+  #
+  # @private
+  #
+  _mergeAttributes: (subject) ->
+    key = OVirtResponseHydrator.ATTRIBUTE_KEY
+    if subject[key]?
+      _.merge subject, subject[key]
+      delete subject[key]
+
+    subject
+
+  #
+  # Removes special properties defined in {.SPECIAL_PROPERTIES}.
+  #
+  # @param value [Object]
+  #
+  # @return [Object]
+  #
+  # @private
+  #
+  _removeSpecialProperties: (subject) ->
+    for key in OVirtResponseHydrator.SPECIAL_PROPERTIES
+      delete subject[key]
+    subject
+
+  #
+  # Hydrates specified hash.
+  #
+  # @param value [Object]
+  #
+  # @return [mixed]
+  #
+  # @private
+  #
+  _hydrateHash: (subject) ->
+    subject = @_mergeAttributes _.cloneDeep subject
+    for name, value of subject
+      subject[name] = @hydrateProperty value
+    @_removeSpecialProperties subject
 
   #
   # Hydrates specified value.
@@ -298,15 +407,11 @@ class OVirtResponseHydrator
   #
   hydrateProperty: (value) ->
     if _.isArray value
-      if value.length is 1
-        value = value[0]
-      value =
-        @hydrateProperty entry for entry in value
+      @_hydrateArray value
     else if _.isObject value
-      # @todo Deal with object properties
-      do nop
-
-    value
+      @_hydrateHash value
+    else
+      value
 
   #
   # Returns the name of the hash's root key if exist.

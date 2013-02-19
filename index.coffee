@@ -3,10 +3,9 @@
 
 lib = require __dirname + '/lib/'
 
-fs = require 'fs'
-
 
 if not module.parent
+  fs = require 'fs'
   eyes = require 'eyes'
   inspect = eyes.inspector maxLength: no
 
@@ -27,6 +26,15 @@ if not module.parent
       console.log error if error
       inspect result
 
+  dumpHydratedHash = ->
+    parser = new lib.OVirtResponseParser
+      response: loadResponse 'api'
+      target: 'collection'
+    parser.parse (error, result) ->
+      console.log error if error
+      inspect parser.target
+
   do dumpFileHash
+  do dumpHydratedHash
 else
   module.exports = lib
