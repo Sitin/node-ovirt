@@ -231,7 +231,7 @@ describe 'OVirtResponseHydrator', ->
     it "should be completed", ->
 
 
-  describe.skip "#hydrateProperty", ->
+  describe.skip "#_hydrateProperty", ->
     it "should be completed", ->
 
 

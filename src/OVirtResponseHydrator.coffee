@@ -330,7 +330,7 @@ class OVirtResponseHydrator
     properties = {}
 
     for name, value of hash when @isProperty name
-      properties[name] = @hydrateProperty value
+      properties[name] = @_hydrateProperty value
 
     @_mergeAttributes properties
 
@@ -348,9 +348,9 @@ class OVirtResponseHydrator
   #
   _hydrateArray: (subject) ->
     if subject.length is 1
-      @hydrateProperty subject[0]
+      @_hydrateProperty subject[0]
     else
-      @hydrateProperty entry for entry in subject
+      @_hydrateProperty entry for entry in subject
 
   #
   # Merges attributes into element.
@@ -396,7 +396,7 @@ class OVirtResponseHydrator
   _hydrateHash: (subject) ->
     subject = @_mergeAttributes _.cloneDeep subject
     for name, value of subject
-      subject[name] = @hydrateProperty value
+      subject[name] = @_hydrateProperty value
     @_removeSpecialProperties subject
 
   #
@@ -406,7 +406,9 @@ class OVirtResponseHydrator
   #
   # @return [mixed]
   #
-  hydrateProperty: (value) ->
+  # @private
+  #
+  _hydrateProperty: (value) ->
     if _.isArray value
       @_hydrateArray value
     else if @isResourceLink value
