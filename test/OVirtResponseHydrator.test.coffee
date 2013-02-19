@@ -228,11 +228,11 @@ describe 'OVirtResponseHydrator', ->
 
 
   describe.skip "#getHydratedProperties", ->
-    # @todo Add tests for .getHydratedProperties()
+    it "should be completed", ->
 
 
   describe.skip "#hydrateProperty", ->
-    # @todo Add tests for .hydrateProperty()
+    it "should be completed", ->
 
 
   describe "#isLink", ->
@@ -271,7 +271,6 @@ describe 'OVirtResponseHydrator', ->
     id = "00000000-0000-0000-0000-000000000000"
 
     it "should return true if subject is a resource link", ->
-      subject = $: id: "id", href: "/href/#{id}"
       expect(hydrator.isResourceLink id: "id", href: "/href/#{id}").to.be.true
 
     it "should omit the root element", ->
@@ -345,35 +344,41 @@ describe 'OVirtResponseHydrator', ->
 
 
   describe.skip "#_addSpecialObject", ->
-    # @todo Add tests for ._addSpecialObject()
+    it "should be completed", ->
 
 
   describe.skip "#_setupCollections", ->
-    # @todo Add tests for ._setupCollections()
+    it "should be completed", ->
 
 
   describe.skip "#_findCollections", ->
-    # @todo Add tests for ._findCollections()
+    it "should be completed", ->
 
 
   describe.skip "#_hydrateArray", ->
-    # @todo Add tests for ._hydrateArray()
+    it "should be completed", ->
 
 
   describe.skip "#_mergeAttributes", ->
-    # @todo Add tests for ._mergeAttributes()
+    it "should be completed", ->
 
 
   describe.skip "#_removeSpecialProperties", ->
-    # @todo Add tests for ._removeSpecialProperties()
+    it "should be completed", ->
 
 
   describe.skip "#_hydrateHash", ->
-    # @todo Add tests for ._hydrateHash()
+    it "should be completed", ->
 
 
-  describe.skip "#_setupResource", ->
-    # @todo Add tests for ._setupResource()
+  describe "#_setupResource", ->
+    it "should return OVirtResource instance", ->
+      hydrator = do getHydrator
+      expect(hydrator._setupResource {}).to.be.an.instanceOf OVirtResource
+
+    it.skip "should treat attributes as a properties", ->
+
+    it.skip "should keep passed parameter untoched", ->
 
 
   describe "#_getSearchOptionCollectionName", ->
