@@ -71,7 +71,7 @@ class OVirtResponseHydrator
   #
   hydrate: ->
     @exportCollections do @getHydratedCollections
-    @exportProperties do @findProperties
+    @exportProperties do @getHydratedProperties
 
   exportProperties: (properties) ->
     @target.properties = properties
@@ -314,16 +314,16 @@ class OVirtResponseHydrator
   #
   # Return a hash of hydrated properties.
   #
-  # @overload findProperties()
+  # @overload getHydratedProperties()
   #   Uses instance hash property as an input value.
   #
-  # @overload findProperties(hash)
+  # @overload getHydratedProperties(hash)
   #   Accepts hash as an argument
   #   @param hash [Object] hash
   #
   # @return [Object] hash of hydrated properties
   #
-  findProperties: (hash) ->
+  getHydratedProperties: (hash) ->
     hash = @_hash unless hash?
     hash = @getRootElement hash
     properties = {}
