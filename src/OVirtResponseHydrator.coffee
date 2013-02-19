@@ -68,6 +68,7 @@ class OVirtResponseHydrator
   # Hydrates hash to target.
   #
   # + Searches hash for collections and exports them to target.
+  # - Searches hash for properties and exports them.
   #
   hydrate: ->
     @exportCollections do @getHydratedCollections
