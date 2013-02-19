@@ -12,6 +12,8 @@ fs = require 'fs'
 
 {OVirtResponseParser, OVirtResponseHydrator, OVirtApi, OVirtApiNode} = require '../lib/'
 
+xml2js = require 'xml2js'
+
 loadResponse = (name) ->
   fs.readFileSync "#{__dirname}/responses/#{name}.xml"
 
@@ -46,6 +48,10 @@ describe 'OVirtResponseParser', ->
     it "should set properties directly if their setters is not defined", ->
       parser = getResponseParser OVirtResponseHydrator: "Hydrator"
       expect(parser._OVirtResponseHydrator).to.be.equal "Hydrator"
+
+    it "should instantiate parser", ->
+      parser = do getResponseParser
+      expect(parser._parser).to.be.an.instanceOf xml2js.Parser
 
 
   describe "#setTarget", ->

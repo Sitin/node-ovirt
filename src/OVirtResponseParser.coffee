@@ -9,6 +9,12 @@ OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 
 
 class OVirtResponseParser
+  # Static properties
+  @PARSER_OPTIONS:
+    explicitArray: no
+    attrkey: '$'
+
+  # Defaults
   _target: null
   _response: ''
   _OVirtResponseHydrator: OVirtResponseHydrator
@@ -50,6 +56,9 @@ class OVirtResponseParser
         else
           @[key] = options[key]
 
+    # Instantiate parser
+    @_parser = new xml2js.Parser OVirtResponseParser.PARSER_OPTIONS
+
   #
   # Asynchroniously parses XML and then exports parse results.
   #
@@ -66,7 +75,7 @@ class OVirtResponseParser
   # @param callback [Function] callback function
   #
   parseXML: (callback) ->
-    xml2js.parseString @response, (error, result) ->
+    @_parser.parseString @response, (error, result) ->
       callback error, result
 
   #
