@@ -151,29 +151,32 @@ describe 'OVirtResponseHydrator', ->
 
     it "should work with non-objects", ->
       hydrator.hash = null
-      expect(-> hydrator.getRootElement null).to.not.throw Error
-      expect(hydrator.getRootElement null).to.be.undefined
+      expect(-> hydrator.getRootElementName null).to.not.throw Error
+      expect(hydrator.getRootElementName null).to.be.undefined
+      expect(-> hydrator.getRootElementName "not an object").to.not.throw Error
+      expect(hydrator.getRootElementName "not an object").to.be.undefined
 
 
-  describe "#getRootElement", ->
+  describe "#unfolded", ->
     hydrator = do getHydrator
 
     it "should return value of the hash root element", ->
       hash = spam: Spam: 'SPAM'
-      expect(hydrator.getRootElement hash).to.be.equal hash.spam
+      expect(hydrator.unfolded hash).to.be.equal hash.spam
 
     it "should return a hash itself if there no root element", ->
       hash = spam: 'SPAM', eggs: 'SPAM'
-      expect(hydrator.getRootElement hash).to.be.equal hash
+      expect(hydrator.unfolded hash).to.be.equal hash
 
     it "should use instance hash property if no parameter specified", ->
       hydrator.hash = hash = spam: Spam: 'SPAM'
-      expect(do hydrator.getRootElement).to.be.equal hash.spam
+      expect(do hydrator.unfolded).to.be.equal hash.spam
 
     it "should work with non-objects", ->
       hydrator.hash = null
-      expect(-> hydrator.getRootElement null).to.not.throw Error
-      expect(hydrator.getRootElement null).to.be.undefined
+      expect(-> hydrator.unfolded null).to.not.throw Error
+      expect(hydrator.unfolded null).to.be.undefined
+      expect(-> hydrator.unfolded "not an object").to.not.throw Error
 
 
   describe "#getHydratedCollections", ->
@@ -211,8 +214,8 @@ describe 'OVirtResponseHydrator', ->
 
       it "should skip the root element", ->
         dehydrator = do getHydrator
-        dehydrator.getRootElement = spy =
-          chai.spy dehydrator.getRootElement
+        dehydrator.unfolded = spy =
+          chai.spy dehydrator.unfolded
         dehydrator.getHydratedCollections hash
         expect(spy).to.be.called
 
@@ -226,6 +229,10 @@ describe 'OVirtResponseHydrator', ->
 
   describe.skip "#getHydratedProperties", ->
     # @todo Add tests for .getHydratedProperties()
+
+
+  describe.skip "#hydrateProperty", ->
+    # @todo Add tests for .hydrateProperty()
 
 
   describe "#isLink", ->
@@ -315,7 +322,7 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#_addSpecialObjects", ->
     hydrator = do getHydrator
-    hash = hydrator.getRootElement do getApiHash
+    hash = hydrator.unfolded do getApiHash
     specialities = hash.special_objects
     specialsCount = specialities[0].link.length
     {collections} = hydrator._findCollections hash
@@ -365,8 +372,8 @@ describe 'OVirtResponseHydrator', ->
     # @todo Add tests for ._hydrateHash()
 
 
-  describe.skip "#hydrateProperty", ->
-    # @todo Add tests for .hydrateProperty()
+  describe.skip "#_setupResource", ->
+    # @todo Add tests for ._setupResource()
 
 
   describe "#_getSearchOptionCollectionName", ->

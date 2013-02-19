@@ -100,7 +100,7 @@ class OVirtResponseHydrator
   #
   isCollectionLink: (subject) ->
     return no unless @isLink subject
-    subject = @getRootElement subject
+    subject = @unfolded subject
     subject.rel? and not @isResourceLink subject
 
   #
@@ -111,7 +111,7 @@ class OVirtResponseHydrator
   # @return [Boolean] whether specified subject is a link
   #
   isLink: (subject) ->
-    subject = @getRootElement subject
+    subject = @unfolded subject
     return no unless subject
     (subject.rel? or subject.id?) and subject.href?
 
@@ -124,7 +124,7 @@ class OVirtResponseHydrator
   #
   isResourceLink: (subject) ->
     return no unless @isLink subject
-    subject = @getRootElement subject
+    subject = @unfolded subject
     return no unless subject
     /\w+-\w+-\w+-\w+-\w+$/.test subject.href
 
@@ -258,7 +258,7 @@ class OVirtResponseHydrator
   #
   getHydratedCollections: (hash) ->
     hash = @_hash unless hash?
-    hash = @getRootElement hash
+    hash = @unfolded hash
 
     {collections, searchabilities} = @_findCollections hash
 
@@ -300,7 +300,7 @@ class OVirtResponseHydrator
     list = [] unless _.isArray list
 
     for entry in list when @isCollectionLink entry
-      entry = @getRootElement entry
+      entry = @unfolded entry
       name = entry.rel
       if @isSearchOption name
         name = @_getSearchOptionCollectionName name
@@ -325,7 +325,7 @@ class OVirtResponseHydrator
   #
   getHydratedProperties: (hash) ->
     hash = @_hash unless hash?
-    hash = @getRootElement hash
+    hash = @unfolded hash
     properties = {}
 
     for name, value of hash when @isProperty name
@@ -408,10 +408,26 @@ class OVirtResponseHydrator
   hydrateProperty: (value) ->
     if _.isArray value
       @_hydrateArray value
+    else if @isResourceLink value
+      @_setupResource value
     else if _.isObject value
       @_hydrateHash value
     else
       value
+
+
+  #
+  # Converts hash to resource.
+  #
+  # @param value [Object]
+  #
+  # @return [<OVirtResource>]
+  #
+  # @private
+  #
+  _setupResource: (hash) ->
+    new OVirtResource @_mergeAttributes _.clone hash
+
 
   #
   # Returns the name of the hash's root key if exist.
@@ -427,7 +443,7 @@ class OVirtResponseHydrator
   #
   getRootElementName: (hash) ->
     hash = @_hash unless hash?
-    return undefined unless hash?
+    return undefined unless _.isObject hash
     keys = Object.keys(hash)
     if keys.length is 1 and not _.isArray hash[keys[0]]
       keys[0]
@@ -435,18 +451,18 @@ class OVirtResponseHydrator
       undefined
 
   #
-  # Returns the value of the hash root element.
+  # Returns the value of the hash root element if existed.
   #
-  # @overload getRootElement()
+  # @overload unfolded()
   #   Uses instance hash property as an input value.
   #
-  # @overload getRootElement(hash)
+  # @overload unfolded(hash)
   #   Accepts hash as an argument
-  #   @param hash [Object] hash
+  #   @param hash [mixed] hash
   #
-  # @return [String] hash root key or undefined
+  # @return [mixed] hash root key or undefined
   #
-  getRootElement: (hash) ->
+  unfolded: (hash) ->
     hash = @_hash unless hash?
     return undefined unless hash?
     rootName = @getRootElementName hash
