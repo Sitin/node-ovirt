@@ -2,6 +2,7 @@
 
 # Tools.
 xml2js = require 'xml2js'
+deepFreeze = require 'deep-freeze'
 
 # Dependencies.
 OVirtApiNode = require __dirname + '/OVirtApiNode'
@@ -85,6 +86,7 @@ class OVirtResponseParser
   # @param hash [Object] oVirt response as a hash
   #
   _exportParseResults: (hash) ->
+    deepFreeze hash
     hydrator = new @_OVirtResponseHydrator @target, hash
     do hydrator.hydrate
 

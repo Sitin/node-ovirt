@@ -149,3 +149,9 @@ describe 'OVirtResponseParser', ->
       parser._exportParseResults options.hash
 
       expect(hydrate).to.be.called.once
+
+    it "should freeze the hash", ->
+      parser = do getResponseParser
+      hash = api: {}
+      parser._exportParseResults hash
+      expect(Object.isFrozen hash).to.be.true
