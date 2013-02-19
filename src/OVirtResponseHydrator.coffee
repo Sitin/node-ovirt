@@ -301,7 +301,7 @@ class OVirtResponseHydrator
     list = [] unless _.isArray list
 
     for entry in list when @isCollectionLink entry
-      entry = @unfolded entry
+      entry = @_mergeAttributes _.clone entry
       name = entry.rel
       if @isSearchOption name
         name = @_getSearchOptionCollectionName name
@@ -347,10 +347,7 @@ class OVirtResponseHydrator
   # @private
   #
   _hydrateArray: (subject) ->
-    if subject.length is 1
-      @_hydrateProperty subject[0]
-    else
-      @_hydrateProperty entry for entry in subject
+    @_hydrateProperty entry for entry in subject
 
   #
   # Merges attributes into element.
