@@ -224,6 +224,10 @@ describe 'OVirtResponseHydrator', ->
         expect(spy).to.be.called hash.api.link.length
 
 
+  describe.skip "#getHydratedProperties", ->
+    # @todo Add tests for .getHydratedProperties()
+
+
   describe "#isLink", ->
     hydrator = do getHydrator
 
