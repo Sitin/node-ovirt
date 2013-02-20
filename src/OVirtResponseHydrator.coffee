@@ -74,6 +74,11 @@ class OVirtResponseHydrator
     @exportCollections do @getHydratedCollections
     @exportProperties do @getHydratedProperties
 
+  #
+  # Exports properties to target API node
+  #
+  # @param properties [Object] properties to export
+  #
   exportProperties: (properties) ->
     @target.properties = properties
 

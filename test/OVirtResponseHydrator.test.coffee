@@ -231,6 +231,17 @@ describe 'OVirtResponseHydrator', ->
     it "should be completed", ->
 
 
+  describe "#exportProperties", ->
+    it "should export hash to target's 'properties' property", ->
+      hydrator = do getHydrator
+      hash = eggs: "with": saousages: "and": "SPAM"
+      spy = chai.spy (value) ->
+        expect(value).to.be.equal hash
+      hydrator.target.__defineSetter__ 'properties', spy
+      hydrator.exportProperties hash
+      expect(spy).to.have.been.called.once
+
+
   describe.skip "#_hydrateProperty", ->
     it "should be completed", ->
 
