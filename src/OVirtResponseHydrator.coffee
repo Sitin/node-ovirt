@@ -423,7 +423,7 @@ class OVirtResponseHydrator
   # @private
   #
   _hydrateHash: (subject) ->
-    subject = @_mergeAttributes _.cloneDeep subject
+    subject = @_mergeAttributes _.clone subject
     for name, value of subject
       subject[name] = @_hydrateProperty value
     @_removeSpecialProperties subject
