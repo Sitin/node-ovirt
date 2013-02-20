@@ -28,6 +28,7 @@ class OVirtResponseHydrator
   @LINK_PROPERTY = 'link'
   @ACTION_PROPERTY = 'action'
   @ATTRIBUTE_KEY = '$'
+  @SPECIAL_OBJECTS = 'special_objects'
 
   # Defaults
   _target: null
@@ -71,8 +72,10 @@ class OVirtResponseHydrator
   # - Searches hash for properties and exports them.
   #
   hydrate: ->
-    @exportCollections do @getHydratedCollections
-    @exportProperties do @getHydratedProperties
+    rootName = @getRootElementName @hash
+    hash = @unfolded @hash
+    @exportCollections @getHydratedCollections hash
+    @exportProperties @getHydratedProperties hash
 
   #
   # Exports properties to target API node
@@ -250,27 +253,31 @@ class OVirtResponseHydrator
       collections[collection].addSpecialObject name, object.href
 
   #
+  # Returns collections special objects of response hash.
+  #
+  # @param hash [Object]
+  #
+  # @return [Object]
+  #
+  # @private
+  #
+  _getSpecialObjects: (hash) ->
+    hash[OVirtResponseHydrator.SPECIAL_OBJECTS]
+
+  #
   # Returns a hash of top-level collections with properly setup search
   # capabilities and special objects.
   #
-  # @overload getHydratedCollections()
-  #   Uses instance hash property as an input value.
-  #
-  # @overload getHydratedCollections(hash)
-  #   Accepts hash as an argument
-  #   @param hash [Object] hash
+  # @param hash [Object] hash
   #
   # @return [Object<OVirtCollection>] hash of collections
   #
   getHydratedCollections: (hash) ->
-    hash = @_hash unless hash?
-    hash = @unfolded hash
-
     {collections, searchabilities} = @_findCollections hash
 
     @_setupCollections collections
     @_makeCollectionsSearchabe collections, searchabilities
-    @_addSpecialObjects collections, hash.special_objects
+    @_addSpecialObjects collections, @_getSpecialObjects hash
 
     collections
 
@@ -320,18 +327,11 @@ class OVirtResponseHydrator
   #
   # Return a hash of hydrated properties.
   #
-  # @overload getHydratedProperties()
-  #   Uses instance hash property as an input value.
-  #
-  # @overload getHydratedProperties(hash)
-  #   Accepts hash as an argument
-  #   @param hash [Object] hash
+  # @param hash [Object] hash
   #
   # @return [Object] hash of hydrated properties
   #
   getHydratedProperties: (hash) ->
-    hash = @_hash unless hash?
-    hash = @unfolded hash
     properties = {}
 
     for name, value of hash when @isProperty name

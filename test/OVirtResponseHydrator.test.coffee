@@ -71,8 +71,10 @@ describe 'OVirtResponseHydrator', ->
       
       
   describe "#hydrate", ->
+    hash = do getApiHash
+
     it "should find collections and then export them", ->
-      hydrator = getHydrator undefined, do getApiHash
+      hydrator = getHydrator undefined, hash
       hydrator.getHydratedCollections = chai.spy ->
         return "collections"
       hydrator.exportCollections = chai.spy (collections) ->
@@ -82,6 +84,16 @@ describe 'OVirtResponseHydrator', ->
       do hydrator.hydrate
 
       expect(hydrator.exportCollections).to.have.been.called.once
+
+    it "should skip the root element", ->
+      hydrator = getHydrator undefined, hash
+      hydrator.getHydratedCollections =
+        spy = chai.spy (value) ->
+          expect(value).to.be.equal hydrator.unfolded hash
+
+      hydrator.hydrate hash
+
+      expect(spy).to.be.called.once
 
 
   describe "#exportCollections", ->
@@ -183,6 +195,7 @@ describe 'OVirtResponseHydrator', ->
     # Defaults:
     hash = do getApiHash
     hydrator = getHydrator undefined, hash
+    hash = hydrator.unfolded hash
     collections = hydrator.getHydratedCollections hash
 
     it "should return a hash", ->
@@ -199,8 +212,17 @@ describe 'OVirtResponseHydrator', ->
       expect(collections.vms.isSearchable).to.be.true
       expect(collections.capabilities.isSearchable).to.be.false
 
-    it "should use instance hash property if no parameter specified", ->
-      expect(do hydrator.getHydratedCollections).to.be.deep.equal collections
+    it "should add special objects", ->
+      dehydrator = do getHydrator
+      {collections} = dehydrator._findCollections hash
+      dehydrator._addSpecialObjects =
+        spy = chai.spy (subjects, specialities) ->
+          expect(Object.keys subjects).to.be.deep.equal Object.keys collections
+          expect(specialities).to.be.equal hydrator._getSpecialObjects hash
+
+      dehydrator.getHydratedCollections hash
+
+      expect(spy).to.be.called.once
 
     
     describe "instance methods dependencies", ->
@@ -212,19 +234,12 @@ describe 'OVirtResponseHydrator', ->
         dehydrator.getHydratedCollections hash
         expect(spy).to.be.called.once
 
-      it "should skip the root element", ->
-        dehydrator = do getHydrator
-        dehydrator.unfolded = spy =
-          chai.spy dehydrator.unfolded
-        dehydrator.getHydratedCollections hash
-        expect(spy).to.be.called
-
       it "should distinguish collections and search options", ->
         dehydrator = do getHydrator
         dehydrator.isSearchOption = spy =
           chai.spy dehydrator.isSearchOption
         dehydrator.getHydratedCollections hash
-        expect(spy).to.be.called hash.api.link.length
+        expect(spy).to.be.called hash.link.length
 
 
   describe.skip "#getHydratedProperties", ->
@@ -234,7 +249,7 @@ describe 'OVirtResponseHydrator', ->
   describe "#exportProperties", ->
     it "should export hash to target's 'properties' property", ->
       hydrator = do getHydrator
-      hash = eggs: "with": saousages: "and": "SPAM"
+      hash = eggs: "with": sausages: "and": "SPAM"
       spy = chai.spy (value) ->
         expect(value).to.be.equal hash
       hydrator.target.__defineSetter__ 'properties', spy
@@ -380,6 +395,15 @@ describe 'OVirtResponseHydrator', ->
 
   describe.skip "#_hydrateHash", ->
     it "should be completed", ->
+
+
+  describe.skip "#_getSpecialObjects", ->
+    hydrator = do getHydrator
+    hash = hydrator.unfolded do getApiHash
+    key = OVirtResponseHydrator.SPECIAL_OBJECTS
+
+    it "should return value of the 'SPECIAL_OBJECTS' property", ->
+      expect(hydrator._getSpecialObjects hash).to.be.equal hash[key]
 
 
   describe "#_setupResource", ->
