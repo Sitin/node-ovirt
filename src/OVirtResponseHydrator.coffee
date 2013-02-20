@@ -414,7 +414,7 @@ class OVirtResponseHydrator
     if _.isArray value
       @_hydrateArray value
     else if @isResourceLink value
-      @_setupResource value
+      @_setupResourceLink value
     else if _.isObject value
       @_hydrateHash value
     else
@@ -430,7 +430,7 @@ class OVirtResponseHydrator
   #
   # @private
   #
-  _setupResource: (hash) ->
+  _setupResourceLink: (hash) ->
     new OVirtResource @_mergeAttributes _.clone hash
 
 

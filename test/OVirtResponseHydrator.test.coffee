@@ -406,10 +406,10 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator._getSpecialObjects hash).to.be.equal hash[key]
 
 
-  describe "#_setupResource", ->
+  describe "#_setupResourceLink", ->
     it "should return OVirtResource instance", ->
       hydrator = do getHydrator
-      expect(hydrator._setupResource {}).to.be.an.instanceOf OVirtResource
+      expect(hydrator._setupResourceLink {}).to.be.an.instanceOf OVirtResource
 
     it.skip "should treat attributes as a properties", ->
 
