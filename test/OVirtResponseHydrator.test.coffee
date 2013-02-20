@@ -389,6 +389,10 @@ describe 'OVirtResponseHydrator', ->
     it "should be completed", ->
 
 
+  describe.skip "#_getAttributes", ->
+    it "should be completed", ->
+
+
   describe.skip "#_removeSpecialProperties", ->
     it "should be completed", ->
 

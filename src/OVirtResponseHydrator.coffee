@@ -127,7 +127,7 @@ class OVirtResponseHydrator
   #
   # Tests whether specified subject is a link to resource.
   #
-  # @param subject [Object, Array] tested subject
+  # @param subject [Object] tested subject
   #
   # @return [Boolean] whether specified subject is a resource link
   #
@@ -136,6 +136,17 @@ class OVirtResponseHydrator
     subject = @unfolded subject
     return no unless subject
     /\w+-\w+-\w+-\w+-\w+$/.test subject.href
+
+
+  #
+  # Tests whether specified subject is a resource hash representation.
+  #
+  # @param subject [Object] tested subject
+  #
+  # @return [Boolean] whether specified subject is a resource link
+  #
+  isResource: (subject) ->
+
 
 
   #
@@ -358,7 +369,7 @@ class OVirtResponseHydrator
   # Merges attributes into element.
   # Attribute key is defined by {.ATTRIBUTE_KEY}
   #
-  # @param value [Object]
+  # @param subject [Object]
   #
   # @return [Object]
   #
@@ -366,11 +377,27 @@ class OVirtResponseHydrator
   #
   _mergeAttributes: (subject) ->
     key = OVirtResponseHydrator.ATTRIBUTE_KEY
-    if subject[key]?
-      _.merge subject, subject[key]
-      delete subject[key]
+    _.merge subject, @_getAttributes subject
+    delete subject[key]
 
     subject
+
+  #
+  # Returns element attributes.
+  # Attribute key is defined by {.ATTRIBUTE_KEY}
+  #
+  # @param subject [Object]
+  #
+  # @return [Object]
+  #
+  # @private
+  #
+  _getAttributes: (subject) ->
+    key = OVirtResponseHydrator.ATTRIBUTE_KEY
+    if subject[key]?
+      subject[key]
+    else
+      {}
 
   #
   # Removes special properties defined in {.SPECIAL_PROPERTIES}.
@@ -415,6 +442,8 @@ class OVirtResponseHydrator
       @_hydrateArray value
     else if @isResourceLink value
       @_setupResourceLink value
+    else if @isResource value
+      @_setupResource value
     else if _.isObject value
       @_hydrateHash value
     else
