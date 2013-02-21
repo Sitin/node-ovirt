@@ -98,7 +98,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # + Target setter should be able to create targets from strings and
 # constructor function.
-# - Get element attributes for custom hash.
+# + Get element attributes for custom hash.
 # - Detect whether element has no children.
 # - Retrieve element's children (but not attributes).
 # - Merge attributes with children (for plain properties).

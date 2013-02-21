@@ -405,7 +405,14 @@ describe 'OVirtResponseHydrator', ->
 
 
   describe.skip "#_getAttributes", ->
-    it "should be completed", ->
+
+    it "should return value of the property defined by attrkey", ->
+      hash = ham: "with": sausages: "and": "SPAM"
+      attributes = eggs: "SPAM"
+      hash[OVirtResponseHydrator.ATTRIBUTE_KEY] = attributes
+      hydrator = do getHydrator
+      expect(hydrator._getAttributes hash).to.be.equal attributes
+
 
 
   describe.skip "#_removeSpecialProperties", ->
