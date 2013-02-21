@@ -99,7 +99,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Target setter should be able to create targets from strings and
 # constructor function.
 # + Get element attributes for custom hash.
-# - Detect whether element has no children.
+# + Detect whether element has children.
 # - Retrieve element's children (but not attributes).
 # - Merge attributes with children (for plain properties).
 # - Retrieve merged version of element.
@@ -508,6 +508,26 @@ class OVirtResponseHydrator
       subject[key]
     else
       {}
+
+  #
+  # Returns whether element has children.
+  # Attributes are not considered as a children.
+  #
+  # @param subject [Object]
+  #
+  # @return [Boolean]
+  #
+  # @private
+  #
+  _hasChildElements: (subject) ->
+    if not (_.isObject subject) or _.isArray subject
+      return undefined
+
+    keys = Object.keys subject
+    count = keys.length
+    count-- if _.contains keys, OVirtResponseHydrator.ATTRIBUTE_KEY
+
+    count > 0
 
   #
   # Removes special properties defined in {.SPECIAL_PROPERTIES}.

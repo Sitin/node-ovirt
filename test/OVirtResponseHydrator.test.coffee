@@ -414,6 +414,25 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator._getAttributes hash).to.be.equal attributes
 
 
+  describe "#_hasChildElements", ->
+    hydrator = do getHydrator
+    hash = ham: "with": sausages: "and": "SPAM"
+    attributes = eggs: "SPAM"
+    hash[OVirtResponseHydrator.ATTRIBUTE_KEY] = attributes
+
+    it "should return undefined for non-objects and arrays", ->
+      expect(hydrator._hasChildElements "SPAAAM!").to.be.undefined
+      expect(hydrator._hasChildElements []).to.be.undefined
+
+    it "should return true if there are properties except attributes", ->
+      expect(hydrator._hasChildElements hash).to.be.true
+
+    it "should return false in other cases", ->
+      emptyHash = {}
+      expect(hydrator._hasChildElements emptyHash).to.be.false
+      emptyHash[OVirtResponseHydrator.ATTRIBUTE_KEY] = attributes
+      expect(hydrator._hasChildElements emptyHash).to.be.false
+
 
   describe.skip "#_removeSpecialProperties", ->
     it "should be completed", ->
