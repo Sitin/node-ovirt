@@ -96,7 +96,8 @@ OVirtResource = require __dirname + '/OVirtResource'
 # Utility tasks
 # --------------
 #
-# - Constructor should be able to create targets from strings and constructors.
+# - Target setter should be able to create targets from strings and
+# constructor function.
 # - Get element attributes for custom hash.
 # - Detect whether element has no children.
 # - Retrieve element's children (but not attributes).
@@ -128,7 +129,8 @@ class OVirtResponseHydrator
   # @property [OVirtApiNode] target API node
   #
   get target: -> @_target
-  set target: (target) -> @_target = target
+  set target: (target) ->
+    @setTarget target
 
   #
   # @property [Object] oVirt hash
@@ -136,6 +138,32 @@ class OVirtResponseHydrator
   get hash: -> @_hash
   set hash: (hash) ->
     @_hash = hash
+
+  #
+  # Sets current target.
+  #
+  # If target is a function the it considered as a constructor of the response
+  # subject.
+  #
+  # If target is a string then it tries convert it to API node constructor
+  # using {OVirtApiNode API node's} types hash (API_NODE_TYPES).
+  #
+  # @param target [String, Function, OVirtApiNode] response subject
+  #
+  # @throw [TypeError]
+  #
+  setTarget: (target) ->
+    if typeof target is 'string'
+      target = OVirtApiNode.API_NODE_TYPES[target]
+
+    if typeof target is 'function'
+      target = new target connection: @connection
+
+    if not (target instanceof OVirtApiNode)
+      throw new
+      TypeError "Hydrator's target should be an OVirtApiNode instance"
+
+    @_target = target
 
   #
   # Accepts hydration parameters.
@@ -146,8 +174,6 @@ class OVirtResponseHydrator
   # @throw ["Hydrator's target should be an OVirtApiNode instance"]
   #
   constructor: (@target, @hash) ->
-    if not (target instanceof OVirtApiNode)
-      throw new TypeError "Hydrator's target should be an OVirtApiNode instance"
 
   #
   # Hydrates hash to target.

@@ -63,11 +63,26 @@ describe 'OVirtResponseHydrator', ->
       target = new OVirtApi
       hydrator = getHydrator target, hash
       expect(hydrator).to.have.property 'hash', hash
-      expect(hydrator).to.have.property 'target', target
+      expect(hydrator).to.have.property 'target'
+      expect(hydrator.target).to.be.not.null
 
-    it "should restrict target to OVirtApiNode instances", ->
-      expect(-> getHydrator {}).
-        to.throw TypeError, "Hydrator's target should be an OVirtApiNode instance"
+  describe "#setTarget", ->
+
+    it "should throw an error if target couldn't be converted" +
+       "to OVirtApiNode", ->
+        hydrator = do getHydrator
+        expect(-> hydrator.setTarget "something wrong")
+          .to.throw TypeError, "Hydrator's target should be an OVirtApiNode instance"
+
+    it "should try to construct target if function specified", ->
+      hydrator = do getHydrator
+      spy = chai.spy OVirtApiNode
+      expect(hydrator.setTarget spy).to.be.an.instanceOf OVirtApiNode
+      expect(spy).to.be.called.once
+
+    it "should treat string as a target type", ->
+      hydrator = do getHydrator
+      expect(hydrator.setTarget 'api').to.be.instanceOf OVirtApi
       
       
   describe "#hydrate", ->
