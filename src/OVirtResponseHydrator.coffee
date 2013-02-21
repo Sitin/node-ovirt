@@ -108,6 +108,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Detects whether string is a resource URI.
 # + Detect whether element is a resource link (it has a resource href).
 # + Detect collection links.
+# - Detect resources.
 #
 class OVirtResponseHydrator
   # Static properties
