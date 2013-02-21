@@ -109,6 +109,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Detect whether element is a resource link (it has a resource href).
 # + Detect collection links.
 # - Detect resources.
+# + Unfold element's root node contents.
 #
 class OVirtResponseHydrator
   # Static properties
