@@ -350,27 +350,81 @@ describe 'OVirtResponseHydrator', ->
       attrs = spam: "SPAM"
       hash[ATTRKEY] = attrs
 
-      it "should return true if subject is a link, href points to resource" +
-        "and element has no children", ->
-          hydrator = getDeHydrator yes, yes, no
-          expect(hydrator.isResourceLink hash).to.be.true
+      it "should return true if resource related and has no children", ->
+        hydrator = getDeHydrator undefined, undefined, no
+        hydrator._isResourceRelated = -> true
+        expect(hydrator.isResourceLink hash).to.be.true
 
       it "should call every helper function to return true", ->
-        hydrator = getDeHydrator yes, yes, no
+        hydrator = getDeHydrator undefined, undefined, no
+        hydrator._isResourceRelated = chai.spy ->
+          true
         expect(hydrator.isResourceLink hash).to.be.true
+
+        expect(hydrator._isResourceRelated).to.have.been.called.once
+        expect(hydrator._hasChildElements).to.have.been.called.once
+
+      it "should return false for other cases", ->
+        hydrator = getDeHydrator undefined, undefined, no
+        hydrator._isResourceRelated = -> false
+        expect(hydrator.isResourceLink hash).to.be.false
+
+        hydrator = getDeHydrator undefined, undefined, yes
+        hydrator._isResourceRelated = -> true
+        expect(hydrator.isResourceLink hash).to.be.false
+
+
+    describe "#isResource", ->
+      hash = ham: "with": sausages: "and": "spam"
+      attrs = spam: "SPAM"
+      hash[ATTRKEY] = attrs
+
+      it "should return true if resource related and has children", ->
+        hydrator = getDeHydrator undefined, undefined, yes
+        hydrator._isResourceRelated = -> true
+        expect(hydrator.isResource hash).to.be.true
+
+      it "should call every helper function to return true", ->
+        hydrator = getDeHydrator undefined, undefined, yes
+        hydrator._isResourceRelated = chai.spy ->
+          true
+        expect(hydrator.isResource hash).to.be.true
+
+        expect(hydrator._isResourceRelated).to.have.been.called.once
+        expect(hydrator._hasChildElements).to.have.been.called.once
+
+      it "should return false for other cases", ->
+        hydrator = getDeHydrator undefined, undefined, yes
+        hydrator._isResourceRelated = -> false
+        expect(hydrator.isResource hash).to.be.false
+
+        hydrator = getDeHydrator undefined, undefined, no
+        hydrator._isResourceRelated = -> true
+        expect(hydrator.isResource hash).to.be.false
+
+
+    describe "#_isResourceRelated", ->
+      hash = ham: "with": sausages: "and": "spam"
+      attrs = spam: "SPAM"
+      hash[ATTRKEY] = attrs
+
+      it "should return true if is a link and href points to resource", ->
+        hydrator = getDeHydrator yes, yes
+        expect(hydrator._isResourceRelated hash).to.be.true
+
+      it "should call every helper function to return true", ->
+        hydrator = getDeHydrator yes, yes
+        expect(hydrator._isResourceRelated hash).to.be.true
 
         expect(hydrator.isLink).to.have.been.called.once
         expect(hydrator._getAttributes).to.have.been.called.once
         expect(hydrator._isResourceHref).to.have.been.called.once
-        expect(hydrator._hasChildElements).to.have.been.called.once
 
       it "should return false for other cases", ->
-        hydrator = getDeHydrator no, yes, no
-        expect(hydrator.isResourceLink hash).to.be.false
-        hydrator = getDeHydrator yes, no, yes
-        expect(hydrator.isResourceLink hash).to.be.false
-        hydrator = getDeHydrator yes, yes, yes
-        expect(hydrator.isResourceLink hash).to.be.false
+        hydrator = getDeHydrator no, yes
+        expect(hydrator._isResourceRelated hash).to.be.false
+        hydrator = getDeHydrator yes, no
+        expect(hydrator._isResourceRelated hash).to.be.false
 
 
   describe "#isProperty", ->

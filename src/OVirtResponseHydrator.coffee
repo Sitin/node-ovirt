@@ -108,7 +108,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Detects whether string is a resource URI.
 # + Detect whether element is a resource link (it has a resource href).
 # + Detect collection links.
-# - Detect resources.
+# + Detect resources.
 # + Unfold element's root node contents.
 #
 class OVirtResponseHydrator
@@ -236,7 +236,6 @@ class OVirtResponseHydrator
   isCollectionLink: (subject) ->
     return no unless @isLink subject
     attributes = @_getAttributes subject
-    return no unless attributes?
     attributes.rel? and not @_isResourceHref attributes.href
 
   #
@@ -247,12 +246,32 @@ class OVirtResponseHydrator
   # @return [Boolean] whether specified subject is a resource link
   #
   isResourceLink: (subject) ->
-    return no unless @isLink subject
-    return no if @_hasChildElements subject
-    attributes = @_getAttributes subject
-    return no unless attributes
-    @_isResourceHref attributes.href
+    return no unless @_isResourceRelated subject
+    not @_hasChildElements subject
 
+  #
+  # Tests whether specified subject is a resource hash representation.
+  #
+  # @param subject [Object] tested subject
+  #
+  # @return [Boolean] whether specified subject is a resource link
+  #
+  isResource: (subject) ->
+    return no unless @_isResourceRelated subject
+    @_hasChildElements subject
+
+  #
+  # Tests whether specified subject is an element related to resource
+  # or resource link.
+  #
+  # @param subject [Object] tested subject
+  #
+  # @return [Boolean] whether specified subject is a resource or resource link
+  #
+  _isResourceRelated: (subject) ->
+    return no unless @isLink subject
+    attributes = @_getAttributes subject
+    @_isResourceHref attributes.href
 
   #
   # Tests whether specified string is a href to resource.
@@ -263,18 +282,6 @@ class OVirtResponseHydrator
   #
   _isResourceHref: (subject) ->
     /[\w\/]+\/\w+-\w+-\w+-\w+-\w+$/.test subject
-
-
-  #
-  # Tests whether specified subject is a resource hash representation.
-  #
-  # @param subject [Object] tested subject
-  #
-  # @return [Boolean] whether specified subject is a resource link
-  #
-  isResource: (subject) ->
-
-
 
   #
   # Tests if value is a valid search option "rel" attribute.
