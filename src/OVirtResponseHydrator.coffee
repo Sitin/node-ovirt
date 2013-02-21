@@ -268,6 +268,8 @@ class OVirtResponseHydrator
   #
   # @return [Boolean] whether specified subject is a resource or resource link
   #
+  # @private
+  #
   _isResourceRelated: (subject) ->
     return no unless @isLink subject
     attributes = @_getAttributes subject
