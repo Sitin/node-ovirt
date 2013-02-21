@@ -18,9 +18,93 @@ OVirtResource = require __dirname + '/OVirtResource'
 # - Investigates for embedded collections links and process them.
 # - Exports all other "plain" properties as hashes.
 #
-# @todo Implement properties hydration
-# @todo Deal with subcollections
-# @todo Implement resource links hydration
+#
+# Currently oVirt API responses has a following structure:
+# ---------------------------------------------------------
+#
+# ### API
+#
+# * Collections (as a links)
+# * Special objects (collection members with special rel's)
+# * Links to resources (not in current version)
+# * Properties
+#
+# ### Collections
+#
+# * Array of resources
+#
+# ### Resources
+#
+# * ID and hreg attributes that identifies resource
+# * Subcollections (same as collections) as a links
+# * Special objects as mentioned before.
+# * Links to resources
+# * Actions (special links).
+# * Properties.
+#
+#
+# Hydration tasks
+# ----------------
+# Assuming that collections and resource links and resources are top-level
+# objects.
+#
+# ### Hydrate top level element attributes
+#
+# - Save attributes in corresponding property if existed.
+#
+# ### Hydrate collections
+#
+# - Detect collection links.
+# - Detect search options.
+# - Instantiate collection objects.
+# - Detect special objects inks and put them into collection.
+# - Save results in collection property.
+#
+# ### Hydrate resource links
+#
+# - Detect links to resources
+# - Instantiate resource objects in link mode.
+# - Save results in resource links property.
+#
+# ### Hydrate resources
+#
+# - Detect resources.
+# - Delegate resource hydration to other hydrator instance.
+# - Save results in resources property.
+#
+# ### Hydrate actions
+#
+# - Detect actions
+# - Instantiates actions objects
+#
+# ### Hydrate properties
+#
+# - Detect properties
+# - Save them in corresponding property.
+#
+#
+# Export tasks
+# -------------
+#
+# - Export attributes.
+# - Export collections.
+# - Export resources.
+# - Export resource links.
+# - Export properties.
+#
+#
+# Utility tasks
+# --------------
+#
+# - Constructor should be able to create targets from strings and constructors.
+# - Get element attributes for custom hash.
+# - Detect whether element has no children.
+# - Retrieve element's children (but not attributes).
+# - Merge attributes with children (for plain properties).
+# - Retrieve merged version of element.
+# - Detect whether element is a link (it has href and id or rel property).
+# - Detect resource hrefs.
+# - Detect hrefs that leads to collections.
 #
 class OVirtResponseHydrator
   # Static properties
