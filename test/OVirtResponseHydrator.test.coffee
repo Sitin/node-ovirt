@@ -402,10 +402,6 @@ describe 'OVirtResponseHydrator', ->
     it "should be completed", ->
 
 
-  describe.skip "#_mergeAttributes", ->
-    it "should be completed", ->
-
-
   describe.skip "#_getAttributes", ->
 
     it "should return value of the property defined by attrkey", ->
@@ -479,6 +475,42 @@ describe 'OVirtResponseHydrator', ->
       hash[ATTRKEY] = eggs: "SPAM"
       expect(hydrator._getElementChildren children).to.be.deep.equal children
       expect(hydrator._getElementChildren hash).to.be.deep.equal children
+
+
+  describe "#_mergeAttributes", ->
+    hydrator = do getHydrator
+
+    it "should return undefined for non-objects and arrays", ->
+      expect(hydrator._mergeAttributes "SPAAAM!").to.be.undefined
+      expect(hydrator._mergeAttributes []).to.be.undefined
+
+    it "should return an object for any passed object", ->
+      expect(hydrator._mergeAttributes eggs: 'spam').to.be.an.object
+
+    it "should return the same object as passed", ->
+      hash = ham: "with": sausages: "and": "SPAM"
+      expect(hydrator._mergeAttributes hash).to.be.equal hash
+
+      hash[ATTRKEY] = eggs: 'spam'
+      expect(hydrator._mergeAttributes hash).to.be.equal hash
+
+    it "should keep objects without attributes untouched", ->
+      hash = ham: "with": sausages: "and": "SPAM"
+      expect(hydrator._mergeAttributes hash).to.be.deep.equal hash
+
+    it "should delete propery with attrkey", ->
+      hash = ham: "with": sausages: "and": "SPAM"
+      hash[ATTRKEY] = spam: "spam"
+      expect(hydrator._mergeAttributes hash).not.to.have.property ATTRKEY
+
+    it "should merge attributes with children", ->
+      children = ham: "with": sausages: "and": "SPAM"
+      attrs = spam: "spam"
+      hash = _.clone children
+      hash[ATTRKEY] = attrs
+
+      expect(hydrator._mergeAttributes hash)
+        .to.be.deep.equal _.merge {}, children, attrs
 
 
   describe.skip "#_removeSpecialProperties", ->
