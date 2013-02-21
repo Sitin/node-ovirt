@@ -280,6 +280,8 @@ class OVirtResponseHydrator
   #
   # @return [Boolean]
   #
+  # @private
+  #
   _isResourceHref: (subject) ->
     /[\w\/]+\/\w+-\w+-\w+-\w+-\w+$/.test subject
 
