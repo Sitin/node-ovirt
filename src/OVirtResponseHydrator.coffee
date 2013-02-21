@@ -101,7 +101,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Get element attributes for custom hash.
 # + Detect whether element has attributes.
 # + Detect whether element has children.
-# - Retrieve element's children (but not attributes).
+# + Retrieve element's children (but not attributes).
 # - Merge attributes with children (for plain properties).
 # - Retrieve merged version of element.
 # - Detect whether element is a link (it has href and id or rel property).
@@ -545,6 +545,23 @@ class OVirtResponseHydrator
     count-- if _.contains keys, OVirtResponseHydrator.ATTRIBUTE_KEY
 
     count > 0
+
+  #
+  # Retrieves element's children.
+  # Attributes are not considered as a children.
+  #
+  # @param subject [Object]
+  #
+  # @return [Object]
+  #
+  # @private
+  #
+  _getElementChildren: (subject) ->
+    if not (_.isObject subject) or _.isArray subject
+      return undefined
+
+    _.omit subject, OVirtResponseHydrator.ATTRIBUTE_KEY
+
 
   #
   # Removes special properties defined in {.SPECIAL_PROPERTIES}.

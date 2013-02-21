@@ -16,6 +16,8 @@ loadResponse = (name) ->
   fs.readFileSync "#{__dirname}/responses/#{name}.xml"
 
 describe 'OVirtResponseHydrator', ->
+  ATTRKEY = OVirtResponseHydrator.ATTRIBUTE_KEY
+
   getHydrator = (target, hash) ->
     target = new OVirtApi unless target?
     new OVirtResponseHydrator target, hash
@@ -409,7 +411,7 @@ describe 'OVirtResponseHydrator', ->
     it "should return value of the property defined by attrkey", ->
       hash = ham: "with": sausages: "and": "SPAM"
       attributes = eggs: "SPAM"
-      hash[OVirtResponseHydrator.ATTRIBUTE_KEY] = attributes
+      hash[ATTRKEY] = attributes
       hydrator = do getHydrator
       expect(hydrator._getAttributes hash).to.be.equal attributes
 
@@ -418,7 +420,7 @@ describe 'OVirtResponseHydrator', ->
     hydrator = do getHydrator
     hash = ham: "with": sausages: "and": "SPAM"
     attributes = eggs: "SPAM"
-    hash[OVirtResponseHydrator.ATTRIBUTE_KEY] = attributes
+    hash[ATTRKEY] = attributes
 
     it "should return undefined for non-objects and arrays", ->
       expect(hydrator._hasChildElements "SPAAAM!").to.be.undefined
@@ -433,13 +435,12 @@ describe 'OVirtResponseHydrator', ->
 
     it "should return false for hashes with attributes only", ->
       emptyHash = {}
-      emptyHash[OVirtResponseHydrator.ATTRIBUTE_KEY] = attributes
+      emptyHash[ATTRKEY] = attributes
       expect(hydrator._hasChildElements emptyHash).to.be.false
 
 
   describe "#_hasAttributes", ->
     hydrator = do getHydrator
-    key = OVirtResponseHydrator.ATTRIBUTE_KEY
 
     it "should return undefined for non-objects and arrays", ->
       expect(hydrator._hasAttributes "SPAAAM!").to.be.undefined
@@ -447,12 +448,12 @@ describe 'OVirtResponseHydrator', ->
 
     it "should return true if there are property with attrkey", ->
       hash = ham: "with": sausages: "and": "SPAM"
-      hash[key] = spam: "eggs"
+      hash[ATTRKEY] = spam: "eggs"
       expect(hydrator._hasAttributes hash).to.be.true
 
     it "should return true if attributes is an only property", ->
       hash = {}
-      hash[key] = spam: "spam"
+      hash[ATTRKEY] = spam: "spam"
       expect(hydrator._hasAttributes hash).to.be.true
 
     it "should return false in other cases", ->
@@ -460,6 +461,24 @@ describe 'OVirtResponseHydrator', ->
       emptyHash = {}
       expect(hydrator._hasAttributes hash).to.be.false
       expect(hydrator._hasAttributes emptyHash).to.be.false
+
+
+  describe "#_getElementChildren", ->
+    hydrator = do getHydrator
+
+    it "should return undefined for non-objects and arrays", ->
+      expect(hydrator._getElementChildren "SPAAAM!").to.be.undefined
+      expect(hydrator._getElementChildren []).to.be.undefined
+
+    it "should return an object for any passed object", ->
+      expect(hydrator._getElementChildren {}).to.be.an.object
+
+    it "should return children elements if existed", ->
+      children = ham: "with": sausages: "and": "SPAM"
+      hash = _.clone children
+      hash[ATTRKEY] = eggs: "SPAM"
+      expect(hydrator._getElementChildren children).to.be.deep.equal children
+      expect(hydrator._getElementChildren hash).to.be.deep.equal children
 
 
   describe.skip "#_removeSpecialProperties", ->
