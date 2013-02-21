@@ -278,56 +278,99 @@ describe 'OVirtResponseHydrator', ->
     it "should be completed", ->
 
 
-  describe "#isLink", ->
-    hydrator = do getHydrator
+  describe "links detection", ->
+    getDeHydrator = (isLink, isResourceHref, hasChildren, attributes) ->
+      attributes = {} unless attributes?
+      dehydrator = do getHydrator
 
-    it "should return true if both 'rel' or 'id' " +
-       "and 'href' properties existed", ->
-        expect(hydrator.isLink rel: "rel", href: "/href").to.be.true
+      dehydrator.isLink = chai.spy ->
+        isLink
+      dehydrator._isResourceHref = chai.spy ->
+        isResourceHref
+      dehydrator._hasChildElements = chai.spy ->
+        hasChildren
+      dehydrator._getAttributes = chai.spy -> attributes
 
-    it "should omit the root element", ->
-      expect(hydrator.isLink $: rel: "rel", href: "/href").to.be.true
-
-    it "should return false for everything else", ->
-      expect(hydrator.isLink rel: "rel").to.be.false
-      expect(hydrator.isLink $: "eggs").to.be.false
-      expect(hydrator.isLink null).to.be.false
-
-
-  describe "#isCollectionLink", ->
-    hydrator = do getHydrator
-    id = "00000000-0000-0000-0000-000000000000"
-
-    it "should return true if subject is a collection link", ->
-      expect(hydrator.isCollectionLink rel: "rel", href: "/href").to.be.true
-
-    it "should omit the root element", ->
-      expect(hydrator.isCollectionLink $: rel: "rel", href: "href").to.be.true
-
-    it "should return false if subject is a resource link", ->
-      expect(hydrator.isCollectionLink rel: "rel", href: "/href/#{id}").to.be.false
-      expect(hydrator.isCollectionLink id: id, href: "/href").to.be.false
+      dehydrator
 
 
-  describe "#isResourceLink", ->
-    hydrator = do getHydrator
-    id = "00000000-0000-0000-0000-000000000000"
+    describe "#isLink", ->
+      hydrator = do getHydrator
+      relLink = idLink = {}
+      relLink[ATTRKEY] = rel: "rel", href: "/href"
+      idLink[ATTRKEY] = id: "id", href: "/href"
 
-    it "should return true if subject is a resource link", ->
-      expect(hydrator.isResourceLink id: "id", href: "/href/#{id}").to.be.true
+      it "should return true if 'rel' and 'href' attributes existed", ->
+        expect(hydrator.isLink relLink).to.be.true
 
-    it "should omit the root element", ->
-      subject = $: id: "id", href: "/href/#{id}"
-      expect(hydrator.isResourceLink subject).to.be.true
+      it "should return true if 'id' and 'href' attributes existed", ->
+        expect(hydrator.isLink idLink).to.be.true
 
-    it "should reflect that some resorce links " +
-       "have 'rel' properties instead 'id'", ->
-        subject = rel: "rel", href: "/href/#{id}"
-        expect(hydrator.isResourceLink subject).to.be.true
+      it "should extract element's attributes", ->
+        dehydrator = do getHydrator
+        dehydrator._getAttributes = spy = chai.spy dehydrator._getAttributes
+        dehydrator.isLink relLink
+        expect(spy).to.be.called.once
 
-    it "should return false for non-valid resource hrefs", ->
-      subject = rel: "id", href: "/href/0000-0000-00000-000"
-      expect(hydrator.isResourceLink subject).to.be.false
+      it "should return false for everything else", ->
+        expect(hydrator.isLink rel: "rel").to.be.false
+        expect(hydrator.isLink $: "eggs").to.be.false
+        expect(hydrator.isLink null).to.be.false
+
+
+    describe "#isCollectionLink", ->
+      hash = ham: "with": sausages: "and": "spam"
+      attrs = rel: "SPAM"
+      hash[ATTRKEY] = attrs
+
+      it.skip "should return true if is link with rel attribute and href" +
+        " doesn't point to resource", ->
+          hydrator = getDeHydrator yes, no, undefined, rel: '/rel'
+          expect(hydrator.isCollectionLink hash).to.be.true
+
+      it "should call every helper function to return true", ->
+        hydrator = getDeHydrator yes, no, undefined, rel: '/rel'
+        hydrator.isCollectionLink hash
+
+        expect(hydrator.isLink).to.have.been.called.once
+        expect(hydrator._getAttributes).to.have.been.called.once
+        expect(hydrator._isResourceHref).to.have.been.called.once
+
+      it.skip "should return false for other cases", ->
+        hydrator = getDeHydrator yes, no, undefined, eggs: 'SPAM'
+        expect(hydrator.isResourceLink hash).to.be.false
+        hydrator = getDeHydrator no, yes, undefined, rel: '/rel'
+        expect(hydrator.isResourceLink hash).to.be.false
+        hydrator = getDeHydrator yes, yes, undefined, rel: '/rel'
+        expect(hydrator.isResourceLink hash).to.be.false
+
+
+    describe "#isResourceLink", ->
+      hash = ham: "with": sausages: "and": "spam"
+      attrs = spam: "SPAM"
+      hash[ATTRKEY] = attrs
+
+      it "should return true if subject is a link, href points to resource" +
+        "and element has no children", ->
+          hydrator = getDeHydrator yes, yes, no
+          expect(hydrator.isResourceLink hash).to.be.true
+
+      it "should call every helper function to return true", ->
+        hydrator = getDeHydrator yes, yes, no
+        expect(hydrator.isResourceLink hash).to.be.true
+
+        expect(hydrator.isLink).to.have.been.called.once
+        expect(hydrator._getAttributes).to.have.been.called.once
+        expect(hydrator._isResourceHref).to.have.been.called.once
+        expect(hydrator._hasChildElements).to.have.been.called.once
+
+      it "should return false for other cases", ->
+        hydrator = getDeHydrator no, yes, no
+        expect(hydrator.isResourceLink hash).to.be.false
+        hydrator = getDeHydrator yes, no, yes
+        expect(hydrator.isResourceLink hash).to.be.false
+        hydrator = getDeHydrator yes, yes, yes
+        expect(hydrator.isResourceLink hash).to.be.false
 
 
   describe "#isProperty", ->
@@ -402,14 +445,37 @@ describe 'OVirtResponseHydrator', ->
     it "should be completed", ->
 
 
-  describe.skip "#_getAttributes", ->
+  describe "#_isResourceHref", ->
+    hydrator = do getHydrator
+    id = "00000000-0000-0000-0000-000000000000"
+
+    it "should return true if subject is a resource URI", ->
+      expect(hydrator._isResourceHref "/href/#{id}").to.be.true
+      expect(hydrator._isResourceHref "/href/to/#{id}").to.be.true
+
+    it "should reflect that plain ID's couldn't be a resource URI", ->
+      expect(hydrator._isResourceHref id).to.be.false
+
+    it "should return false for non-valid resource hrefs", ->
+      expect(hydrator._isResourceHref "/href/0000-0000-00000-000").to.be.false
+
+    it "should false for everything else", ->
+      expect(hydrator._isResourceHref '').to.be.false
+      expect(hydrator._isResourceHref '/href/to').to.be.false
+      expect(hydrator._isResourceHref null).to.be.false
+
+  describe "#_getAttributes", ->
+    hydrator = do getHydrator
 
     it "should return value of the property defined by attrkey", ->
       hash = ham: "with": sausages: "and": "SPAM"
       attributes = eggs: "SPAM"
       hash[ATTRKEY] = attributes
-      hydrator = do getHydrator
       expect(hydrator._getAttributes hash).to.be.equal attributes
+
+    it "should return undefined for non-objects and arrays", ->
+      expect(hydrator._getAttributes "SPAAAM!").to.be.undefined
+      expect(hydrator._getAttributes []).to.be.undefined
 
 
   describe "#_hasChildElements", ->

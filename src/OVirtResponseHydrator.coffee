@@ -104,9 +104,10 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Retrieve element's children (but not attributes).
 # + Merge attributes with children (for plain properties).
 # + Retrieve merged version of element (children with attributes).
-# - Detect whether element is a link (it has href and id or rel property).
-# - Detect resource hrefs.
-# - Detect hrefs that leads to collections.
+# + Detect whether element is a link (it has href and id or rel property).
+# + Detects whether string is a resource URI.
+# + Detect whether element is a resource link (it has a resource href).
+# + Detect collection links.
 #
 class OVirtResponseHydrator
   # Static properties
@@ -212,6 +213,18 @@ class OVirtResponseHydrator
     target.collections = collections
 
   #
+  # Tests whether specified subject is a link to resource or collection.
+  #
+  # @param subject [Object, Array] tested subject
+  #
+  # @return [Boolean] whether specified subject is a link
+  #
+  isLink: (subject) ->
+    attributes = @_getAttributes subject
+    return no unless attributes
+    (attributes.rel? or attributes.id?) and attributes.href?
+
+  #
   # Tests whether specified subject is a link to collection.
   #
   # @param subject [Object, Array] tested subject
@@ -220,20 +233,9 @@ class OVirtResponseHydrator
   #
   isCollectionLink: (subject) ->
     return no unless @isLink subject
-    subject = @unfolded subject
-    subject.rel? and not @isResourceLink subject
-
-  #
-  # Tests whether specified subject is a link to resource or collection.
-  #
-  # @param subject [Object, Array] tested subject
-  #
-  # @return [Boolean] whether specified subject is a link
-  #
-  isLink: (subject) ->
-    subject = @unfolded subject
-    return no unless subject
-    (subject.rel? or subject.id?) and subject.href?
+    attributes = @_getAttributes subject
+    return no unless attributes?
+    attributes.rel? and not @_isResourceHref attributes.href
 
   #
   # Tests whether specified subject is a link to resource.
@@ -244,9 +246,21 @@ class OVirtResponseHydrator
   #
   isResourceLink: (subject) ->
     return no unless @isLink subject
-    subject = @unfolded subject
-    return no unless subject
-    /\w+-\w+-\w+-\w+-\w+$/.test subject.href
+    return no if @_hasChildElements subject
+    attributes = @_getAttributes subject
+    return no unless attributes
+    @_isResourceHref attributes.href
+
+
+  #
+  # Tests whether specified string is a href to resource.
+  #
+  # @param subject [String] tested string
+  #
+  # @return [Boolean]
+  #
+  _isResourceHref: (subject) ->
+    /[\w\/]+\/\w+-\w+-\w+-\w+-\w+$/.test subject
 
 
   #
@@ -520,6 +534,9 @@ class OVirtResponseHydrator
   # @private
   #
   _getAttributes: (subject) ->
+    if not (_.isObject subject) or _.isArray subject
+      return undefined
+
     key = OVirtResponseHydrator.ATTRIBUTE_KEY
     if subject[key]?
       subject[key]
