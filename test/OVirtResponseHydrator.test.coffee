@@ -427,11 +427,39 @@ describe 'OVirtResponseHydrator', ->
     it "should return true if there are properties except attributes", ->
       expect(hydrator._hasChildElements hash).to.be.true
 
-    it "should return false in other cases", ->
+    it "should return false for emty hashes", ->
       emptyHash = {}
       expect(hydrator._hasChildElements emptyHash).to.be.false
+
+    it "should return false for hashes with attributes only", ->
+      emptyHash = {}
       emptyHash[OVirtResponseHydrator.ATTRIBUTE_KEY] = attributes
       expect(hydrator._hasChildElements emptyHash).to.be.false
+
+
+  describe "#_hasAttributes", ->
+    hydrator = do getHydrator
+    key = OVirtResponseHydrator.ATTRIBUTE_KEY
+
+    it "should return undefined for non-objects and arrays", ->
+      expect(hydrator._hasAttributes "SPAAAM!").to.be.undefined
+      expect(hydrator._hasAttributes []).to.be.undefined
+
+    it "should return true if there are property with attrkey", ->
+      hash = ham: "with": sausages: "and": "SPAM"
+      hash[key] = spam: "eggs"
+      expect(hydrator._hasAttributes hash).to.be.true
+
+    it "should return true if attributes is an only property", ->
+      hash = {}
+      hash[key] = spam: "spam"
+      expect(hydrator._hasAttributes hash).to.be.true
+
+    it "should return false in other cases", ->
+      hash = ham: "with": sausages: "and": "SPAM"
+      emptyHash = {}
+      expect(hydrator._hasAttributes hash).to.be.false
+      expect(hydrator._hasAttributes emptyHash).to.be.false
 
 
   describe.skip "#_removeSpecialProperties", ->
