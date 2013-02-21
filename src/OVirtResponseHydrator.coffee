@@ -103,7 +103,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Detect whether element has children.
 # + Retrieve element's children (but not attributes).
 # + Merge attributes with children (for plain properties).
-# - Retrieve merged version of element.
+# + Retrieve merged version of element (children with attributes).
 # - Detect whether element is a link (it has href and id or rel property).
 # - Detect resource hrefs.
 # - Detect hrefs that leads to collections.
@@ -495,6 +495,19 @@ class OVirtResponseHydrator
     delete subject[key]
 
     subject
+
+  #
+  # Returns element version where all attributes are merged with children.
+  # Attribute key is defined by {.ATTRIBUTE_KEY}
+  #
+  # @param subject [Object]
+  #
+  # @return [Object]
+  #
+  # @private
+  #
+  _getPlainedElement: (subject) ->
+    @_mergeAttributes _.clone subject
 
   #
   # Returns element attributes.

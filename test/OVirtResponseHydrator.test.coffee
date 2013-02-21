@@ -513,6 +513,23 @@ describe 'OVirtResponseHydrator', ->
         .to.be.deep.equal _.merge {}, children, attrs
 
 
+  describe "#_getPlainedElement", ->
+
+    it "should clone passed object and merge their attributes", ->
+      hydrator = do getHydrator
+      hash = ham: "with": sausages: "and": "SPAM"
+      hydrator._mergeAttributes = spy = chai.spy (subject) ->
+        expect(subject).not.to.be.equal hash
+        expect(subject).to.be.deep.equal hash
+
+      hydrator._getPlainedElement hash
+
+      hash[ATTRKEY] = eggs: 'spam'
+      hydrator._getPlainedElement hash
+
+      expect(spy).to.have.been.called.twice
+
+
   describe.skip "#_removeSpecialProperties", ->
     it "should be completed", ->
 
