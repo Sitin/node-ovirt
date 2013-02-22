@@ -4,6 +4,7 @@
 _ = require 'lodash'
 
 # Dependencies.
+config = require __dirname + '/config'
 OVirtApi = require __dirname + '/OVirtApi'
 OVirtApiNode = require __dirname + '/OVirtApiNode'
 OVirtCollection = require __dirname + '/OVirtCollection'
@@ -113,11 +114,12 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 class OVirtResponseHydrator
   # Static properties
-  @SPECIAL_PROPERTIES = ['link', 'action', 'special_objects']
-  @LINK_PROPERTY = 'link'
-  @ACTION_PROPERTY = 'action'
-  @ATTRIBUTE_KEY = '$'
-  @SPECIAL_OBJECTS = 'special_objects'
+  @SPECIAL_PROPERTIES = config.api.specialProperties
+  @LINK_PROPERTY = config.api.link
+  @ACTION_PROPERTY = config.api.action
+  @ATTRIBUTE_KEY = config.parser.attrkey
+  @CHILDREN_KEY = config.parser.childkey
+  @SPECIAL_OBJECTS = config.api.special_objects
 
   # Defaults
   _target: null

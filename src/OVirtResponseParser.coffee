@@ -5,15 +5,14 @@ xml2js = require 'xml2js'
 deepFreeze = require 'deep-freeze'
 
 # Dependencies.
+config = require __dirname + '/config'
 OVirtApiNode = require __dirname + '/OVirtApiNode'
 OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 
 
 class OVirtResponseParser
   # Static properties
-  @PARSER_OPTIONS:
-    explicitArray: no
-    attrkey: '$'
+  @PARSER_OPTIONS: config.parser
 
   # Defaults
   _target: null
