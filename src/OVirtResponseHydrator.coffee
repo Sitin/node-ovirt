@@ -114,12 +114,12 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 class OVirtResponseHydrator
   # Static properties
-  @SPECIAL_PROPERTIES = config.api.specialProperties
-  @LINK_PROPERTY = config.api.link
-  @ACTION_PROPERTY = config.api.action
-  @ATTRIBUTE_KEY = config.parser.attrkey
-  @CHILDREN_KEY = config.parser.childkey
-  @SPECIAL_OBJECTS = config.api.special_objects
+  SPECIAL_PROPERTIES: config.api.specialProperties
+  LINK_PROPERTY: config.api.link
+  ACTION_PROPERTY: config.api.action
+  ATTRIBUTE_KEY: config.parser.attrkey
+  CHILDREN_KEY: config.parser.childkey
+  SPECIAL_OBJECTS: config.api.specialObjects
 
   # Defaults
   _target: null
@@ -309,7 +309,7 @@ class OVirtResponseHydrator
   # @return [Boolean]
   #
   isProperty: (name) ->
-    (OVirtResponseHydrator.SPECIAL_PROPERTIES.indexOf name) < 0
+    (@SPECIAL_PROPERTIES.indexOf name) < 0
 
   #
   # Returns href base for specified search pattern.
@@ -383,9 +383,11 @@ class OVirtResponseHydrator
   # @private
   #
   _addSpecialObjects: (collections, specialities) ->
-    try
-      for object in specialities[0].link
+    if _.isArray specialities.link
+      for object in specialities.link
         @_addSpecialObject collections, _.clone object
+    else if _.isObject specialities.link
+      @_addSpecialObject collections, _.clone specialities.link
 
   #
   # Adds special object to exact collections.
@@ -396,12 +398,13 @@ class OVirtResponseHydrator
   # @private
   #
   _addSpecialObject: (collections, object) ->
-    object = @_mergeAttributes object
-    collection = @_getSpecialObjectCollection object.rel
-    name = @_getSpecialObjectName object.rel
+    attributes = @_getAttributes object
+    collection = @_getSpecialObjectCollection attributes.rel
+    name = @_getSpecialObjectName attributes.rel
 
     if collections[collection]?
-      collections[collection].addSpecialObject name, object.href
+      # @todo Invoke proper OVirtApiCollection method
+      collections[collection].specialObjects = name: name, href: attributes.href
 
   #
   # Returns collections special objects of response hash.
@@ -413,7 +416,7 @@ class OVirtResponseHydrator
   # @private
   #
   _getSpecialObjects: (hash) ->
-    hash[OVirtResponseHydrator.SPECIAL_OBJECTS]
+    hash[@SPECIAL_OBJECTS]
 
   #
   # Returns a hash of top-level collections with properly setup search
@@ -428,7 +431,10 @@ class OVirtResponseHydrator
 
     @_setupCollections collections
     @_makeCollectionsSearchabe collections, searchabilities
-    @_addSpecialObjects collections, @_getSpecialObjects hash
+
+    specialities = @_getSpecialObjects hash
+    if specialities
+      @_addSpecialObjects collections, specialities
 
     collections
 
@@ -457,7 +463,7 @@ class OVirtResponseHydrator
   # @private
   #
   _findCollections: (hash) ->
-    list = hash[OVirtResponseHydrator.LINK_PROPERTY]
+    list = hash[@LINK_PROPERTY]
     collections = {}
     searchabilities = {}
 
@@ -507,7 +513,7 @@ class OVirtResponseHydrator
 
   #
   # Merges attributes into element.
-  # Attribute key is defined by {.ATTRIBUTE_KEY}
+  # Attribute key is defined by {#ATTRIBUTE_KEY}
   #
   # @param subject [Object]
   #
@@ -519,7 +525,7 @@ class OVirtResponseHydrator
     if not (_.isObject subject) or _.isArray subject
       return undefined
 
-    key = OVirtResponseHydrator.ATTRIBUTE_KEY
+    key = @ATTRIBUTE_KEY
     _.merge subject, @_getAttributes subject
     delete subject[key]
 
@@ -527,7 +533,7 @@ class OVirtResponseHydrator
 
   #
   # Returns element version where all attributes are merged with children.
-  # Attribute key is defined by {.ATTRIBUTE_KEY}
+  # Attribute key is defined by {#ATTRIBUTE_KEY}
   #
   # @param subject [Object]
   #
@@ -540,7 +546,7 @@ class OVirtResponseHydrator
 
   #
   # Returns element attributes.
-  # Attribute key is defined by {.ATTRIBUTE_KEY}
+  # Attribute key is defined by {#ATTRIBUTE_KEY}
   #
   # @param subject [Object]
   #
@@ -552,7 +558,7 @@ class OVirtResponseHydrator
     if not (_.isObject subject) or _.isArray subject
       return undefined
 
-    key = OVirtResponseHydrator.ATTRIBUTE_KEY
+    key = @ATTRIBUTE_KEY
     if subject[key]?
       subject[key]
     else
@@ -572,7 +578,7 @@ class OVirtResponseHydrator
       return undefined
 
     keys = Object.keys subject
-    _.contains keys, OVirtResponseHydrator.ATTRIBUTE_KEY
+    _.contains keys, @ATTRIBUTE_KEY
 
   #
   # Returns whether element has children.
@@ -590,7 +596,7 @@ class OVirtResponseHydrator
 
     keys = Object.keys subject
     count = keys.length
-    count-- if _.contains keys, OVirtResponseHydrator.ATTRIBUTE_KEY
+    count-- if _.contains keys, @ATTRIBUTE_KEY
 
     count > 0
 
@@ -608,11 +614,11 @@ class OVirtResponseHydrator
     if not (_.isObject subject) or _.isArray subject
       return undefined
 
-    _.omit subject, OVirtResponseHydrator.ATTRIBUTE_KEY
+    _.omit subject, @ATTRIBUTE_KEY
 
 
   #
-  # Removes special properties defined in {.SPECIAL_PROPERTIES}.
+  # Removes special properties defined in {#SPECIAL_PROPERTIES}.
   #
   # @param value [Object]
   #
@@ -621,7 +627,7 @@ class OVirtResponseHydrator
   # @private
   #
   _removeSpecialProperties: (subject) ->
-    for key in OVirtResponseHydrator.SPECIAL_PROPERTIES
+    for key in @SPECIAL_PROPERTIES
       delete subject[key]
     subject
 

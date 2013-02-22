@@ -11,8 +11,8 @@ OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 
 
 class OVirtResponseParser
-  # Static properties
-  @PARSER_OPTIONS: config.parser
+  # Prototype properties
+  PARSER_OPTIONS: config.parser
 
   # Defaults
   _target: null
@@ -57,7 +57,7 @@ class OVirtResponseParser
           @[key] = options[key]
 
     # Instantiate parser
-    @_parser = new xml2js.Parser OVirtResponseParser.PARSER_OPTIONS
+    @_parser = new xml2js.Parser @PARSER_OPTIONS
 
   #
   # Asynchroniously parses XML and then exports parse results.

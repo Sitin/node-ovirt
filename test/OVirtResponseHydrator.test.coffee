@@ -10,49 +10,20 @@ chai.use spies
 _ = require 'lodash'
 fs = require 'fs'
 
+config = require '../lib/config'
 {OVirtResponseHydrator, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource} = require '../lib/'
 
 loadResponse = (name) ->
   fs.readFileSync "#{__dirname}/responses/#{name}.xml"
 
 describe 'OVirtResponseHydrator', ->
-  ATTRKEY = OVirtResponseHydrator.ATTRIBUTE_KEY
+  ATTRKEY = config.parser.attrkey
 
   getHydrator = (target, hash) ->
     target = new OVirtApi unless target?
     new OVirtResponseHydrator target, hash
 
-  getApiHash = ->
-    api:
-      time: [ '2013-02-11T18:05:33.554+02:00' ]
-      link: [
-        { $: href: '/api/capabilities', rel: 'capabilities' }
-        { $: href: '/api/clusters', rel: 'clusters' }
-        { $: href: '/api/clusters?search={query}', rel: 'clusters/search' }
-        { $: href: '/api/datacenters', rel: 'datacenters' }
-        { $: href: '/api/datacenters?search={query}', rel: 'datacenters/search' }
-        { $: href: '/api/events', rel: 'events' }
-        { $: href: '/api/events;from={event_id}?search={query}', rel: 'events/search' }
-        { $: href: '/api/vms', rel: 'vms' }
-        { $: href: '/api/vms?search={query}', rel: 'vms/search' }
-      ]
-      product_info: [
-        vendor: [ 'ovirt.org' ],
-        name: [ 'oVirt Engine' ],
-        version: [
-          $:
-            minor: '1',
-            build: '0',
-            revision: '0',
-            major: '3'
-        ]
-      ]
-      special_objects: [
-        link: [
-          { $: href: '/api/templates/00000000-0000-0000-0000-000000000000', rel: 'templates/blank' }
-          { $: href: '/api/tags/00000000-0000-0000-0000-000000000000', rel: 'tags/root' }
-        ]
-      ]
+  apiHash = require './responses/api'
 
   it "should be a function", ->
     expect(OVirtResponseHydrator).to.be.a 'function'
@@ -88,7 +59,7 @@ describe 'OVirtResponseHydrator', ->
       
       
   describe "#hydrate", ->
-    hash = do getApiHash
+    hash = apiHash
 
     it "should find collections and then export them", ->
       hydrator = getHydrator undefined, hash
@@ -210,7 +181,7 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#getHydratedCollections", ->
     # Defaults:
-    hash = do getApiHash
+    hash = apiHash
     hydrator = getHydrator undefined, hash
     hash = hydrator.unfolded hash
     collections = hydrator.getHydratedCollections hash
@@ -223,7 +194,7 @@ describe 'OVirtResponseHydrator', ->
         expect(collections[key]).to.be.an.instanceof OVirtCollection
 
     it "should return a hash of top-level only collections", ->
-      expect(Object.keys(collections).length).to.be.equal 5
+      expect(Object.keys(collections).length).to.be.equal 16
 
     it "should setup searchable collections", ->
       expect(collections.vms.isSearchable).to.be.true
@@ -431,7 +402,7 @@ describe 'OVirtResponseHydrator', ->
     hydrator = do getHydrator
 
     it "should return false for special properies", ->
-      for special in OVirtResponseHydrator.SPECIAL_PROPERTIES
+      for special in config.api.specialProperties
         expect(hydrator.isProperty special).to.be.false
 
     it "should return true for everything else", ->
@@ -461,9 +432,9 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#_addSpecialObjects", ->
     hydrator = do getHydrator
-    hash = hydrator.unfolded do getApiHash
+    hash = apiHash.api
     specialities = hash.special_objects
-    specialsCount = specialities[0].link.length
+    specialsCount = specialities.link.length
     {collections} = hydrator._findCollections hash
 
     it "should loop over special objects and add them to collections", ->
@@ -660,8 +631,8 @@ describe 'OVirtResponseHydrator', ->
 
   describe.skip "#_getSpecialObjects", ->
     hydrator = do getHydrator
-    hash = hydrator.unfolded do getApiHash
-    key = OVirtResponseHydrator.SPECIAL_OBJECTS
+    hash = hydrator.unfolded apiHash
+    key = config.api.specialObjects
 
     it "should return value of the 'SPECIAL_OBJECTS' property", ->
       expect(hydrator._getSpecialObjects hash).to.be.equal hash[key]
