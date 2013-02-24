@@ -190,7 +190,7 @@ class OVirtResponseHydrator
   #
   # @return [mixed] hydrated node value
   #
-  hydrate: (xpath, currentValue, newValue) ->
+  hydrateNode: (xpath, currentValue, newValue) ->
     newValue
 
   #

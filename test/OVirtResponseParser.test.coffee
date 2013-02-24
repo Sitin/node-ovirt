@@ -168,7 +168,7 @@ describe 'OVirtResponseParser', ->
       "and return it's result", ->
         parser = do getResponseParser
         params = [1, 2, 3]
-        spy = parser._hydrator.hydrate = chai.spy ->
+        spy = parser._hydrator.hydrateNode = chai.spy ->
           expect(_.toArray arguments).to.be.deep.equal params
           'result'
         expect(parser.hydrateNode params...).to.be.equal 'result'

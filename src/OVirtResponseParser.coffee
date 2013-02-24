@@ -83,7 +83,7 @@ class OVirtResponseParser
       callback error, result
 
   #
-  # Passes all parameters to {#_hydrate hydrator function}.
+  # Passes all parameters to {#hydrateNode node hydrator function}.
   #
   # This functon is binded to current responce parser instance.
   #
@@ -104,7 +104,7 @@ class OVirtResponseParser
   # @return [mixed] hydrated node value
   #
   hydrateNode: (xpath, currentValue, newValue) ->
-    @_hydrator.hydrate xpath, currentValue, newValue
+    @_hydrator.hydrateNode xpath, currentValue, newValue
 
   #
   # Sets current target.
