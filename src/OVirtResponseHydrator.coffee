@@ -182,16 +182,16 @@ class OVirtResponseHydrator
   constructor: (@target, @hash) ->
 
   #
-  # Hydrates hash to target.
+  # Hydrates node value if necessary.
   #
-  # + Searches hash for collections and exports them to target.
-  # - Searches hash for properties and exports them.
+  # @param xpath [String] node's XPath
+  # @param currentValue [undefined, mixed] current value of the node
+  # @param newValue [mixed] node value
   #
-  hydrate: ->
-    rootName = @getRootElementName @hash
-    hash = @unfolded @hash
-    @exportCollections @getHydratedCollections hash
-    @exportProperties @getHydratedProperties hash
+  # @return [mixed] hydrated node value
+  #
+  hydrate: (xpath, currentValue, newValue) ->
+    newValue
 
   #
   # Exports properties to target API node

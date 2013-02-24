@@ -63,6 +63,10 @@ describe 'OVirtResponseParser', ->
       parser = do getResponseParser
       expect(parser._hydrator.target).to.be.equal parser.target
 
+    it "should set 'validator' parser option to #hydrate method", ->
+      parser = do getResponseParser
+      expect(parser._parserOptions).to.have.property 'validator', parser.hydrate
+
 
   describe "#setTarget", ->
 

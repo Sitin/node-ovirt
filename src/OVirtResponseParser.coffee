@@ -10,14 +10,12 @@ OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 
 
 class OVirtResponseParser
-  # Prototype properties
-  PARSER_OPTIONS: config.parser
-
   # Defaults
   _target: null
   _response: ''
   _Hydrator: OVirtResponseHydrator
   _hydrator: null
+  _parserOptions: config.parser
 
   #
   # Utility methods that help to create getters and setters.
@@ -56,8 +54,11 @@ class OVirtResponseParser
         else
           @[key] = options[key]
 
+    # Set validator to current instance #hydrate method
+    @_parserOptions.validator = @hydrate
+
     # Instantiate parser
-    @_parser = new xml2js.Parser @PARSER_OPTIONS
+    @_parser = new xml2js.Parser @_parserOptions
 
     # Instantiate hydrator
     @_hydrator = new @_Hydrator @target
@@ -97,7 +98,7 @@ class OVirtResponseParser
   # Calls inner hydrator instance to convert node value if necessary.
   #
   # @param xpath [String] node's XPath
-  # @param currentValue [undefined, mixed] current value of the parent node
+  # @param currentValue [undefined, mixed] current value of the node
   # @param newValue [mixed] node value
   #
   # @return [mixed] hydrated node value
