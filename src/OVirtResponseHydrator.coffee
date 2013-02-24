@@ -55,15 +55,46 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate collections
 #
-# - Detect collection links.
-# - Detect search options.
-# - Instantiate collection objects.
-# - Detect special objects inks and put them into collection.
-# - Save results in collection property.
+# - Collection links
+#     - Detect whether specified node is a collection links.
+#     - Instantiate collection objects.
+#     - Save link to collection object in {#collections} property with `rel` as
+#       a key and `xpath` as a namespace.
+#     - Set node value to undefined.
+# - Search options
+#     - Detect search option.
+#     - Detect corresponding collection `rel`.
+#     - Save search options in {#searchOptions} with `rel` base as a key and
+#       `xpath` as a namespace.
+#     - Set node to undefined.
+# - Special objects
+#     - Detect special object.
+#     - Detect special object related collection `rel`.
+#     - Save a link to special object in {#specialObjects} with `rel` base as a
+#       key and `xpath` as a namespace.
+#     - Set node to undefined.
+# - Setup collections
+#     - Detect that a set of the links are added to current node.
+#     - Resolve collections namespace adding '/link' to current xpath.
+#     - Loop over {#searchOptions} of the namespace and setup corresponding
+#       collections.
+#     - Clean the applied namespace of the {#searchOptions search options}.
+#     - Loop over {#specialObjects} of the namespace and add links to special
+#       objects to corresponding collections.
+#     - Clean the applied namespace of the {#specialObjects special objects}
+# - Export collections (right after collections setup)
+#     - If `link` is array then remove undefined values from it.
+#     - Delete link if it is an epty array or is undefined.
+#     - Loop over current {#collections} namespace
+#     - Resolve collection name from `rel` key
+#     - If current node isn't a root one then save link to collection object in
+#       current node hash with collection name as a key.
+#     - Otherwise export collection to target node.
+#     - Clean current namespace of the {#collections} property.
 #
 # ### Hydrate resource links
 #
-# - Detect links to resources
+# - Detect link to resource.
 # - Instantiate resource objects in link mode.
 # - Save results in resource links property.
 #
