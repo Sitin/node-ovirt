@@ -32,9 +32,10 @@ describe 'OVirtResponseParser', ->
   describe "#constructor", ->
 
     it "should merge only properties those are already exist in the prototype", ->
-      parser = new OVirtResponseParser eggs: 'spam', response: '<vms />'
+      parser = new OVirtResponseParser eggs: 'spam', response: '<vms />', target: 'api'
       expect(parser).to.have.not.property 'eggs'
       expect(parser).to.have.property 'response', '<vms />'
+      expect(parser).to.have.property 'target'
 
     it "should set properties via the setters if exists", ->
       backup = OVirtResponseParser.prototype.setTarget
@@ -46,12 +47,21 @@ describe 'OVirtResponseParser', ->
       OVirtResponseParser.prototype.setTarget = backup
 
     it "should set properties directly if their setters is not defined", ->
-      parser = getResponseParser OVirtResponseHydrator: "Hydrator"
-      expect(parser._OVirtResponseHydrator).to.be.equal "Hydrator"
+      Hydrator = ->
+      parser = getResponseParser Hydrator: Hydrator
+      expect(parser._Hydrator).to.be.equal Hydrator
 
     it "should instantiate parser", ->
       parser = do getResponseParser
       expect(parser._parser).to.be.an.instanceOf xml2js.Parser
+
+    it "should instantiate hydrator", ->
+      parser = do getResponseParser
+      expect(parser._hydrator).to.be.an.instanceOf OVirtResponseHydrator
+
+    it "should instantiate hydrator and pass current target to it", ->
+      parser = do getResponseParser
+      expect(parser._hydrator.target).to.be.equal parser.target
 
 
   describe "#setTarget", ->
@@ -128,30 +138,38 @@ describe 'OVirtResponseParser', ->
         do done
 
 
-  describe "#_exportParseResults", ->
+  describe "#hydrate", ->
 
-    it "should use a response hydrator to export parsed hash to target", ->
-      options =
-        hash: api: []
-        target: new OVirtApi
-
-      hydrate = chai.spy ->
-
-      Hydrator = (target, hash) ->
-        expect(target).to.be.equal options.target
-        expect(hash).to.be.equal options.hash
-        @hydrate = hydrate
-        @
-
-      options.OVirtResponseHydrator = Hydrator
-
-      parser = getResponseParser options
-      parser._exportParseResults options.hash
-
-      expect(hydrate).to.be.called.once
-
-    it "should freeze the hash", ->
+    it "should pass all parameters to #hydrateNode() and return it's result", ->
       parser = do getResponseParser
-      hash = api: {}
-      parser._exportParseResults hash
-      expect(Object.isFrozen hash).to.be.true
+      params = [1, 2, 3]
+      parser.hydrateNode = chai.spy ->
+        expect(_.toArray arguments).to.be.deep.equal params
+        'result'
+      expect(parser.hydrate params...).to.be.equal 'result'
+      expect(parser.hydrateNode).to.be.called.once
+
+    it "should be binded to parser instance", ->
+      parser = do getResponseParser
+      hydrate = parser.hydrate
+      parser.hydrateNode = chai.spy ->
+
+      do hydrate
+
+      expect(parser.hydrateNode).to.be.called.once
+
+  describe "#hydrateNode", ->
+
+    it "should call hydrator's #hydrate method with passed parameters " +
+      "and return it's result", ->
+        parser = do getResponseParser
+        params = [1, 2, 3]
+        spy = parser._hydrator.hydrate = chai.spy ->
+          expect(_.toArray arguments).to.be.deep.equal params
+          'result'
+        expect(parser.hydrateNode params...).to.be.equal 'result'
+        expect(spy).to.be.called.once
+
+  describe.skip "#_exportParseResults", ->
+
+    it "should export results to target", ->

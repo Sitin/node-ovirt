@@ -2,7 +2,6 @@
 
 # Tools.
 xml2js = require 'xml2js'
-deepFreeze = require 'deep-freeze'
 
 # Dependencies.
 config = require __dirname + '/config'
@@ -17,7 +16,8 @@ class OVirtResponseParser
   # Defaults
   _target: null
   _response: ''
-  _OVirtResponseHydrator: OVirtResponseHydrator
+  _Hydrator: OVirtResponseHydrator
+  _hydrator: null
 
   #
   # Utility methods that help to create getters and setters.
@@ -59,6 +59,9 @@ class OVirtResponseParser
     # Instantiate parser
     @_parser = new xml2js.Parser @PARSER_OPTIONS
 
+    # Instantiate hydrator
+    @_hydrator = new @_Hydrator @target
+
   #
   # Asynchroniously parses XML and then exports parse results.
   #
@@ -79,15 +82,28 @@ class OVirtResponseParser
       callback error, result
 
   #
-  # Exports oVirt response that was represented as a hash.
+  # Passes all parameters to {#_hydrate hydrator function}.
   #
-  # @private
-  # @param hash [Object] oVirt response as a hash
+  # This functon is binded to current responce parser instance.
   #
-  _exportParseResults: (hash) ->
-    deepFreeze hash
-    hydrator = new @_OVirtResponseHydrator @target, hash
-    do hydrator.hydrate
+  # @param params... [mixed] what ever
+  #
+  # @return [mixed] new node value
+  #
+  hydrate: (params...) =>
+    @hydrateNode params...
+
+  #
+  # Calls inner hydrator instance to convert node value if necessary.
+  #
+  # @param xpath [String] node's XPath
+  # @param currentValue [undefined, mixed] current value of the parent node
+  # @param newValue [mixed] node value
+  #
+  # @return [mixed] hydrated node value
+  #
+  hydrateNode: (xpath, currentValue, newValue) ->
+    @_hydrator.hydrate xpath, currentValue, newValue
 
   #
   # Sets current target.
@@ -114,6 +130,14 @@ class OVirtResponseParser
         TypeError "OVirtResponseParser requires OVirtApiNode as a target"
 
     @_target = target
+
+  #
+  # Exports oVirt response that was represented as a hash.
+  #
+  # @private
+  # @param hash [Object] oVirt response as a hash
+  #
+  _exportParseResults: (hash) ->
 
 
 module.exports = OVirtResponseParser
