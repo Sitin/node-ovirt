@@ -564,10 +564,6 @@ describe 'OVirtResponseHydrator', ->
       expect(spy).to.have.been.called.twice
 
 
-  describe.skip "#_removeSpecialProperties", ->
-    it "should be completed", ->
-
-
   describe.skip "#_getSpecialObjects", ->
     hydrator = do getHydrator
     hash = hydrator.unfolded apiHash

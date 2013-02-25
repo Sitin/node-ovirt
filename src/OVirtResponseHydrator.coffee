@@ -602,20 +602,6 @@ class OVirtResponseHydrator
     _.omit subject, @ATTRIBUTE_KEY
 
   #
-  # Removes special properties defined in {#SPECIAL_PROPERTIES}.
-  #
-  # @param value [Object]
-  #
-  # @return [Object]
-  #
-  # @private
-  #
-  _removeSpecialProperties: (subject) ->
-    for key in @SPECIAL_PROPERTIES
-      delete subject[key]
-    subject
-
-  #
   # Converts hash to resource.
   #
   # @param value [Object]
