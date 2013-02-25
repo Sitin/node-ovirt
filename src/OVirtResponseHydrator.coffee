@@ -67,19 +67,22 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Save search options in `_collections` with `rel` base as a key and
 #       `<xpath>.searchOptions` as a namespace.
 #     + Set node to undefined.
-# - Special objects
-#     - Detect special object.
-#     - Detect special object related collection `rel`.
-#     - Save a link to special object in `_collections` with `rel` base as a
-#       key and `<xpath>.specialObjects` as a namespace.
-#     - Set node to undefined.
+# + Special objects
+#     + Detect special object.
+#     + Detect special object related collection `rel`.
+#     + Detect special object name.
+#     + Save a link to special object in `_collections` with `rel` base as a
+#       key and `<xpath>.specialObjects.<collection rel>` as a namespace.
+#     + Set node to undefined.
 # - Setup collections
 #     - Detect that a set of the links are added to current node.
 #     - Resolve collections namespace adding '/link' to current xpath.
 #     - Loop over related search options if existed and setup corresponding
 #       collections.
 #     - Clean the applied `searchOptions` namespace.
-#     - Loop over related special objects add links to them to corresponding
+#     - Resolve special objects namespace adding 'special_object/link' to
+#       current xpath.
+#     - Loop over related special objects adding them to corresponding
 #       collections.
 #     - Clean the applied `specialObjects` namespace.
 # - Export collections (right after collections setup)
@@ -225,6 +228,9 @@ class OVirtResponseHydrator
     else if @isSearchOption newValue
       @hydrateSearchOption xpath, newValue
       undefined
+    else if @isSpecialObject newValue
+      @hydrateSpecialObject xpath, newValue
+      undefined
     else
       newValue
 
@@ -247,7 +253,7 @@ class OVirtResponseHydrator
     collection
 
   #
-  # Hydrates collection collection search option.
+  # Hydrates collection search option.
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
@@ -260,6 +266,23 @@ class OVirtResponseHydrator
     @registerIn @_collections, xpath, 'searchOptions', name, searchOptions
 
     searchOptions
+
+  #
+  # Hydrates collection special object.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  #
+  # @return [OVirtResource] hydrated special object
+  #
+  hydrateSpecialObject: (xpath, node) ->
+    attributes = @_getAttributes node
+    specialObject = new OVirtResource
+    collection = @_getSpecialObjectCollection attributes.rel
+    name = @_getSpecialObjectName attributes.rel
+    @registerIn @_collections,
+      xpath, 'specialObjects', collection, name,
+      specialObject
 
   #
   # Registers subject in proper namespace.
@@ -363,6 +386,31 @@ class OVirtResponseHydrator
     /^\w+\/search$/.test rel
 
   #
+  # Tests whether specified node is a special object.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node value
+  #
+  # @return [Boolean]
+  #
+  isSpecialObject: (xpath, node) ->
+    return no unless @isResourceLink node
+    @_isSpecialObjectXPath xpath
+
+  #
+  # Tests whether specified xpath leads to a special object.
+  #
+  # @param xpath [String] xpath to node
+  #
+  # @return [Boolean]
+  #
+  # @private
+  #
+  _isSpecialObjectXPath: (xpath) ->
+    regExp = new RegExp "[\\w\\/]+\\/#{@SPECIAL_OBJECTS}\\/#{@LINK_PROPERTY}"
+    regExp.test xpath
+
+  #
   # Tests whether specified subject is an element related to resource
   # or resource link.
   #
@@ -403,7 +451,7 @@ class OVirtResponseHydrator
   #
   # Extracts first element of the collection search link `rel` atribute.
   #
-  # @param rel [String] rel attribute of the collection search link
+  # @param rel [String] `rel` attribute of the collection search link
   #
   # @return [String]
   #
@@ -414,11 +462,12 @@ class OVirtResponseHydrator
     matches[1] if _.isArray(matches) and matches.length is 2
 
   #
-  # Extracts special object collection name from the 'rel' attribute.
+  # Extracts special object collection `rel` from the special object `rel`
+  # attribute.
   #
-  # @param rel [String] rel attribute of the special object link
+  # @param rel [String] `rel` attribute of the special object link
   #
-  # @return [String]
+  # @return [String] related collection `rel`
   #
   # @private
   #
@@ -451,50 +500,6 @@ class OVirtResponseHydrator
     for key of searchabilities
       collections[key].searchOptions =
         href: searchabilities[key].href
-
-  #
-  # Adds special objects to corresponding collections.
-  #
-  # @param collections [Object<OVirtCollection>] collections hash
-  # @param specialities [Object] collections special objects
-  #
-  # @private
-  #
-  _addSpecialObjects: (collections, specialities) ->
-    if _.isArray specialities.link
-      for object in specialities.link
-        @_addSpecialObject collections, _.clone object
-    else if _.isObject specialities.link
-      @_addSpecialObject collections, _.clone specialities.link
-
-  #
-  # Adds special object to exact collections.
-  #
-  # @param collections [OVirtCollection] collections hash
-  # @param specialities [Object] collection special objects
-  #
-  # @private
-  #
-  _addSpecialObject: (collections, object) ->
-    attributes = @_getAttributes object
-    collection = @_getSpecialObjectCollection attributes.rel
-    name = @_getSpecialObjectName attributes.rel
-
-    if collections[collection]?
-      # @todo Invoke proper OVirtApiCollection method
-      collections[collection].specialObjects = name: name, href: attributes.href
-
-  #
-  # Returns collections special objects of response hash.
-  #
-  # @param hash [Object]
-  #
-  # @return [Object]
-  #
-  # @private
-  #
-  _getSpecialObjects: (hash) ->
-    hash[@SPECIAL_OBJECTS]
 
   #
   # Merges attributes into element.

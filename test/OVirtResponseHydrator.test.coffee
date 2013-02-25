@@ -6,19 +6,27 @@ spies = require 'chai-spies'
 chai.use spies
 {expect} = chai
 
-# Utilities:
+# Utilities
 _ = require 'lodash'
 fs = require 'fs'
 
+# Config
 config = require '../lib/config'
-{OVirtResponseHydrator, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource} = require '../lib/'
 
-loadResponse = (name) ->
-  fs.readFileSync "#{__dirname}/responses/#{name}.xml"
+# SUT
+{OVirtResponseHydrator} = require '../lib/'
+
+# Dependencies
+{OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource} = require '../lib/'
+
 
 describe 'OVirtResponseHydrator', ->
   ATTRKEY = config.parser.attrkey
+  SPECIAL = config.api.specialObjects
+  LINK = config.api.link
 
+  # Returns response hydrator mock with spies for everything that could be
+  # called.
   getHydrator = (target, hash) ->
     target = new OVirtApi unless target?
     hydrator = new OVirtResponseHydrator target, hash
@@ -28,13 +36,25 @@ describe 'OVirtResponseHydrator', ->
 
     hydrator
 
+  # Returns response hydrator mock with stubs for specified functions.
+  getDeHydrator = (options, target, hash) ->
+    dehydrator = getHydrator target, hash
+    fn = (param) -> -> param
+
+    for key, value of options
+      dehydrator[key] = chai.spy fn value
+
+    dehydrator
+
   apiHash = require './responses/api'
+  specialObjects = apiHash.api.special_objects.link
+  specialObject = specialObjects[0]
   testCollection =
     link: apiHash.api.link[14]
     search: apiHash.api.link[15]
     name: apiHash.api.link[14].$.rel
     searchOptions: apiHash.api.link[15].$
-  specialObjects = apiHash.api.special_objects
+    specialObject: specialObjects[0]
 
   it "should be a function", ->
     expect(OVirtResponseHydrator).to.be.a 'function'
@@ -52,10 +72,11 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#setTarget", ->
 
-    it "should throw an error if target couldn't be converted to OVirtApiNode", ->
-        hydrator = do getHydrator
-        expect(-> hydrator.setTarget "something wrong")
-          .to.throw TypeError, "Hydrator's target should be an OVirtApiNode instance"
+    it '''should throw an error if target couldn't be converted to
+    OVirtApiNode''', ->
+      hydrator = do getHydrator
+      expect(-> hydrator.setTarget "something wrong")
+        .to.throw TypeError, "Hydrator's target should be an OVirtApiNode instance"
 
     it "should try to construct target if function specified", ->
       hydrator = do getHydrator
@@ -70,19 +91,32 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#hydrateNode", ->
 
-    it "should call #hydrateCollectionLink and return undefined if node value is a collection link", ->
-      hydrator = do getHydrator
-      hydrator.isCollectionLink = -> yes
-      hydrator.hydrateCollectionLink = chai.spy -> 'defined'
+    it '''should call #hydrateCollectionLink and return undefined if node value
+    is a collection link''', ->
+      hydrator = getDeHydrator
+        isCollectionLink: yes, hydrateCollectionLink: 'defined'
+
       expect(do hydrator.hydrateNode).to.be.undefined
+      expect(hydrator.isCollectionLink).to.be.called.once
       expect(hydrator.hydrateCollectionLink).to.be.called.once
 
-    it "should call #hydrateSearchOption and return undefined if node is a search option", ->
-      hydrator = do getHydrator
-      hydrator.isSearchOption = -> yes
-      hydrator.hydrateSearchOption = chai.spy -> 'defined'
+    it '''should call #hydrateSearchOption and return undefined if node is a
+    search option''', ->
+      hydrator = getDeHydrator
+        isSearchOption: yes, hydrateSearchOption: 'defined'
+
       expect(do hydrator.hydrateNode).to.be.undefined
+      expect(hydrator.isSearchOption).to.be.called.once
       expect(hydrator.hydrateSearchOption).to.be.called.once
+
+    it '''should call #hydrateSpecialObject and return undefined if node is a
+    special object''', ->
+      hydrator = getDeHydrator
+        isSpecialObject: yes, hydrateSpecialObject: 'defined'
+
+      expect(do hydrator.hydrateNode).to.be.undefined
+      expect(hydrator.isSpecialObject).to.be.called.once
+      expect(hydrator.hydrateSpecialObject).to.be.called.once
 
 
   describe "#hydrateCollectionLink", ->
@@ -115,6 +149,27 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.registerIn).to.have.been.called.once
       expect(hydrator._collections['/api/link'].searchOptions)
         .to.have.property testCollection.name, testCollection.searchOptions
+
+
+  describe "#hydrateSpecialObject", ->
+
+    it '''should return special object as a resource if node
+    is a special object''', ->
+      hydrator = do getHydrator
+      result = hydrator.hydrateSpecialObject 'xpath', specialObject
+
+      expect(result).to.be.instanceOf OVirtResource
+
+    it '''should register special object instance to corresponding
+    collection''', ->
+      hydrator = do getHydrator
+      hydrator.hydrateSpecialObject 'xpath', specialObject
+
+      expect(hydrator.registerIn).to.have.been.called.once
+      expect(hydrator._collections['xpath'].specialObjects)
+        .to.have.property(testCollection.name)
+        .to.have.property("blank")
+        .to.be.instanceOf OVirtResource
 
 
   describe "#registerIn", ->
@@ -244,20 +299,6 @@ describe 'OVirtResponseHydrator', ->
 
 
   describe "links detection", ->
-    getDeHydrator = (isLink, isResourceHref, hasChildren, attributes) ->
-      attributes = {} unless attributes?
-      dehydrator = do getHydrator
-
-      dehydrator.isLink = chai.spy ->
-        isLink
-      dehydrator._isResourceHref = chai.spy ->
-        isResourceHref
-      dehydrator._hasChildElements = chai.spy ->
-        hasChildren
-      dehydrator._getAttributes = chai.spy -> attributes
-
-      dehydrator
-
 
     describe "#isLink", ->
       hydrator = do getHydrator
@@ -288,13 +329,15 @@ describe 'OVirtResponseHydrator', ->
       attrs = rel: "SPAM"
       hash[ATTRKEY] = attrs
 
-      it.skip "should return true if is link with rel attribute and href" +
-        " doesn't point to resource", ->
-          hydrator = getDeHydrator yes, no, undefined, rel: '/rel'
-          expect(hydrator.isCollectionLink hash).to.be.true
+      it.skip '''should return true if is link with rel attribute and href
+      doesn't point to resource''', ->
+        hydrator = getDeHydrator
+          isLink: yes, _isResourceHref: no, _getAttributes: rel: '/rel'
+        expect(hydrator.isCollectionLink hash).to.be.true
 
       it "should call every helper function to return true", ->
-        hydrator = getDeHydrator yes, no, undefined, rel: '/rel'
+        hydrator = getDeHydrator
+          isLink: yes, _isResourceHref: no, _getAttributes: rel: '/rel'
         hydrator.isCollectionLink hash
 
         expect(hydrator.isLink).to.have.been.called.once
@@ -302,12 +345,51 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._isResourceHref).to.have.been.called.once
 
       it.skip "should return false for other cases", ->
-        hydrator = getDeHydrator yes, no, undefined, eggs: 'SPAM'
+        hydrator = getDeHydrator
+          isLink: yes, _isResourceHref: no, _getAttributes: eggs: 'SPAM'
         expect(hydrator.isResourceLink hash).to.be.false
-        hydrator = getDeHydrator no, yes, undefined, rel: '/rel'
+        hydrator = getDeHydrator
+          isLink: no, _isResourceHref: yes, _getAttributes: rel: '/rel'
         expect(hydrator.isResourceLink hash).to.be.false
-        hydrator = getDeHydrator yes, yes, undefined, rel: '/rel'
+        hydrator = getDeHydrator
+          isLink: yes, _isResourceHref: yes, _getAttributes: rel: '/rel'
         expect(hydrator.isResourceLink hash).to.be.false
+
+
+    describe "#isSpecialObject", ->
+      hydrator = do getDeHydrator
+
+      it '''should return true if current xpath points to special object
+      contents (resource link) and node is a resource link''', ->
+        hydrator = getDeHydrator
+          isResourceLink: yes, _isSpecialObjectXPath: yes
+        expect(do hydrator.isSpecialObject).to.be.true
+
+      it "should return false in other cases", ->
+        hydrator = getDeHydrator
+          isResourceLink: no, _isSpecialObjectXPath: yes
+        expect(do hydrator.isSpecialObject).to.be.false
+        hydrator = getDeHydrator
+          isResourceLink: yes, _isSpecialObjectXPath: no
+        expect(do hydrator.isSpecialObject).to.be.false
+
+
+    describe "#_isSpecialObjectXPath", ->
+
+      it '''should return true if xpath ends with link prceded by special
+      object tag name''', ->
+        hydrator = do getHydrator
+        expect(hydrator._isSpecialObjectXPath "/api/#{SPECIAL}/#{LINK}")
+          .to.be.true
+
+      it "should return false in other cases", ->
+        hydrator = do getHydrator
+        expect(hydrator._isSpecialObjectXPath "/api/regular/#{LINK}")
+          .to.be.false
+        expect(hydrator._isSpecialObjectXPath "/api/#{SPECIAL}/not_a_link")
+          .to.be.false
+        expect(hydrator._isSpecialObjectXPath "/api/path/to.nowhere")
+          .to.be.false
 
 
     describe "#isResourceLink", ->
@@ -316,26 +398,25 @@ describe 'OVirtResponseHydrator', ->
       hash[ATTRKEY] = attrs
 
       it "should return true if resource related and has no children", ->
-        hydrator = getDeHydrator undefined, undefined, no
-        hydrator._isResourceRelated = -> true
+        hydrator = getDeHydrator
+          _hasChildElements: no, _isResourceRelated: yes
         expect(hydrator.isResourceLink hash).to.be.true
 
       it "should call every helper function to return true", ->
-        hydrator = getDeHydrator undefined, undefined, no
-        hydrator._isResourceRelated = chai.spy ->
-          true
+        hydrator = getDeHydrator
+          _hasChildElements: no, _isResourceRelated: yes
         expect(hydrator.isResourceLink hash).to.be.true
 
         expect(hydrator._isResourceRelated).to.have.been.called.once
         expect(hydrator._hasChildElements).to.have.been.called.once
 
       it "should return false for other cases", ->
-        hydrator = getDeHydrator undefined, undefined, no
-        hydrator._isResourceRelated = -> false
+        hydrator = getDeHydrator
+          _hasChildElements: no, _isResourceRelated: no
         expect(hydrator.isResourceLink hash).to.be.false
 
-        hydrator = getDeHydrator undefined, undefined, yes
-        hydrator._isResourceRelated = -> true
+        hydrator = getDeHydrator
+          _hasChildElements: yes, _isResourceRelated: yes
         expect(hydrator.isResourceLink hash).to.be.false
 
 
@@ -345,26 +426,25 @@ describe 'OVirtResponseHydrator', ->
       hash[ATTRKEY] = attrs
 
       it "should return true if resource related and has children", ->
-        hydrator = getDeHydrator undefined, undefined, yes
-        hydrator._isResourceRelated = -> true
+        hydrator = getDeHydrator
+          _hasChildElements: yes, _isResourceRelated: yes
         expect(hydrator.isResource hash).to.be.true
 
       it "should call every helper function to return true", ->
-        hydrator = getDeHydrator undefined, undefined, yes
-        hydrator._isResourceRelated = chai.spy ->
-          true
+        hydrator = getDeHydrator
+          _hasChildElements: yes, _isResourceRelated: yes
         expect(hydrator.isResource hash).to.be.true
 
         expect(hydrator._isResourceRelated).to.have.been.called.once
         expect(hydrator._hasChildElements).to.have.been.called.once
 
       it "should return false for other cases", ->
-        hydrator = getDeHydrator undefined, undefined, yes
-        hydrator._isResourceRelated = -> false
+        hydrator = getDeHydrator
+          _hasChildElements: yes, _isResourceRelated: no
         expect(hydrator.isResource hash).to.be.false
 
-        hydrator = getDeHydrator undefined, undefined, no
-        hydrator._isResourceRelated = -> true
+        hydrator = getDeHydrator
+          _hasChildElements: no, _isResourceRelated: yes
         expect(hydrator.isResource hash).to.be.false
 
 
@@ -374,11 +454,11 @@ describe 'OVirtResponseHydrator', ->
       hash[ATTRKEY] = attrs
 
       it "should return true if is a link and href points to resource", ->
-        hydrator = getDeHydrator yes, yes
+        hydrator = getDeHydrator isLink: yes, _isResourceHref: yes
         expect(hydrator._isResourceRelated hash).to.be.true
 
       it "should call every helper function to return true", ->
-        hydrator = getDeHydrator yes, yes
+        hydrator = getDeHydrator isLink: yes, _isResourceHref: yes
         expect(hydrator._isResourceRelated hash).to.be.true
 
         expect(hydrator.isLink).to.have.been.called.once
@@ -386,9 +466,9 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._isResourceHref).to.have.been.called.once
 
       it "should return false for other cases", ->
-        hydrator = getDeHydrator no, yes
+        hydrator = getDeHydrator isLink: no, _isResourceHref: yes
         expect(hydrator._isResourceRelated hash).to.be.false
-        hydrator = getDeHydrator yes, no
+        hydrator = getDeHydrator isLink: yes, _isResourceHref: no
         expect(hydrator._isResourceRelated hash).to.be.false
 
 
@@ -562,15 +642,6 @@ describe 'OVirtResponseHydrator', ->
       hydrator._getPlainedElement hash
 
       expect(spy).to.have.been.called.twice
-
-
-  describe.skip "#_getSpecialObjects", ->
-    hydrator = do getHydrator
-    hash = hydrator.unfolded apiHash
-    key = config.api.specialObjects
-
-    it "should return value of the 'SPECIAL_OBJECTS' property", ->
-      expect(hydrator._getSpecialObjects hash).to.be.equal hash[key]
 
 
   describe "#_setupResourceLink", ->
