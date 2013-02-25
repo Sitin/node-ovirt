@@ -21,9 +21,20 @@ describe 'OVirtResponseHydrator', ->
 
   getHydrator = (target, hash) ->
     target = new OVirtApi unless target?
-    new OVirtResponseHydrator target, hash
+    hydrator = new OVirtResponseHydrator target, hash
+    # Create spies.
+    for method of hydrator when _.isFunction hydrator[method]
+      hydrator[method] = chai.spy hydrator[method]
+
+    hydrator
 
   apiHash = require './responses/api'
+  testCollection =
+    link: apiHash.api.link[14]
+    search: apiHash.api.link[15]
+    name: apiHash.api.link[14].$.rel
+    searchOptions: apiHash.api.link[15].$
+  specialObjects = apiHash.api.special_objects
 
   it "should be a function", ->
     expect(OVirtResponseHydrator).to.be.a 'function'
@@ -41,8 +52,7 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#setTarget", ->
 
-    it "should throw an error if target couldn't be converted" +
-       "to OVirtApiNode", ->
+    it "should throw an error if target couldn't be converted to OVirtApiNode", ->
         hydrator = do getHydrator
         expect(-> hydrator.setTarget "something wrong")
           .to.throw TypeError, "Hydrator's target should be an OVirtApiNode instance"
@@ -56,46 +66,100 @@ describe 'OVirtResponseHydrator', ->
     it "should treat string as a target type", ->
       hydrator = do getHydrator
       expect(hydrator.setTarget 'api').to.be.instanceOf OVirtApi
-      
-      
-  describe.skip "#hydrate", ->
-    hash = apiHash
-
-    it "should find collections and then export them", ->
-      hydrator = getHydrator undefined, hash
-      hydrator.getHydratedCollections = chai.spy ->
-        return "collections"
-      hydrator.exportCollections = chai.spy (collections) ->
-        expect(collections).to.be.equal "collections"
-        expect(hydrator.getHydratedCollections).to.have.been.called.once
-
-      do hydrator.hydrate
-
-      expect(hydrator.exportCollections).to.have.been.called.once
-
-    it "should skip the root element", ->
-      hydrator = getHydrator undefined, hash
-      hydrator.getHydratedCollections =
-        spy = chai.spy (value) ->
-          expect(value).to.be.equal hydrator.unfolded hash
-
-      hydrator.hydrate hash
-
-      expect(spy).to.be.called.once
 
 
-  describe "#exportCollections", ->
+  describe "#hydrateNode", ->
 
-    it "should export specified collections to target", ->
+    it "should call #hydrateCollectionLink and return undefined if node value is a collection link", ->
       hydrator = do getHydrator
-      target = new OVirtApi
-      hydrator.exportCollections "collections", target
-      expect(target).to.have.property "collections", "collections"
+      hydrator.isCollectionLink = -> yes
+      hydrator.hydrateCollectionLink = chai.spy -> 'defined'
+      expect(do hydrator.hydrateNode).to.be.undefined
+      expect(hydrator.hydrateCollectionLink).to.be.called.once
 
-    it "should use instance property 'target' if no target specified", ->
+    it "should call #hydrateSearchOption and return undefined if node is a search option", ->
       hydrator = do getHydrator
-      hydrator.exportCollections "collections"
-      expect(hydrator._target).to.have.property "collections", "collections"
+      hydrator.isSearchOption = -> yes
+      hydrator.hydrateSearchOption = chai.spy -> 'defined'
+      expect(do hydrator.hydrateNode).to.be.undefined
+      expect(hydrator.hydrateSearchOption).to.be.called.once
+
+
+  describe "#hydrateCollectionLink", ->
+
+    it "should return collection object", ->
+      hydrator = do getHydrator
+      result = hydrator.hydrateCollectionLink '/api/link', testCollection.link
+      expect(result).to.be.instanceOf OVirtCollection
+
+    it "should register created collection", ->
+      hydrator = do getHydrator
+      hydrator.hydrateCollectionLink '/api/link', testCollection.link
+
+      expect(hydrator.registerIn).to.have.been.called.once
+      expect(hydrator._collections['/api/link'].instances[testCollection.name])
+        .to.be.instanceOf OVirtCollection
+
+
+  describe "#hydrateSearchOption", ->
+
+    it "should return search options", ->
+      hydrator = do getHydrator
+      result = hydrator.hydrateSearchOption '/api/link', testCollection.search
+      expect(result).to.be.equal testCollection.searchOptions
+
+    it "should register search options", ->
+      hydrator = do getHydrator
+      hydrator.hydrateSearchOption '/api/link', testCollection.search
+
+      expect(hydrator.registerIn).to.have.been.called.once
+      expect(hydrator._collections['/api/link'].searchOptions)
+        .to.have.property testCollection.name, testCollection.searchOptions
+
+
+  describe "#registerIn", ->
+
+    it "should throw error on incomplete parameters", ->
+      hydrator = do getHydrator
+      expect(hydrator.registerIn).to.throw Error,
+        "You should specify both property and value to register in"
+      expect(-> hydrator.registerIn 'one').to.throw Error,
+        "You should specify both property and value to register in"
+
+    it "should throw error if wrong namespace specified", ->
+      hydrator = do getHydrator
+      hydrator.property = 'property'
+      expect(-> hydrator.registerIn 'property', 'key', 'subject')
+        .to.throw Error, "Wrong namespace to register in"
+
+    it "should throw error if object specified without a namespace", ->
+      hydrator = do getHydrator
+      expect(-> hydrator.registerIn hydrator._collections, 'value')
+        .to.throw Error, "You should specify a namespace to register in existing object"
+
+    it "should set property to subject if path is not specified", ->
+      hydrator = do getHydrator
+      hydrator.registerIn 'propertyName', 'value'
+      expect(hydrator).to.have.property 'propertyName', 'value'
+
+    it "should create property if not existed and string specified", ->
+      hydrator = do getHydrator
+      hydrator.registerIn 'propertyName', 'value'
+      expect(hydrator).to.have.property 'propertyName', 'value'
+
+    it "should assign subject to proper namespace", ->
+      hydrator = do getHydrator
+      hydrator.registerIn hydrator._collections, 'path', 'to', 'ns', 'value'
+      expect(hydrator._collections).to.have.property 'path'
+      expect(hydrator._collections.path).to.have.property 'to'
+      expect(hydrator._collections.path.to).to.have.property 'ns', 'value'
+
+    it "shouldn't overwrite namespaces if existed", ->
+      hydrator = do getHydrator
+      hydrator.registerIn hydrator._collections, 'path', 'to', 'value 1'
+      hydrator.registerIn hydrator._collections, 'path', 'for', 'value 2'
+      expect(hydrator._collections.path).to.have.property 'to', 'value 1'
+      expect(hydrator._collections.path).to.have.property 'for', 'value 2'
 
 
   describe "#isSearchOption", ->
@@ -177,76 +241,6 @@ describe 'OVirtResponseHydrator', ->
       expect(-> hydrator.unfolded null).to.not.throw Error
       expect(hydrator.unfolded null).to.be.undefined
       expect(-> hydrator.unfolded "not an object").to.not.throw Error
-
-
-  describe "#getHydratedCollections", ->
-    # Defaults:
-    hash = apiHash
-    hydrator = getHydrator undefined, hash
-    hash = hydrator.unfolded hash
-    collections = hydrator.getHydratedCollections hash
-
-    it "should return a hash", ->
-      expect(collections).to.be.an 'object'
-
-    it "should return a hash of collections", ->
-      for key of collections
-        expect(collections[key]).to.be.an.instanceof OVirtCollection
-
-    it "should return a hash of top-level only collections", ->
-      expect(Object.keys(collections).length).to.be.equal 16
-
-    it "should setup searchable collections", ->
-      expect(collections.vms.isSearchable).to.be.true
-      expect(collections.capabilities.isSearchable).to.be.false
-
-    it "should add special objects", ->
-      dehydrator = do getHydrator
-      {collections} = dehydrator._findCollections hash
-      dehydrator._addSpecialObjects =
-        spy = chai.spy (subjects, specialities) ->
-          expect(Object.keys subjects).to.be.deep.equal Object.keys collections
-          expect(specialities).to.be.equal hydrator._getSpecialObjects hash
-
-      dehydrator.getHydratedCollections hash
-
-      expect(spy).to.be.called.once
-
-    
-    describe "instance methods dependencies", ->
-    
-      it "should use ._makeCollectionsSearchabe()", ->
-        dehydrator = do getHydrator
-        dehydrator._makeCollectionsSearchabe = spy =
-          chai.spy dehydrator._makeCollectionsSearchabe
-        dehydrator.getHydratedCollections hash
-        expect(spy).to.be.called.once
-
-      it "should distinguish collections and search options", ->
-        dehydrator = do getHydrator
-        dehydrator.isSearchOption = spy =
-          chai.spy dehydrator.isSearchOption
-        dehydrator.getHydratedCollections hash
-        expect(spy).to.be.called hash.link.length
-
-
-  describe.skip "#getHydratedProperties", ->
-    it "should be completed", ->
-
-
-  describe "#exportProperties", ->
-    it "should export hash to target's 'properties' property", ->
-      hydrator = do getHydrator
-      hash = eggs: "with": sausages: "and": "SPAM"
-      spy = chai.spy (value) ->
-        expect(value).to.be.equal hash
-      hydrator.target.__defineSetter__ 'properties', spy
-      hydrator.exportProperties hash
-      expect(spy).to.have.been.called.once
-
-
-  describe.skip "#_hydrateProperty", ->
-    it "should be completed", ->
 
 
   describe "links detection", ->
@@ -430,28 +424,8 @@ describe 'OVirtResponseHydrator', ->
         .that.deep.equals href: searches.ham.href
 
 
-  describe "#_addSpecialObjects", ->
-    hydrator = do getHydrator
-    hash = apiHash.api
-    specialities = hash.special_objects
-    specialsCount = specialities.link.length
-    {collections} = hydrator._findCollections hash
-
-    it "should loop over special objects and add them to collections", ->
-      dehydrator = do getHydrator
-      spy = dehydrator._addSpecialObject = chai.spy ->
-
-      dehydrator._addSpecialObjects collections, specialities
-      expect(spy).to.be.called specialsCount
-
-    it "should clone objects before adding them", ->
-      backup = _.clone
-      spy = _.clone = chai.spy _.clone
-
-      hydrator._addSpecialObjects collections, specialities
-      expect(spy).to.be.called specialsCount
-
-      _.clone = backup
+  describe.skip "#_addSpecialObjects", ->
+    it "should be completed", ->
 
 
   describe.skip "#_addSpecialObject", ->
@@ -622,10 +596,6 @@ describe 'OVirtResponseHydrator', ->
 
 
   describe.skip "#_removeSpecialProperties", ->
-    it "should be completed", ->
-
-
-  describe.skip "#_hydrateHash", ->
     it "should be completed", ->
 
 

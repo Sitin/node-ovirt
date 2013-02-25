@@ -55,42 +55,42 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate collections
 #
-# - Collection links
-#     - Detect whether specified node is a collection links.
-#     - Instantiate collection objects.
-#     - Save link to collection object in {#collections} property with `rel` as
-#       a key and `xpath` as a namespace.
-#     - Set node value to undefined.
-# - Search options
-#     - Detect search option.
-#     - Detect corresponding collection `rel`.
-#     - Save search options in {#searchOptions} with `rel` base as a key and
-#       `xpath` as a namespace.
-#     - Set node to undefined.
+# + Collection links
+#     + Detect whether specified node is a collection links.
+#     + Instantiate collection objects.
+#     + Save link to collection object in `_collections` property with `rel` as
+#       a key in `<xpath>.instance` namespace.
+#     + Set node value to undefined.
+# + Search options
+#     + Detect search option.
+#     + Detect corresponding collection `rel`.
+#     + Save search options in `_collections` with `rel` base as a key and
+#       `<xpath>.searchOptions` as a namespace.
+#     + Set node to undefined.
 # - Special objects
 #     - Detect special object.
 #     - Detect special object related collection `rel`.
-#     - Save a link to special object in {#specialObjects} with `rel` base as a
-#       key and `xpath` as a namespace.
+#     - Save a link to special object in `_collections` with `rel` base as a
+#       key and `<xpath>.specialObjects` as a namespace.
 #     - Set node to undefined.
 # - Setup collections
 #     - Detect that a set of the links are added to current node.
 #     - Resolve collections namespace adding '/link' to current xpath.
-#     - Loop over {#searchOptions} of the namespace and setup corresponding
+#     - Loop over related search options if existed and setup corresponding
 #       collections.
-#     - Clean the applied namespace of the {#searchOptions search options}.
-#     - Loop over {#specialObjects} of the namespace and add links to special
-#       objects to corresponding collections.
-#     - Clean the applied namespace of the {#specialObjects special objects}
+#     - Clean the applied `searchOptions` namespace.
+#     - Loop over related special objects add links to them to corresponding
+#       collections.
+#     - Clean the applied `specialObjects` namespace.
 # - Export collections (right after collections setup)
 #     - If `link` is array then remove undefined values from it.
 #     - Delete link if it is an epty array or is undefined.
-#     - Loop over current {#collections} namespace
+#     - Loop over current `_collections` namespace
 #     - Resolve collection name from `rel` key
 #     - If current node isn't a root one then save link to collection object in
 #       current node hash with collection name as a key.
 #     - Otherwise export collection to target node.
-#     - Clean current namespace of the {#collections} property.
+#     - Clean current namespace of the `_collections` property.
 #
 # ### Hydrate resource links
 #
@@ -152,10 +152,6 @@ class OVirtResponseHydrator
   CHILDREN_KEY: config.parser.childkey
   SPECIAL_OBJECTS: config.api.specialObjects
 
-  # Defaults
-  _target: null
-  _hash: {}
-
   #
   # Utility methods that help to create getters and setters.
   #
@@ -210,7 +206,8 @@ class OVirtResponseHydrator
   #
   # @throw ["Hydrator's target should be an OVirtApiNode instance"]
   #
-  constructor: (@target, @hash) ->
+  constructor: (@target, @hash={}) ->
+    @_collections = {}
 
   #
   # Hydrates node value if necessary.
@@ -222,7 +219,82 @@ class OVirtResponseHydrator
   # @return [mixed] hydrated node value
   #
   hydrateNode: (xpath, currentValue, newValue) ->
-    newValue
+    if @isCollectionLink newValue
+      @hydrateCollectionLink xpath, newValue
+      undefined
+    else if @isSearchOption newValue
+      @hydrateSearchOption xpath, newValue
+      undefined
+    else
+      newValue
+
+  #
+  # Hydrates collection link.
+  #
+  # Registers link to created object in `_collections` hash under
+  # `<xpath>.instance` namespace with a <rel> as a key.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  #
+  # @return [OVirtCollection] hydrated collection link
+  #
+  hydrateCollectionLink: (xpath, node) ->
+    attributes = @_getAttributes node
+    collection = new OVirtCollection attributes
+    @registerIn @_collections, xpath, 'instances', attributes.rel, collection
+
+    collection
+
+  #
+  # Hydrates collection collection search option.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  #
+  # @return [Object] hydrated search option
+  #
+  hydrateSearchOption: (xpath, node) ->
+    searchOptions = @_getAttributes node
+    name = @_getSearchOptionCollectionName searchOptions.rel
+    @registerIn @_collections, xpath, 'searchOptions', name, searchOptions
+
+    searchOptions
+
+  #
+  # Registers subject in proper namespace.
+  #
+  # @overload registerIn(nsPath..., subject)
+  #   @param nsPath... [Array<String>] path to namespace for the current instance
+  #   @param subject [mixed]
+  #
+  # @overload registerIn(hash, nsPath..., subject)
+  #   @param hash [Object] root namespace hash
+  #   @param nsPath... [Array<String>] path to namespace for the hash
+  #   @param subject [mixed]
+  #
+  registerIn: (hash, nsPath..., subject) ->
+    unless subject? and hash?
+      throw new Error "You should specify both property and value to register in"
+
+    if _.isString hash
+      ns = @
+      nsPath = [hash].concat nsPath
+    else
+      if nsPath.length is 0
+        throw new Error "You should specify a namespace to register in existing object"
+      ns = hash
+
+    for key in _.initial nsPath
+      ns[key] = {} unless ns[key]?
+      throw new Error "Wrong namespace to register in" unless _.isObject ns[key]
+      ns = ns[key]
+
+    if nsPath.length > 0
+      key = _.last nsPath
+      ns[key] = subject
+    else
+      ns = subject
 
   #
   # Exports properties to target API node
@@ -231,21 +303,6 @@ class OVirtResponseHydrator
   #
   exportProperties: (properties) ->
     @target.properties = properties
-
-  #
-  # Exports specified collections to target.
-  # By default uses instance target.
-  #
-  # @overload exportCollections(collections)
-  #   @param collections [Object<OVirtCollection>] hash of collections
-  #
-  # @overload exportCollections(collections, target)
-  #   @param collections [Object<OVirtCollection>] hash of collections
-  #   @param target [OVirtApiNode] target API node
-  #
-  exportCollections: (collections, target) ->
-    target = @target unless target
-    target.collections = collections
 
   #
   # Tests whether specified subject is a link to resource or collection.
@@ -354,7 +411,7 @@ class OVirtResponseHydrator
     matches[1] if _.isArray(matches) and matches.length is 2
 
   #
-  # Extracts first element of the collection search link 'rel' atribute.
+  # Extracts first element of the collection search link `rel` atribute.
   #
   # @param rel [String] rel attribute of the collection search link
   #
@@ -448,99 +505,6 @@ class OVirtResponseHydrator
   #
   _getSpecialObjects: (hash) ->
     hash[@SPECIAL_OBJECTS]
-
-  #
-  # Returns a hash of top-level collections with properly setup search
-  # capabilities and special objects.
-  #
-  # @param hash [Object] hash
-  #
-  # @return [Object<OVirtCollection>] hash of collections
-  #
-  getHydratedCollections: (hash) ->
-    {collections, searchabilities} = @_findCollections hash
-
-    @_setupCollections collections
-    @_makeCollectionsSearchabe collections, searchabilities
-
-    specialities = @_getSpecialObjects hash
-    if specialities
-      @_addSpecialObjects collections, specialities
-
-    collections
-
-  #
-  # Replaces collections property hash with corresponding collection instances.
-  #
-  # @param hash [Object<String>] hash
-  #
-  # @return [Object<OVirtCollection>] hash of collections instances
-  #
-  # @private
-  #
-  _setupCollections: (collections) ->
-    for name, href of collections
-      collections[name] = new OVirtCollection name, href
-
-  #
-  # Returns top-level collections an their search options.
-  #
-  # The result is a hash with two properties: colections and searchabilities.
-  #
-  # @param hash [Object] hash
-  #
-  # @return [Object] hash of collections and their search options
-  #
-  # @private
-  #
-  _findCollections: (hash) ->
-    list = hash[@LINK_PROPERTY]
-    collections = {}
-    searchabilities = {}
-
-    list = [] unless _.isArray list
-
-    for entry in list when @isCollectionLink entry
-      entry = @_mergeAttributes _.clone entry
-      name = entry.rel
-      if @isSearchOption name
-        name = @_getSearchOptionCollectionName name
-        searchabilities[name] = entry
-      else
-        collections[name] = entry.href
-
-    collections: collections
-    searchabilities: searchabilities
-
-  #
-  # Return a hash of hydrated properties.
-  #
-  # @param hash [Object] hash
-  #
-  # @return [Object] hash of hydrated properties
-  #
-  getHydratedProperties: (hash) ->
-    properties = {}
-
-    for name, value of hash when @isProperty name
-      properties[name] = @_hydrateProperty value
-
-    @_mergeAttributes properties
-
-    properties
-
-  #
-  # Hydrates specified array.
-  # Unfolds singular array element.
-  #
-  # @param value [Array]
-  #
-  # @return [Array,mixed]
-  #
-  # @private
-  #
-  _hydrateArray: (subject) ->
-    @_hydrateProperty entry for entry in subject
 
   #
   # Merges attributes into element.
@@ -647,7 +611,6 @@ class OVirtResponseHydrator
 
     _.omit subject, @ATTRIBUTE_KEY
 
-
   #
   # Removes special properties defined in {#SPECIAL_PROPERTIES}.
   #
@@ -663,43 +626,6 @@ class OVirtResponseHydrator
     subject
 
   #
-  # Hydrates specified hash.
-  #
-  # @param value [Object]
-  #
-  # @return [mixed]
-  #
-  # @private
-  #
-  _hydrateHash: (subject) ->
-    subject = @_mergeAttributes _.clone subject
-    for name, value of subject
-      subject[name] = @_hydrateProperty value
-    @_removeSpecialProperties subject
-
-  #
-  # Hydrates specified value.
-  #
-  # @param value [mixed]
-  #
-  # @return [mixed]
-  #
-  # @private
-  #
-  _hydrateProperty: (value) ->
-    if _.isArray value
-      @_hydrateArray value
-    else if @isResourceLink value
-      @_setupResourceLink value
-    else if @isResource value
-      @_setupResource value
-    else if _.isObject value
-      @_hydrateHash value
-    else
-      value
-
-
-  #
   # Converts hash to resource.
   #
   # @param value [Object]
@@ -710,7 +636,6 @@ class OVirtResponseHydrator
   #
   _setupResourceLink: (hash) ->
     new OVirtResource @_mergeAttributes _.clone hash
-
 
   #
   # Returns the name of the hash's root key if exist.
