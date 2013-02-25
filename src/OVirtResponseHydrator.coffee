@@ -340,6 +340,18 @@ class OVirtResponseHydrator
     (attributes.rel? or attributes.id?) and attributes.href?
 
   #
+  # Tests whether node under current xpath is a collections owner.
+  #
+  # @param xpath [String] xpath to node
+  #
+  # @return [Boolean]
+  #
+  isCollectionsOwner: (xpath) ->
+    instances = @getCollectionsAtXPath xpath
+    return no unless _.isObject instances
+    Object.getOwnPropertyNames(instances).length > 0
+
+  #
   # Tests whether specified subject is a link to collection.
   #
   # @param subject [Object, Array] tested subject
