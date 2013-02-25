@@ -413,26 +413,6 @@ describe 'OVirtResponseHydrator', ->
         .that.deep.equals href: searches.ham.href
 
 
-  describe.skip "#_addSpecialObjects", ->
-    it "should be completed", ->
-
-
-  describe.skip "#_addSpecialObject", ->
-    it "should be completed", ->
-
-
-  describe.skip "#_setupCollections", ->
-    it "should be completed", ->
-
-
-  describe.skip "#_findCollections", ->
-    it "should be completed", ->
-
-
-  describe.skip "#_hydrateArray", ->
-    it "should be completed", ->
-
-
   describe "#_isResourceHref", ->
     hydrator = do getHydrator
     id = "00000000-0000-0000-0000-000000000000"
