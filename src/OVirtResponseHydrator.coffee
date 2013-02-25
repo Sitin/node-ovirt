@@ -75,8 +75,8 @@ OVirtResource = require __dirname + '/OVirtResource'
 #       key and `<xpath>.specialObjects.<collection rel>` as a namespace.
 #     + Set node to undefined.
 # - Setup collections
-#     - Detect that a set of the links are added to current node.
-#     - Resolve collections namespace adding '/link' to current xpath.
+#     + Detect that a set of the links are added to current node.
+#     + Resolve collections namespace adding '/link' to current xpath.
 #     - Loop over related search options if existed and setup corresponding
 #       collections.
 #     - Clean the applied `searchOptions` namespace.
@@ -347,7 +347,7 @@ class OVirtResponseHydrator
   # @return [Boolean]
   #
   isCollectionsOwner: (xpath) ->
-    instances = @getCollectionsAtXPath xpath
+    instances = @_getCollectionsAtXPath xpath
     return no unless _.isObject instances
     Object.getOwnPropertyNames(instances).length > 0
 
@@ -448,6 +448,24 @@ class OVirtResponseHydrator
   #
   _isResourceHref: (subject) ->
     /[\w\/]+\/\w+-\w+-\w+-\w+-\w+$/.test subject
+
+  #
+  # Returns collections instances for specified xpath.
+  #
+  # @param xpath [String]
+  #
+  # @return [Object] collections for xpath
+  #
+  # @private
+  #
+  _getCollectionsAtXPath: (xpath) ->
+    xpath += "/#{@LINK_PROPERTY}"
+    collections = undefined
+
+    try
+      collections = @_collections[xpath].instances
+
+    collections
 
   #
   # Returns href base for specified search pattern.

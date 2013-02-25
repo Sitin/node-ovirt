@@ -310,10 +310,10 @@ describe 'OVirtResponseHydrator', ->
     describe "#isCollectionsOwner", ->
 
       it "should return true if collections registered to specified xpath", ->
-        hydrator = getHydrator.withSpies.andStubs getCollectionsAtXPath: name: 'instance'
+        hydrator = getHydrator.withSpies.andStubs _getCollectionsAtXPath: name: 'instance'
         expect(hydrator.isCollectionsOwner 'xpath').to.be.true
-        expect(hydrator.getCollectionsAtXPath).to.be.called.once
-        expect(hydrator.getCollectionsAtXPath).to.be.called.with 'xpath'
+        expect(hydrator._getCollectionsAtXPath).to.be.called.once
+        expect(hydrator._getCollectionsAtXPath).to.be.called.with 'xpath'
 
 
     describe "#isLink", ->
@@ -499,13 +499,18 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._isResourceRelated hash).to.be.false
 
 
-  describe "#getCollectionsAtXPath", ->
+  describe "#_getCollectionsAtXPath", ->
     
     it "should return collections for given xpath", ->
       hydrator = do getHydrator.withSpies
+      hydrator._collections["/path/to/#{LINK}"] = instances: 'collections'
+      expect(hydrator._getCollectionsAtXPath '/path/to')
+        .to.be.equal 'collections'
     
-    it "should return undefined if instance namespace inaccessible", ->  
-      ""  
+    it "should return undefined if instance namespace inaccessible", ->
+      hydrator = do getHydrator.withSpies
+      expect(hydrator._getCollectionsAtXPath '/path/to/nowhere')
+        .to.be.undefined
   
   describe "#_makeCollectionsSearchabe", ->
     hydrator = do getHydrator.withSpies
