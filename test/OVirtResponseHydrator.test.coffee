@@ -72,11 +72,12 @@ describe 'OVirtResponseHydrator', ->
 
   describe "#setTarget", ->
 
-    it '''should throw an error if target couldn't be converted to
-    OVirtApiNode''', ->
+    it "should throw an error if target couldn't be converted to " +
+    "OVirtApiNode", ->
       hydrator = do getHydrator
       expect(-> hydrator.setTarget "something wrong")
-        .to.throw TypeError, "Hydrator's target should be an OVirtApiNode instance"
+        .to.throw TypeError,
+          "Hydrator's target should be an OVirtApiNode instance"
 
     it "should try to construct target if function specified", ->
       hydrator = do getHydrator
@@ -89,163 +90,162 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.setTarget 'api').to.be.instanceOf OVirtApi
 
 
-  describe "#hydrateNode", ->
+  describe "Node hydration", ->
 
-    it '''should call #hydrateCollectionLink and return undefined if node value
-    is a collection link''', ->
-      hydrator = getDeHydrator
-        isCollectionLink: yes, hydrateCollectionLink: 'defined'
+    describe "#hydrateNode", ->
 
-      expect(do hydrator.hydrateNode).to.be.undefined
-      expect(hydrator.isCollectionLink).to.be.called.once
-      expect(hydrator.hydrateCollectionLink).to.be.called.once
+      it "should call #hydrateCollectionLink and return undefined if node " +
+      "value is a collection link", ->
+        hydrator = getDeHydrator
+          isCollectionLink: yes, hydrateCollectionLink: 'defined'
 
-    it '''should call #hydrateSearchOption and return undefined if node is a
-    search option''', ->
-      hydrator = getDeHydrator
-        isSearchOption: yes, hydrateSearchOption: 'defined'
+        expect(do hydrator.hydrateNode).to.be.undefined
+        expect(hydrator.isCollectionLink).to.be.called.once
+        expect(hydrator.hydrateCollectionLink).to.be.called.once
 
-      expect(do hydrator.hydrateNode).to.be.undefined
-      expect(hydrator.isSearchOption).to.be.called.once
-      expect(hydrator.hydrateSearchOption).to.be.called.once
+      it "should call #hydrateSearchOption and return undefined if node is " +
+      "a search option", ->
+        hydrator = getDeHydrator
+          isSearchOption: yes, hydrateSearchOption: 'defined'
 
-    it '''should call #hydrateSpecialObject and return undefined if node is a
-    special object''', ->
-      hydrator = getDeHydrator
-        isSpecialObject: yes, hydrateSpecialObject: 'defined'
+        expect(do hydrator.hydrateNode).to.be.undefined
+        expect(hydrator.isSearchOption).to.be.called.once
+        expect(hydrator.hydrateSearchOption).to.be.called.once
 
-      expect(do hydrator.hydrateNode).to.be.undefined
-      expect(hydrator.isSpecialObject).to.be.called.once
-      expect(hydrator.hydrateSpecialObject).to.be.called.once
+      it "should call #hydrateSpecialObject and return undefined if node is " +
+      "a special object", ->
+        hydrator = getDeHydrator
+          isSpecialObject: yes, hydrateSpecialObject: 'defined'
 
-
-  describe "#hydrateCollectionLink", ->
-
-    it "should return collection object", ->
-      hydrator = do getHydrator
-      result = hydrator.hydrateCollectionLink '/api/link', testCollection.link
-      expect(result).to.be.instanceOf OVirtCollection
-
-    it "should register created collection", ->
-      hydrator = do getHydrator
-      hydrator.hydrateCollectionLink '/api/link', testCollection.link
-
-      expect(hydrator.registerIn).to.have.been.called.once
-      expect(hydrator._collections['/api/link'].instances[testCollection.name])
-        .to.be.instanceOf OVirtCollection
+        expect(do hydrator.hydrateNode).to.be.undefined
+        expect(hydrator.isSpecialObject).to.be.called.once
+        expect(hydrator.hydrateSpecialObject).to.be.called.once
 
 
-  describe "#hydrateSearchOption", ->
+    describe "#hydrateCollectionLink", ->
 
-    it "should return search options", ->
-      hydrator = do getHydrator
-      result = hydrator.hydrateSearchOption '/api/link', testCollection.search
-      expect(result).to.be.equal testCollection.searchOptions
+      it "should return collection object", ->
+        hydrator = do getHydrator
+        result =
+          hydrator.hydrateCollectionLink '/api/link', testCollection.link
+        expect(result).to.be.instanceOf OVirtCollection
 
-    it "should register search options", ->
-      hydrator = do getHydrator
-      hydrator.hydrateSearchOption '/api/link', testCollection.search
+      it "should register created collection", ->
+        hydrator = do getHydrator
+        hydrator.hydrateCollectionLink '/api/link', testCollection.link
 
-      expect(hydrator.registerIn).to.have.been.called.once
-      expect(hydrator._collections['/api/link'].searchOptions)
-        .to.have.property testCollection.name, testCollection.searchOptions
-
-
-  describe "#hydrateSpecialObject", ->
-
-    it '''should return special object as a resource if node
-    is a special object''', ->
-      hydrator = do getHydrator
-      result = hydrator.hydrateSpecialObject 'xpath', specialObject
-
-      expect(result).to.be.instanceOf OVirtResource
-
-    it '''should register special object instance to corresponding
-    collection''', ->
-      hydrator = do getHydrator
-      hydrator.hydrateSpecialObject 'xpath', specialObject
-
-      expect(hydrator.registerIn).to.have.been.called.once
-      expect(hydrator._collections['xpath'].specialObjects)
-        .to.have.property(testCollection.name)
-        .to.have.property("blank")
-        .to.be.instanceOf OVirtResource
+        expect(hydrator.registerIn).to.have.been.called.once
+        expect(hydrator._collections['/api/link'].instances)
+          .to.have.property(testCollection.name)
+          .to.be.instanceOf OVirtCollection
 
 
-  describe "#registerIn", ->
+    describe "#hydrateSearchOption", ->
 
-    it "should throw error on incomplete parameters", ->
-      hydrator = do getHydrator
-      expect(hydrator.registerIn).to.throw Error,
-        "You should specify both property and value to register in"
-      expect(-> hydrator.registerIn 'one').to.throw Error,
-        "You should specify both property and value to register in"
+      it "should return search options", ->
+        hydrator = do getHydrator
+        result =
+          hydrator.hydrateSearchOption '/api/link', testCollection.search
+        expect(result).to.be.equal testCollection.searchOptions
 
-    it "should throw error if wrong namespace specified", ->
-      hydrator = do getHydrator
-      hydrator.property = 'property'
-      expect(-> hydrator.registerIn 'property', 'key', 'subject')
-        .to.throw Error, "Wrong namespace to register in"
+      it "should register search options", ->
+        hydrator = do getHydrator
+        hydrator.hydrateSearchOption '/api/link', testCollection.search
 
-    it "should throw error if object specified without a namespace", ->
-      hydrator = do getHydrator
-      expect(-> hydrator.registerIn hydrator._collections, 'value')
-        .to.throw Error, "You should specify a namespace to register in existing object"
-
-    it "should set property to subject if path is not specified", ->
-      hydrator = do getHydrator
-      hydrator.registerIn 'propertyName', 'value'
-      expect(hydrator).to.have.property 'propertyName', 'value'
-
-    it "should create property if not existed and string specified", ->
-      hydrator = do getHydrator
-      hydrator.registerIn 'propertyName', 'value'
-      expect(hydrator).to.have.property 'propertyName', 'value'
-
-    it "should assign subject to proper namespace", ->
-      hydrator = do getHydrator
-      hydrator.registerIn hydrator._collections, 'path', 'to', 'ns', 'value'
-      expect(hydrator._collections).to.have.property 'path'
-      expect(hydrator._collections.path).to.have.property 'to'
-      expect(hydrator._collections.path.to).to.have.property 'ns', 'value'
-
-    it "shouldn't overwrite namespaces if existed", ->
-      hydrator = do getHydrator
-      hydrator.registerIn hydrator._collections, 'path', 'to', 'value 1'
-      hydrator.registerIn hydrator._collections, 'path', 'for', 'value 2'
-      expect(hydrator._collections.path).to.have.property 'to', 'value 1'
-      expect(hydrator._collections.path).to.have.property 'for', 'value 2'
+        expect(hydrator.registerIn).to.have.been.called.once
+        expect(hydrator._collections['/api/link'].searchOptions)
+          .to.have.property testCollection.name, testCollection.searchOptions
 
 
-  describe "#isSearchOption", ->
+    describe "#hydrateSpecialObject", ->
 
-    it "should match only valid search rel attributes", ->
-      hydrator = do getHydrator
-      expect(hydrator.isSearchOption "api/search").to.be.true
-      expect(hydrator.isSearchOption "apisearch").to.be.false
-      expect(hydrator.isSearchOption "api/search!").to.be.false
+      it "should return special object as a resource if node " +
+      "is a special object", ->
+        hydrator = do getHydrator
+        result = hydrator.hydrateSpecialObject 'xpath', specialObject
 
-    it "should treat leading slash as an error", ->
-      hydrator = do getHydrator
-      expect(hydrator.isSearchOption "api/search/").to.be.false
+        expect(result).to.be.instanceOf OVirtResource
+
+      it "should register special object instance to corresponding " +
+      "collection", ->
+        hydrator = do getHydrator
+        hydrator.hydrateSpecialObject 'xpath', specialObject
+
+        expect(hydrator.registerIn).to.have.been.called.once
+        expect(hydrator._collections['xpath'].specialObjects)
+          .to.have.property(testCollection.name)
+          .to.have.property("blank")
+          .to.be.instanceOf OVirtResource
+
+
+    describe "#registerIn", ->
+
+      it "should throw error on incomplete parameters", ->
+        hydrator = do getHydrator
+        expect(hydrator.registerIn).to.throw Error,
+          "You should specify both property and value to register in"
+        expect(-> hydrator.registerIn 'one').to.throw Error,
+          "You should specify both property and value to register in"
+
+      it "should throw error if wrong namespace specified", ->
+        hydrator = do getHydrator
+        hydrator.property = 'property'
+        expect(-> hydrator.registerIn 'property', 'key', 'subject')
+          .to.throw Error, "Wrong namespace to register in"
+
+      it "should throw error if object specified without a namespace", ->
+        hydrator = do getHydrator
+        expect(-> hydrator.registerIn hydrator._collections, 'value')
+          .to.throw Error,
+            "You should specify a namespace to register in existing object"
+
+      it "should set property to subject if path is not specified", ->
+        hydrator = do getHydrator
+        hydrator.registerIn 'propertyName', 'value'
+        expect(hydrator).to.have.property 'propertyName', 'value'
+
+      it "should create property if not existed and string specified", ->
+        hydrator = do getHydrator
+        hydrator.registerIn 'propertyName', 'value'
+        expect(hydrator).to.have.property 'propertyName', 'value'
+
+      it "should assign subject to proper namespace", ->
+        hydrator = do getHydrator
+        hydrator.registerIn hydrator._collections, 'path', 'to', 'ns', 'value'
+        expect(hydrator._collections).to.have.property 'path'
+        expect(hydrator._collections.path).to.have.property 'to'
+        expect(hydrator._collections.path.to).to.have.property 'ns', 'value'
+
+      it "shouldn't overwrite namespaces if existed", ->
+        hydrator = do getHydrator
+        hydrator.registerIn hydrator._collections, 'path', 'to', 'value 1'
+        hydrator.registerIn hydrator._collections, 'path', 'for', 'value 2'
+        expect(hydrator._collections.path).to.have.property 'to', 'value 1'
+        expect(hydrator._collections.path).to.have.property 'for', 'value 2'
 
 
   describe "#getSearchHrefBase", ->
 
     it "should return href base for specified pattern", ->
       hydrator = do getHydrator
-      expect(hydrator.getSearchHrefBase "/api/templates?search={query}").to.be.equal "/api/templates?search="
+      expect(hydrator.getSearchHrefBase "/api/templates?search={query}")
+        .to.be.equal "/api/templates?search="
 
     it "should properly process hrefs with from parts", ->
       hydrator = do getHydrator
-      expect(hydrator.getSearchHrefBase "/api/events;from={event_id}?search={query}").to.be.equal "/api/events;from={event_id}?search="
+      href = "/api/events;from={event_id}?search={query}"
+      expect(hydrator.getSearchHrefBase href)
+          .to.be.equal "/api/events;from={event_id}?search="
 
     it "should return undefined for invalid patterns", ->
       hydrator = do getHydrator
       expect(hydrator.getSearchHrefBase "").to.be.undefined
-      expect(hydrator.getSearchHrefBase "/api/templates={query}").to.be.undefined
-      expect(hydrator.getSearchHrefBase "/api/temp????lates?search={query}").to.be.undefined
-      expect(hydrator.getSearchHrefBase "?/api/templates?search={query}").to.be.undefined
+      expect(hydrator.getSearchHrefBase "/api/templates={query}")
+        .to.be.undefined
+      expect(hydrator.getSearchHrefBase "/api/temp????lates?search={query}")
+        .to.be.undefined
+      expect(hydrator.getSearchHrefBase "?/api/templates?search={query}")
+        .to.be.undefined
 
 
   describe "#getRootElementName", ->
@@ -255,7 +255,8 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator.getRootElementName spam: Spam: 'SPAM').to.be.equal 'spam'
 
     it "should return undefined for hashes without single root element", ->
-      expect(hydrator.getRootElementName spam: 'SPAM', eggs: 'SPAM').to.be.undefined
+      expect(hydrator.getRootElementName spam: 'SPAM', eggs: 'SPAM')
+        .to.be.undefined
 
     it "should return undefined for empty hashes", ->
       expect(hydrator.getRootElementName {}).to.be.undefined
@@ -298,7 +299,7 @@ describe 'OVirtResponseHydrator', ->
       expect(-> hydrator.unfolded "not an object").to.not.throw Error
 
 
-  describe "links detection", ->
+  describe "Detection of different node types", ->
 
     describe "#isLink", ->
       hydrator = do getHydrator
@@ -329,8 +330,8 @@ describe 'OVirtResponseHydrator', ->
       attrs = rel: "SPAM"
       hash[ATTRKEY] = attrs
 
-      it.skip '''should return true if is link with rel attribute and href
-      doesn't point to resource''', ->
+      it.skip "should return true if is link with rel attribute and href " +
+      "doesn't point to resource", ->
         hydrator = getDeHydrator
           isLink: yes, _isResourceHref: no, _getAttributes: rel: '/rel'
         expect(hydrator.isCollectionLink hash).to.be.true
@@ -356,11 +357,23 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.isResourceLink hash).to.be.false
 
 
-    describe "#isSpecialObject", ->
-      hydrator = do getDeHydrator
+    describe "#isSearchOption", ->
 
-      it '''should return true if current xpath points to special object
-      contents (resource link) and node is a resource link''', ->
+      it "should match only valid search rel attributes", ->
+        hydrator = do getHydrator
+        expect(hydrator.isSearchOption "api/search").to.be.true
+        expect(hydrator.isSearchOption "apisearch").to.be.false
+        expect(hydrator.isSearchOption "api/search!").to.be.false
+
+      it "should treat leading slash as an error", ->
+        hydrator = do getHydrator
+        expect(hydrator.isSearchOption "api/search/").to.be.false
+
+
+    describe "#isSpecialObject", ->
+
+      it "should return true if current xpath points to special object " +
+      "contents (resource link) and node is a resource link", ->
         hydrator = getDeHydrator
           isResourceLink: yes, _isSpecialObjectXPath: yes
         expect(do hydrator.isSpecialObject).to.be.true
@@ -374,22 +387,21 @@ describe 'OVirtResponseHydrator', ->
         expect(do hydrator.isSpecialObject).to.be.false
 
 
-    describe "#_isSpecialObjectXPath", ->
-
-      it '''should return true if xpath ends with link prceded by special
-      object tag name''', ->
+      describe "#_isSpecialObjectXPath", ->
         hydrator = do getHydrator
-        expect(hydrator._isSpecialObjectXPath "/api/#{SPECIAL}/#{LINK}")
-          .to.be.true
 
-      it "should return false in other cases", ->
-        hydrator = do getHydrator
-        expect(hydrator._isSpecialObjectXPath "/api/regular/#{LINK}")
-          .to.be.false
-        expect(hydrator._isSpecialObjectXPath "/api/#{SPECIAL}/not_a_link")
-          .to.be.false
-        expect(hydrator._isSpecialObjectXPath "/api/path/to.nowhere")
-          .to.be.false
+        it "should return true if xpath ends with link prceded by special" +
+        "object tag name", ->
+          expect(hydrator._isSpecialObjectXPath "/api/#{SPECIAL}/#{LINK}")
+            .to.be.true
+
+        it "should return false in other cases", ->
+          expect(hydrator._isSpecialObjectXPath "/api/regular/#{LINK}")
+            .to.be.false
+          expect(hydrator._isSpecialObjectXPath "/api/#{SPECIAL}/not_a_link")
+            .to.be.false
+          expect(hydrator._isSpecialObjectXPath "/api/path/to.nowhere")
+            .to.be.false
 
 
     describe "#isResourceLink", ->
@@ -658,7 +670,8 @@ describe 'OVirtResponseHydrator', ->
 
     it "should extract first element of the collection search link 'rel'", ->
       hydrator = do getHydrator
-      expect(hydrator._getSearchOptionCollectionName "api/search").to.be.equal "api"
+      expect(hydrator._getSearchOptionCollectionName "api/search")
+        .to.be.equal "api"
 
     it "should return udefined for non searchable paths", ->
       hydrator = do getHydrator
