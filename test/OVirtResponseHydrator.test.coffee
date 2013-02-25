@@ -128,6 +128,13 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.hydrateSpecialObject).to.be.called.once
 
 
+    describe "#hydrateCollections", ->
+
+      it "should be implemented", ->
+        hydrator = do getHydrator
+        expect(hydrator).to.respondTo 'hydrateCollections'
+
+
     describe "#hydrateCollectionLink", ->
 
       it "should return collection object", ->
@@ -502,13 +509,13 @@ describe 'OVirtResponseHydrator', ->
   describe "#_getCollectionsAtXPath", ->
     
     it "should return collections for given xpath", ->
-      hydrator = do getHydrator.withSpies
+      hydrator = do getHydrator
       hydrator._collections["/path/to/#{LINK}"] = instances: 'collections'
       expect(hydrator._getCollectionsAtXPath '/path/to')
         .to.be.equal 'collections'
     
     it "should return undefined if instance namespace inaccessible", ->
-      hydrator = do getHydrator.withSpies
+      hydrator = do getHydrator
       expect(hydrator._getCollectionsAtXPath '/path/to/nowhere')
         .to.be.undefined
   
