@@ -392,17 +392,6 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._isResourceRelated hash).to.be.false
 
 
-  describe "#isProperty", ->
-    hydrator = do getHydrator
-
-    it "should return false for special properies", ->
-      for special in config.api.specialProperties
-        expect(hydrator.isProperty special).to.be.false
-
-    it "should return true for everything else", ->
-      expect(hydrator.isProperty "just_property").to.be.true
-
-
   describe "#_makeCollectionsSearchabe", ->
     hydrator = do getHydrator
 

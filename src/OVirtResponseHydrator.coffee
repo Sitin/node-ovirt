@@ -351,6 +351,18 @@ class OVirtResponseHydrator
     @_hasChildElements subject
 
   #
+  # Tests if value is a valid search option "rel" attribute.
+  #
+  # Rels with leading slashes treated as invalid.
+  #
+  # @param rel [String] link "rel" attribute
+  #
+  # @return [Boolean]
+  #
+  isSearchOption: (rel) ->
+    /^\w+\/search$/.test rel
+
+  #
   # Tests whether specified subject is an element related to resource
   # or resource link.
   #
@@ -376,28 +388,6 @@ class OVirtResponseHydrator
   #
   _isResourceHref: (subject) ->
     /[\w\/]+\/\w+-\w+-\w+-\w+-\w+$/.test subject
-
-  #
-  # Tests if value is a valid search option "rel" attribute.
-  #
-  # Rels with leading slashes treated as invalid.
-  #
-  # @param rel [String] link "rel" attribute
-  #
-  # @return [Boolean]
-  #
-  isSearchOption: (rel) ->
-    /^\w+\/search$/.test rel
-
-  #
-  # Tests if specified value is a property key.
-  #
-  # @param name [String] supject name
-  #
-  # @return [Boolean]
-  #
-  isProperty: (name) ->
-    (@SPECIAL_PROPERTIES.indexOf name) < 0
 
   #
   # Returns href base for specified search pattern.
