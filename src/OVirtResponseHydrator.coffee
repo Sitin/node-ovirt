@@ -83,7 +83,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Clean the applied `searchOptions` namespace.
 #     + Resolve special objects namespace adding 'special_object/link' to
 #       current xpath.
-#     - Loop over related special objects adding them to corresponding
+#     + Loop over related special objects adding them to corresponding
 #       collections.
 #     - Clean the applied `specialObjects` namespace.
 # - Export collections (right after collections setup)
@@ -299,9 +299,12 @@ class OVirtResponseHydrator
   hydrateCollections: (xpath, node) ->
     collections = @_getCollectionsAtXPath xpath
     searchOptions = @_getSearchOptionsAtXPath xpath
+    specialObjects = @_getSpecialObjectsAtXPath xpath
 
     @_makeCollectionsSearchable collections, searchOptions
     try delete @_collections["#{xpath}/#{@LINK_PROPERTY}"].searchOptions
+
+    @_addSpecialObjects collections, specialObjects
 
   #
   # Registers subject in proper namespace.
@@ -582,6 +585,33 @@ class OVirtResponseHydrator
     for key of searchabilities
       collections[key].searchOptions =
         href: searchabilities[key].href
+
+  #
+  # Passes special objects to exact collections.
+  #
+  # @param collections [Object<OVirtCollection>] collections hash
+  # @param specialObjects [Object<OVirtResource>] special objects
+  #
+  # @private
+  #
+  _addSpecialObjects: (collections, specialObjects) ->
+    for collectionName, objects of specialObjects
+      collection = collections[collectionName]
+      for name, object of objects
+        @_addSpecialObject collection, name, object
+
+
+  #
+  # Registers special object to specified collection.
+  #
+  # @param collections [OVirtCollection] collections hash
+  # @param name [String] special object name
+  # @param object [OVirtResource] special object as a link to resource
+  #
+  # @private
+  #
+  _addSpecialObject: (collection, name, object) ->
+    collection[name] = object
 
   #
   # Merges attributes into element.

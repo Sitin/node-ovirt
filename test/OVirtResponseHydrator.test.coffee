@@ -48,7 +48,12 @@ describe 'OVirtResponseHydrator', ->
 
     # Create stubbed spies
     for key in Object.getOwnPropertyNames options
-      dehydrator[key] = chai.spy fn options[key]
+      value = options[key]
+      if _.isFunction value
+        stub = value
+      else
+        stub = fn value
+      dehydrator[key] = chai.spy stub
 
     dehydrator
 
@@ -134,7 +139,9 @@ describe 'OVirtResponseHydrator', ->
         defaults =
           _getCollectionsAtXPath: 'collections'
           _getSearchOptionsAtXPath: 'searchOptions'
+          _getSpecialObjectsAtXPath: 'specialObjects'
           _makeCollectionsSearchable: undefined
+          _addSpecialObjects: undefined
 
         getHydrator.withSpies.andStubs _.defaults defaults, options
 
@@ -150,6 +157,12 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.once
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.with 'xpath'
 
+      it "should retrieve special objects related to xpath", ->
+        hydrator = do getHydrator.withSpies
+        hydrator.hydrateCollections 'xpath'
+        expect(hydrator._getSpecialObjectsAtXPath).to.be.called.once
+        expect(hydrator._getSpecialObjectsAtXPath).to.be.called.with 'xpath'
+
       it "should loop over related search options if existed and setup " +
       "corresponding collections", ->
         hydrator = do getCollectionsHydrator
@@ -164,6 +177,14 @@ describe 'OVirtResponseHydrator', ->
         hydrator.hydrateCollections 'xpath'
         expect(hydrator._collections['xpath/link'])
           .to.have.not.property 'searchOptions'
+
+      it "should loop over related sspecial objects if existed and add them " +
+      "to corresponding collections", ->
+        hydrator = do getCollectionsHydrator
+        hydrator.hydrateCollections 'xpath'
+        expect(hydrator._addSpecialObjects).to.be.called.once
+        expect(hydrator._addSpecialObjects)
+          .to.be.called.with 'collections', 'specialObjects'
 
 
     describe "#hydrateCollectionLink", ->
@@ -598,6 +619,43 @@ describe 'OVirtResponseHydrator', ->
         .that.deep.equals href: searches.spam.href
       expect(collections.ham).to.have.property('searchOptions')
         .that.deep.equals href: searches.ham.href
+
+
+  describe "#_addSpecialObjects", ->
+
+    it "should loop over all special objects and add them to " +
+    "respective collections", ->
+      collections =
+        eggs: 'eggs'
+        spam: 'spam'
+      specialObjects =
+        eggs:
+          spam: 'spam'
+          ham:  'ham'
+        spam:
+          coffee: 'coffee'
+
+      hydrator = getHydrator.withSpies.andStubs
+        _addSpecialObject: (collection, name, object) ->
+          expect(collections).to.have.property collection
+          expect(specialObjects[collection]).to.have.property name
+          expect(specialObjects[collection][name]).to.be.equal object
+
+      hydrator._addSpecialObjects collections, specialObjects
+
+      expect(hydrator._addSpecialObject).to.be.called 3
+
+
+  describe "#_addSpecialObject", ->
+
+    it "should add object to collection with specified name as a key", ->
+      hydrator = do getHydrator
+      collection = {}
+      hydrator._addSpecialObject collection, 'key', 'value'
+      expect(collection).to.have.property 'key', 'value'
+
+    it.skip "should be completed", ->
+      # @todo Complete hydrator's #_addSpecialObject tests implementation.
 
 
   describe "#_isResourceHref", ->
