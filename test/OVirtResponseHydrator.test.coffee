@@ -207,6 +207,34 @@ describe 'OVirtResponseHydrator', ->
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._isRootElememntXPath).to.have.been.called.once
 
+      it "should export collections if this is a root node", ->
+        hydrator = getCollectionsHydrator
+          _isRootElememntXPath: yes
+          exportCollections: undefined
+        hydrator._collections = xpath: instances: 'collections'
+        hydrator.hydrateCollections 'xpath', {}
+        expect(hydrator.exportCollections).to.be.called.once
+        expect(hydrator.exportCollections).to.be.called.with 'collections'
+
+      it.skip "should populate collections for not root node", ->
+        #@todo Write the test.
+
+
+    describe "#exportCollections", ->
+
+      it "should assign collections to target's 'collection' property", ->
+        hydrator = do getHydrator
+        hydrator.exportCollections 'collections'
+        expect(hydrator.target).to.have.property 'collections', 'collections'
+
+
+    describe "#exportProperties", ->
+
+      it "should assign properties to target's 'properties' property", ->
+        hydrator = do getHydrator
+        hydrator.exportProperties 'properties'
+        expect(hydrator.target).to.have.property 'properties', 'properties'
+
 
     describe "#hydrateCollectionLink", ->
 

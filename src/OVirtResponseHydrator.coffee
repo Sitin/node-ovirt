@@ -89,12 +89,10 @@ OVirtResource = require __dirname + '/OVirtResource'
 # - Export collections (right after collections setup)
 #     + If `link` is array then remove undefined values from it.
 #     + Delete link if it is an epty array or is undefined.
-#     - Loop over current `_collections` namespace
 #     + Use collection `rel` attribute as a collection name.
 #     + Detect whether current `xpath` points to root node.
-#     - If current node isn't a root one then save link to collection object in
-#       current node hash with collection name as a key.
-#     - Otherwise export collection to target node.
+#     + If current node is a root one export collections to target node.
+#     - Otherwise populate collections to node with collection name as a key.
 #     - Clean current namespace of the `_collections` property.
 #
 # ### Hydrate resource links
@@ -313,9 +311,9 @@ class OVirtResponseHydrator
     @_cleanUpLinks node
 
     if @_isRootElememntXPath xpath
-      # @todo @exportCollections collections
+      @exportCollections collections
     else
-      # @todo @putCollectionsToNode collections, node
+      # @todo @populateCollectionsToNode collections, node
 
     node
 
@@ -363,6 +361,14 @@ class OVirtResponseHydrator
       ns[key] = subject
     else
       ns = subject
+
+  #
+  # Exports colections to target API node
+  #
+  # @param collections [Object] collections to export
+  #
+  exportCollections: (collections) ->
+    @target.collections = collections
 
   #
   # Exports properties to target API node
