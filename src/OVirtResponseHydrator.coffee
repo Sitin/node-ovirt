@@ -90,7 +90,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + If `link` is array then remove undefined values from it.
 #     + Delete link if it is an epty array or is undefined.
 #     - Loop over current `_collections` namespace
-#     - Resolve collection name from `rel` key
+#     - Use collection `rel` attribute as a collection name.
 #     - If current node isn't a root one then save link to collection object in
 #       current node hash with collection name as a key.
 #     - Otherwise export collection to target node.
