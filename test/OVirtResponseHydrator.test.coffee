@@ -135,6 +135,16 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.isSpecialObject).to.be.called.with 'xpath', 'value'
         expect(hydrator.hydrateSpecialObject).to.be.called.once
 
+      it "should call #hydrateCollections if node is a collection owner", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isCollectionsOwner: yes, hydrateCollections: undefined
+
+        expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        expect(hydrator.isCollectionsOwner).to.be.called.once
+        expect(hydrator.isCollectionsOwner).to.be.called.with 'xpath'
+        expect(hydrator.hydrateCollections).to.be.called.once
+        expect(hydrator.hydrateCollections).to.be.called.with 'xpath', 'value'
+
 
     describe "#hydrateCollections", ->
       # Related mock

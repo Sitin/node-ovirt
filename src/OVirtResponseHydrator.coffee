@@ -223,6 +223,9 @@ class OVirtResponseHydrator
   # @return [mixed] hydrated node value
   #
   hydrateNode: (xpath, currentValue, newValue) ->
+    if @isCollectionsOwner xpath
+      newValue = @hydrateCollections xpath, newValue
+
     if @isCollectionLink newValue
       @hydrateCollectionLink xpath, newValue
       undefined
@@ -232,8 +235,6 @@ class OVirtResponseHydrator
     else if @isSpecialObject xpath, newValue
       @hydrateSpecialObject xpath, newValue
       undefined
-    else if @isCollectionsOwner xpath
-      @hydrateCollections xpath, newValue
     else
       newValue
 
