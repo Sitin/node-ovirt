@@ -202,6 +202,10 @@ describe 'OVirtResponseHydrator', ->
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._cleanUpLinks).to.have.been.called.once
 
+      it "should check whether this is a root node", ->
+        hydrator = do getCollectionsHydrator
+        hydrator.hydrateCollections 'xpath', {}
+        expect(hydrator._isRootElememntXPath).to.have.been.called.once
 
     describe "#hydrateCollectionLink", ->
 

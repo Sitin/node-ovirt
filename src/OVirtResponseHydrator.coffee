@@ -312,6 +312,11 @@ class OVirtResponseHydrator
 
     @_cleanUpLinks node
 
+    if @_isRootElememntXPath xpath
+      # @todo @exportCollections collections
+    else
+      # @todo @putCollectionsToNode collections, node
+
     node
 
   #
