@@ -185,13 +185,6 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._makeCollectionsSearchable)
           .to.be.called.with 'collections', 'searchOptions'
 
-      it "should clean the applied search options namespace", ->
-        hydrator = do getCollectionsHydrator
-        hydrator._collections['xpath/link'] = searchOptions: "options"
-        hydrator.hydrateCollections 'xpath', {}
-        expect(hydrator._collections['xpath/link'])
-          .to.have.not.property 'searchOptions'
-
       it "should loop over related sspecial objects if existed and add them " +
       "to corresponding collections", ->
         hydrator = do getCollectionsHydrator
@@ -213,7 +206,7 @@ describe 'OVirtResponseHydrator', ->
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._cleanUpLinks).to.have.been.called.once
 
-      it "should special objects element from node", ->
+      it "should delete special objects element from node", ->
         hydrator = do getCollectionsHydrator
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._cleanUpSpecialObjects).to.have.been.called.once
@@ -237,6 +230,12 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.populateOVirtNodeLinks).to.be.called.once
         expect(hydrator.populateOVirtNodeLinks).to.be.called.with 'collections'
 
+      it "should delete related namespace from collection instances", ->
+        hydrator = do getCollectionsHydrator
+        hydrator._collections['xpath/link'] = 'collections stuff'
+        hydrator.hydrateCollections 'xpath', {}
+        expect(hydrator._collections).to.have.not.property 'xpath/link'
+
 
     describe "#exportCollections", ->
 
@@ -253,15 +252,11 @@ describe 'OVirtResponseHydrator', ->
       target = {}
       hydrator.populateOVirtNodeLinks nodes, target
 
-      it "should add API nodes with underscored keys to target", ->
-        for key of nodes
-          expect(target).to.have.property "_#{key}", nodes[key]
-
       it "should add add getters for all API nodes with a key as a property " +
       "name", ->
         for key of nodes
           expect(target).to.have.property key, nodes[key]
-          expect(target.__lookupGetter__ key).to.be.a 'function'
+          expect(target.__lookupGetter__ key).to.be.equal nodes[key].initiated
 
 
     describe "#exportProperties", ->

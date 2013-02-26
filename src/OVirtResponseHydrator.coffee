@@ -80,13 +80,12 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Retrieve search options for current xpath adding '/link' to it.
 #     + Loop over related search options if existed and setup corresponding
 #       collections.
-#     + Clean the applied `searchOptions` namespace.
 #     + Resolve special objects namespace adding 'special_object/link' to
 #       current xpath.
 #     + Loop over related special objects adding them to corresponding
 #       collections.
 #     + Clean the applied `specialObjects` namespace.
-# - Export collections (right after collections setup)
+# + Export collections (right after collections setup)
 #     + If `link` is array then remove undefined values from it.
 #     + Delete link if it is an epty array or is undefined.
 #     + Remove special objects element from node children.
@@ -94,7 +93,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Detect whether current `xpath` points to root node.
 #     + If current node is a root one export collections to target node.
 #     + Otherwise populate collections to node with collection name as a key.
-#     - Clean current namespace of the `_collections` property.
+#     + Clean current namespace of the `_collections` property.
 #
 # ### Hydrate resource links
 #
@@ -305,7 +304,6 @@ class OVirtResponseHydrator
     specialObjects = @_getSpecialObjectsAtXPath xpath
 
     @_makeCollectionsSearchable collections, searchOptions
-    try delete @_collections["#{xpath}/#{@LINK_PROPERTY}"].searchOptions
 
     @_addSpecialObjects collections, specialObjects
     try delete @_collections["#{xpath}/#{@SPECIAL_OBJECTS}/#{@LINK_PROPERTY}"].specialObjects
@@ -317,6 +315,8 @@ class OVirtResponseHydrator
       @exportCollections collections
     else
       @populateOVirtNodeLinks collections, node
+
+    try delete @_collections["#{xpath}/#{@LINK_PROPERTY}"]
 
     node
 
@@ -393,7 +393,6 @@ class OVirtResponseHydrator
   #
   populateOVirtNodeLinks: (nodes, target) ->
     for key of nodes
-      target["_#{key}"] = nodes[key]
       target.__defineGetter__ key, nodes[key].initiated
 
   #
