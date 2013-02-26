@@ -130,10 +130,17 @@ describe 'OVirtResponseHydrator', ->
 
     describe "#hydrateCollections", ->
 
-      it "should loop over collections related to xpath", ->
+      it "should retrieve collections related to xpath", ->
         hydrator = do getHydrator.withSpies
-        do hydrator._getCollectionsAtXPath
+        hydrator.hydrateCollections 'xpath'
         expect(hydrator._getCollectionsAtXPath).to.be.called.once
+        expect(hydrator._getCollectionsAtXPath).to.be.called.with 'xpath'
+
+      it "should retrieve search options related to xpath", ->
+        hydrator = do getHydrator.withSpies
+        hydrator.hydrateCollections 'xpath'
+        expect(hydrator._getSearchOptionsAtXPath).to.be.called.once
+        expect(hydrator._getSearchOptionsAtXPath).to.be.called.with 'xpath'
 
 
     describe "#hydrateCollectionLink", ->
@@ -519,6 +526,21 @@ describe 'OVirtResponseHydrator', ->
       hydrator = do getHydrator
       expect(hydrator._getCollectionsAtXPath '/path/to/nowhere')
         .to.be.undefined
+
+
+  describe "_getSearchOptionsAtXPath", ->
+
+    it "should return search options for given xpath", ->
+      hydrator = do getHydrator
+      hydrator._collections["/path/to/#{LINK}"] = searchOptions: 'options'
+      expect(hydrator._getSearchOptionsAtXPath '/path/to')
+        .to.be.equal 'options'
+
+    it "should return undefined if search options namespace inaccessible", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSearchOptionsAtXPath '/path/to/nowhere')
+        .to.be.undefined
+
   
   describe "#_makeCollectionsSearchabe", ->
     hydrator = do getHydrator.withSpies
