@@ -93,7 +93,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Use collection `rel` attribute as a collection name.
 #     + Detect whether current `xpath` points to root node.
 #     + If current node is a root one export collections to target node.
-#     - Otherwise populate collections to node with collection name as a key.
+#     + Otherwise populate collections to node with collection name as a key.
 #     - Clean current namespace of the `_collections` property.
 #
 # ### Hydrate resource links
@@ -316,7 +316,7 @@ class OVirtResponseHydrator
     if @_isRootElememntXPath xpath
       @exportCollections collections
     else
-      # @todo @populateCollectionsToNode collections, node
+      @populateOVirtNodeLinks collections, node
 
     node
 
@@ -384,6 +384,17 @@ class OVirtResponseHydrator
   #
   exportCollections: (collections) ->
     @target.collections = collections
+
+  #
+  # Populates nodes over target as a lazy loading properties.
+  #
+  # @param nodes [Object<OVirtApiNode>] nodes hash to populate
+  # @param target [Object] target object
+  #
+  populateOVirtNodeLinks: (nodes, target) ->
+    for key of nodes
+      target["_#{key}"] = nodes[key]
+      target.__defineGetter__ key, nodes[key].initiated
 
   #
   # Exports properties to target API node

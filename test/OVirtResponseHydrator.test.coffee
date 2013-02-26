@@ -155,6 +155,7 @@ describe 'OVirtResponseHydrator', ->
           _getSpecialObjectsAtXPath: 'specialObjects'
           _makeCollectionsSearchable: undefined
           _addSpecialObjects: undefined
+          populateOVirtNodeLinks: undefined
 
         getHydrator.withSpies.andStubs _.defaults defaults, options
 
@@ -223,16 +224,18 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._isRootElememntXPath).to.have.been.called.once
 
       it "should export collections if this is a root node", ->
-        hydrator = getCollectionsHydrator
-          _isRootElememntXPath: yes
-          exportCollections: undefined
+        hydrator = getCollectionsHydrator _isRootElememntXPath: yes
         hydrator._collections = xpath: instances: 'collections'
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator.exportCollections).to.be.called.once
         expect(hydrator.exportCollections).to.be.called.with 'collections'
 
       it.skip "should populate collections for not root node", ->
-        #@todo Write the test.
+        hydrator = getCollectionsHydrator _isRootElememntXPath: no
+        hydrator._collections = xpath: instances: 'collections'
+        hydrator.hydrateCollections 'xpath', {}
+        expect(hydrator.populateOVirtNodeLinks).to.be.called.once
+        expect(hydrator.populateOVirtNodeLinks).to.be.called.with 'collections'
 
 
     describe "#exportCollections", ->
@@ -241,6 +244,24 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator
         hydrator.exportCollections 'collections'
         expect(hydrator.target).to.have.property 'collections', 'collections'
+
+
+    describe "#populateOVirtNodeLinks", ->
+      # Test data
+      hydrator = do getHydrator
+      nodes = eggs: new OVirtApiNode, spam: new OVirtApiNode
+      target = {}
+      hydrator.populateOVirtNodeLinks nodes, target
+
+      it "should add API nodes with underscored keys to target", ->
+        for key of nodes
+          expect(target).to.have.property "_#{key}", nodes[key]
+
+      it "should add add getters for all API nodes with a key as a property " +
+      "name", ->
+        for key of nodes
+          expect(target).to.have.property key, nodes[key]
+          expect(target.__lookupGetter__ key).to.be.a 'function'
 
 
     describe "#exportProperties", ->
