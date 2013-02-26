@@ -150,26 +150,26 @@ describe 'OVirtResponseHydrator', ->
 
       it "should retrieve collections related to xpath", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateCollections 'xpath'
+        hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._getCollectionsAtXPath).to.be.called.once
         expect(hydrator._getCollectionsAtXPath).to.be.called.with 'xpath'
 
       it "should retrieve search options related to xpath", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateCollections 'xpath'
+        hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.once
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.with 'xpath'
 
       it "should retrieve special objects related to xpath", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateCollections 'xpath'
+        hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._getSpecialObjectsAtXPath).to.be.called.once
         expect(hydrator._getSpecialObjectsAtXPath).to.be.called.with 'xpath'
 
       it "should loop over related search options if existed and setup " +
       "corresponding collections", ->
         hydrator = do getCollectionsHydrator
-        hydrator.hydrateCollections 'xpath'
+        hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._makeCollectionsSearchable).to.be.called.once
         expect(hydrator._makeCollectionsSearchable)
           .to.be.called.with 'collections', 'searchOptions'
@@ -177,14 +177,14 @@ describe 'OVirtResponseHydrator', ->
       it "should clean the applied search options namespace", ->
         hydrator = do getCollectionsHydrator
         hydrator._collections['xpath/link'] = searchOptions: "options"
-        hydrator.hydrateCollections 'xpath'
+        hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._collections['xpath/link'])
           .to.have.not.property 'searchOptions'
 
       it "should loop over related sspecial objects if existed and add them " +
       "to corresponding collections", ->
         hydrator = do getCollectionsHydrator
-        hydrator.hydrateCollections 'xpath'
+        hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._addSpecialObjects).to.be.called.once
         expect(hydrator._addSpecialObjects)
           .to.be.called.with 'collections', 'specialObjects'
@@ -193,9 +193,14 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getCollectionsHydrator
         hydrator._collections['xpath/special_objects/link'] =
           specialObjects: "specialObjects"
-        hydrator.hydrateCollections 'xpath'
+        hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._collections['xpath/special_objects/link'])
           .to.have.not.property 'specialObjects'
+
+      it "should compact or remove link property", ->
+        hydrator = do getCollectionsHydrator
+        hydrator.hydrateCollections 'xpath', {}
+        expect(hydrator._cleanUpLinks).to.have.been.called.once
 
 
     describe "#hydrateCollectionLink", ->
@@ -725,6 +730,28 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator._isResourceHref '').to.be.false
       expect(hydrator._isResourceHref '/href/to').to.be.false
       expect(hydrator._isResourceHref null).to.be.false
+
+
+  describe "#_cleanUpLinks", ->
+
+    it "should remove empty vaues from link if it is an array", ->
+      hydrator = do getHydrator
+      node = link: [1, 2, 3, undefined, 4]
+      hydrator._cleanUpLinks node
+      expect(node).to.have.property('link').that.deep.equals node.link
+
+    it "should remove empty link array", ->
+      hydrator = do getHydrator
+      node = link: []
+      hydrator._cleanUpLinks node
+      expect(node).to.have.not.property 'link'
+
+    it "should remove link array that have only undefined values", ->
+      hydrator = do getHydrator
+      node = link: [undefined, undefined]
+      hydrator._cleanUpLinks node
+      expect(node).to.have.not.property 'link'
+
 
   describe "#_getAttributes", ->
     hydrator = do getHydrator.withSpies
