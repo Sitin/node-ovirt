@@ -551,7 +551,7 @@ describe 'OVirtResponseHydrator', ->
         .to.be.undefined
 
 
-  describe "_getSearchOptionsAtXPath", ->
+  describe "#_getSearchOptionsAtXPath", ->
 
     it "should return search options for given xpath", ->
       hydrator = do getHydrator
@@ -562,6 +562,20 @@ describe 'OVirtResponseHydrator', ->
     it "should return undefined if search options namespace inaccessible", ->
       hydrator = do getHydrator
       expect(hydrator._getSearchOptionsAtXPath '/path/to/nowhere')
+        .to.be.undefined
+
+
+  describe "#_getSpecialObjectsAtXPath", ->
+
+    it "should return special objects for given xpath", ->
+      hydrator = do getHydrator
+      hydrator._collections["/path/to/#{SPECIAL}/#{LINK}"] = specialObjects: 'special objects'
+      expect(hydrator._getSpecialObjectsAtXPath '/path/to')
+        .to.be.equal 'special objects'
+
+    it "should return undefined if special objects namespace inaccessible", ->
+      hydrator = do getHydrator
+      expect(hydrator._getSpecialObjectsAtXPath '/path/to/nowhere')
         .to.be.undefined
 
   
