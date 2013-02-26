@@ -285,6 +285,20 @@ class OVirtResponseHydrator
       specialObject
 
   #
+  # Hydrates collections.
+  #
+  # Loops over collections instances assigned to xpath and setup them with
+  # corresponding search options and special objects.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  #
+  # @return [Object] hydrated node
+  #
+  hydrateCollections: (xpath, node) ->
+    collections = @_getCollectionsAtXPath xpath
+
+  #
   # Registers subject in proper namespace.
   #
   # @overload registerIn(nsPath..., subject)

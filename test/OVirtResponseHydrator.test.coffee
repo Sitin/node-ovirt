@@ -130,9 +130,10 @@ describe 'OVirtResponseHydrator', ->
 
     describe "#hydrateCollections", ->
 
-      it "should be implemented", ->
-        hydrator = do getHydrator
-        expect(hydrator).to.respondTo 'hydrateCollections'
+      it "should loop over collections related to xpath", ->
+        hydrator = do getHydrator.withSpies
+        do hydrator._getCollectionsAtXPath
+        expect(hydrator._getCollectionsAtXPath).to.be.called.once
 
 
     describe "#hydrateCollectionLink", ->
