@@ -207,6 +207,7 @@ describe 'OVirtResponseHydrator', ->
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._isRootElememntXPath).to.have.been.called.once
 
+
     describe "#hydrateCollectionLink", ->
 
       it "should return collection object", ->
