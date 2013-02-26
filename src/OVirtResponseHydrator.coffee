@@ -229,7 +229,7 @@ class OVirtResponseHydrator
     else if @isSearchOption newValue
       @hydrateSearchOption xpath, newValue
       undefined
-    else if @isSpecialObject newValue
+    else if @isSpecialObject xpath, newValue
       @hydrateSpecialObject xpath, newValue
       undefined
     else
@@ -383,7 +383,9 @@ class OVirtResponseHydrator
   #
   isCollectionLink: (subject) ->
     return no unless @isLink subject
+    return no if @isSearchOption subject
     attributes = @_getAttributes subject
+    return no unless attributes
     attributes.rel? and not @_isResourceHref attributes.href
 
   #
@@ -409,6 +411,19 @@ class OVirtResponseHydrator
     @_hasChildElements subject
 
   #
+  # Tests whether specified subject is a link to search option.
+  #
+  # @param subject [Object] tested subject
+  #
+  # @return [Boolean] whether specified subject is a search option
+  #
+  isSearchOption: (subject) ->
+    return no unless @isLink subject
+    attributes = @_getAttributes subject
+    return no unless attributes
+    attributes.rel? and @_isSearchOptionRel attributes.rel
+
+  #
   # Tests if value is a valid search option "rel" attribute.
   #
   # Rels with leading slashes treated as invalid.
@@ -417,7 +432,9 @@ class OVirtResponseHydrator
   #
   # @return [Boolean]
   #
-  isSearchOption: (rel) ->
+  # @private
+  #
+  _isSearchOptionRel: (rel) ->
     /^\w+\/search$/.test rel
 
   #
