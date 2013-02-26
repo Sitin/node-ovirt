@@ -25,7 +25,6 @@ if not module.parent
     parser.parseXML (error, result) ->
       console.log error if error
       inspect result
-      inspect parser._hydrator
 
   dumpHydratedHash = ->
     parser = new lib.OVirtResponseParser
@@ -33,6 +32,7 @@ if not module.parent
       target: 'collection'
     parser.parse (error, result) ->
       console.log error if error
+      inspect parser._hydrator
       inspect parser.target
 
   do dumpFileHash
