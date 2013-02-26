@@ -89,6 +89,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # - Export collections (right after collections setup)
 #     + If `link` is array then remove undefined values from it.
 #     + Delete link if it is an epty array or is undefined.
+#     + Remove special objects element from node children.
 #     + Use collection `rel` attribute as a collection name.
 #     + Detect whether current `xpath` points to root node.
 #     + If current node is a root one export collections to target node.
@@ -309,6 +310,7 @@ class OVirtResponseHydrator
     try delete @_collections["#{xpath}/#{@SPECIAL_OBJECTS}/#{@LINK_PROPERTY}"].specialObjects
 
     @_cleanUpLinks node
+    @_cleanUpSpecialObjects node
 
     if @_isRootElememntXPath xpath
       @exportCollections collections
@@ -322,10 +324,22 @@ class OVirtResponseHydrator
   #
   # @param node [Object] node to clean up
   #
+  # @private
+  #
   _cleanUpLinks: (node) ->
     if _.isArray node[@LINK_PROPERTY]
       node[@LINK_PROPERTY] = _.compact node[@LINK_PROPERTY]
       delete node[@LINK_PROPERTY] if node[@LINK_PROPERTY].length is 0
+
+  #
+  # Removes empty values from links array and removes it became empty.
+  #
+  # @param node [Object] node to clean up
+  #
+  # @private
+  #
+  _cleanUpSpecialObjects: (node) ->
+    delete node[@SPECIAL_OBJECTS]
 
   #
   # Registers subject in proper namespace.

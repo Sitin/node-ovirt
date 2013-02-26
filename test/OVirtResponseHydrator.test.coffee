@@ -202,6 +202,11 @@ describe 'OVirtResponseHydrator', ->
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._cleanUpLinks).to.have.been.called.once
 
+      it "should special objects element from node", ->
+        hydrator = do getCollectionsHydrator
+        hydrator.hydrateCollections 'xpath', {}
+        expect(hydrator._cleanUpSpecialObjects).to.have.been.called.once
+
       it "should check whether this is a root node", ->
         hydrator = do getCollectionsHydrator
         hydrator.hydrateCollections 'xpath', {}
@@ -798,6 +803,16 @@ describe 'OVirtResponseHydrator', ->
       node = link: [undefined, undefined]
       hydrator._cleanUpLinks node
       expect(node).to.have.not.property 'link'
+
+
+  describe "#_cleanUpSpecialObjects", ->
+
+    it "should remove special objects element", ->
+      hydrator = do getHydrator
+      node = {}
+      node[SPECIAL] = {}
+      hydrator._cleanUpSpecialObjects node
+      expect(node).to.have.not.property SPECIAL
 
 
   describe "#_getAttributes", ->
