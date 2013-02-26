@@ -90,7 +90,8 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + If `link` is array then remove undefined values from it.
 #     + Delete link if it is an epty array or is undefined.
 #     - Loop over current `_collections` namespace
-#     - Use collection `rel` attribute as a collection name.
+#     + Use collection `rel` attribute as a collection name.
+#     + Detect whether current `xpath` points to root node.
 #     - If current node isn't a root one then save link to collection object in
 #       current node hash with collection name as a key.
 #     - Otherwise export collection to target node.
@@ -555,6 +556,19 @@ class OVirtResponseHydrator
     try specialObjects = @_collections[xpath].specialObjects
 
     specialObjects
+
+  #
+  # Tests whether xpath points to root element.
+  #
+  # @param xpath [String] xpath to test
+  #
+  # @return [Boolean]
+  #
+  # @private
+  #
+  _isRootElememntXPath: (xpath) ->
+    /^\/\w+$/.test xpath
+
 
   #
   # Returns href base for specified search pattern.

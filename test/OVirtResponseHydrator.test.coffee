@@ -653,6 +653,20 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator._getSpecialObjectsAtXPath '/path/to/nowhere')
         .to.be.undefined
 
+
+  describe "#_isRootElememntXPath", ->
+
+    it "should return true only for root elements xpath", ->
+      hydrator = do getHydrator
+      expect(hydrator._isRootElememntXPath '/api').to.be.true
+
+    it "should return false for everything else", ->
+      hydrator = do getHydrator
+      expect(hydrator._isRootElememntXPath '/api/cache').to.be.false
+      expect(hydrator._isRootElememntXPath '/').to.be.false
+      expect(hydrator._isRootElememntXPath '').to.be.false
+      expect(do hydrator._isRootElememntXPath).to.be.false
+
   
   describe "#_makeCollectionsSearchable", ->
     hydrator = do getHydrator.withSpies
