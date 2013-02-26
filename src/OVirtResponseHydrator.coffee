@@ -78,7 +78,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Detect that a set of the links are added to current node.
 #     + Resolve collections namespace adding '/link' to current xpath.
 #     + Retrieve search options for current xpath adding '/link' to it.
-#     - Loop over related search options if existed and setup corresponding
+#     + Loop over related search options if existed and setup corresponding
 #       collections.
 #     - Clean the applied `searchOptions` namespace.
 #     - Resolve special objects namespace adding 'special_object/link' to
@@ -299,6 +299,8 @@ class OVirtResponseHydrator
   hydrateCollections: (xpath, node) ->
     collections = @_getCollectionsAtXPath xpath
     searchOptions = @_getSearchOptionsAtXPath xpath
+
+    @_makeCollectionsSearchable collections, searchOptions
 
   #
   # Registers subject in proper namespace.
@@ -560,7 +562,7 @@ class OVirtResponseHydrator
   #
   # @private
   #
-  _makeCollectionsSearchabe: (collections, searchabilities) ->
+  _makeCollectionsSearchable: (collections, searchabilities) ->
     for key of searchabilities
       collections[key].searchOptions =
         href: searchabilities[key].href

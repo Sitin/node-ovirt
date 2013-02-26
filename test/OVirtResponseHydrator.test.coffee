@@ -47,8 +47,8 @@ describe 'OVirtResponseHydrator', ->
     fn = (param) -> -> param
 
     # Create stubbed spies
-    for key, value of options
-      dehydrator[key] = chai.spy fn value
+    for key in Object.getOwnPropertyNames options
+      dehydrator[key] = chai.spy fn options[key]
 
     dehydrator
 
@@ -141,6 +141,17 @@ describe 'OVirtResponseHydrator', ->
         hydrator.hydrateCollections 'xpath'
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.once
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.with 'xpath'
+
+      it "should loop over related search options if existed and setup " +
+      "corresponding collections", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _getCollectionsAtXPath: 'collections'
+          _getSearchOptionsAtXPath: 'searchOptions'
+          _makeCollectionsSearchable: undefined
+        hydrator.hydrateCollections 'xpath'
+        expect(hydrator._makeCollectionsSearchable).to.be.called.once
+        expect(hydrator._makeCollectionsSearchable)
+          .to.be.called.with 'collections', 'searchOptions'
 
 
     describe "#hydrateCollectionLink", ->
@@ -542,7 +553,7 @@ describe 'OVirtResponseHydrator', ->
         .to.be.undefined
 
   
-  describe "#_makeCollectionsSearchabe", ->
+  describe "#_makeCollectionsSearchable", ->
     hydrator = do getHydrator.withSpies
 
     it "should pass searchabilities to exact collections", ->
@@ -554,7 +565,7 @@ describe 'OVirtResponseHydrator', ->
         spam: href: 'Spam?search='
         ham: href: 'Spam;from{ham_id}?search='
 
-      hydrator._makeCollectionsSearchabe collections, searches
+      hydrator._makeCollectionsSearchable collections, searches
 
       expect(collections.eggs).to.have.not.property 'searchOptions'
       expect(collections.spam).to.have.property('searchOptions')
