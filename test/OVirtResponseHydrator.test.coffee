@@ -186,6 +186,14 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._addSpecialObjects)
           .to.be.called.with 'collections', 'specialObjects'
 
+      it "should clean the applied special objects namespace", ->
+        hydrator = do getCollectionsHydrator
+        hydrator._collections['xpath/special_objects/link'] =
+          specialObjects: "specialObjects"
+        hydrator.hydrateCollections 'xpath'
+        expect(hydrator._collections['xpath/special_objects/link'])
+          .to.have.not.property 'specialObjects'
+
 
     describe "#hydrateCollectionLink", ->
 

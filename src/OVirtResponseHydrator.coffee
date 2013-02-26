@@ -74,7 +74,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Save a link to special object in `_collections` with `rel` base as a
 #       key and `<xpath>.specialObjects.<collection rel>` as a namespace.
 #     + Set node to undefined.
-# - Setup collections
+# + Setup collections
 #     + Detect that a set of the links are added to current node.
 #     + Resolve collections namespace adding '/link' to current xpath.
 #     + Retrieve search options for current xpath adding '/link' to it.
@@ -85,7 +85,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #       current xpath.
 #     + Loop over related special objects adding them to corresponding
 #       collections.
-#     - Clean the applied `specialObjects` namespace.
+#     + Clean the applied `specialObjects` namespace.
 # - Export collections (right after collections setup)
 #     - If `link` is array then remove undefined values from it.
 #     - Delete link if it is an epty array or is undefined.
@@ -305,6 +305,7 @@ class OVirtResponseHydrator
     try delete @_collections["#{xpath}/#{@LINK_PROPERTY}"].searchOptions
 
     @_addSpecialObjects collections, specialObjects
+    try delete @_collections["#{xpath}/#{@SPECIAL_OBJECTS}/#{@LINK_PROPERTY}"].specialObjects
 
   #
   # Registers subject in proper namespace.
