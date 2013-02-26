@@ -129,6 +129,14 @@ describe 'OVirtResponseHydrator', ->
 
 
     describe "#hydrateCollections", ->
+      # Related mock
+      getCollectionsHydrator = (options) ->
+        defaults =
+          _getCollectionsAtXPath: 'collections'
+          _getSearchOptionsAtXPath: 'searchOptions'
+          _makeCollectionsSearchable: undefined
+
+        getHydrator.withSpies.andStubs _.defaults defaults, options
 
       it "should retrieve collections related to xpath", ->
         hydrator = do getHydrator.withSpies
@@ -144,14 +152,18 @@ describe 'OVirtResponseHydrator', ->
 
       it "should loop over related search options if existed and setup " +
       "corresponding collections", ->
-        hydrator = getHydrator.withSpies.andStubs
-          _getCollectionsAtXPath: 'collections'
-          _getSearchOptionsAtXPath: 'searchOptions'
-          _makeCollectionsSearchable: undefined
+        hydrator = do getCollectionsHydrator
         hydrator.hydrateCollections 'xpath'
         expect(hydrator._makeCollectionsSearchable).to.be.called.once
         expect(hydrator._makeCollectionsSearchable)
           .to.be.called.with 'collections', 'searchOptions'
+
+      it "should clean the applied search options namespace", ->
+        hydrator = do getCollectionsHydrator
+        hydrator._collections['xpath/link'] = searchOptions: "options"
+        hydrator.hydrateCollections 'xpath'
+        expect(hydrator._collections['xpath/link'])
+          .to.have.not.property 'searchOptions'
 
 
     describe "#hydrateCollectionLink", ->

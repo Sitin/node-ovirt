@@ -80,7 +80,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Retrieve search options for current xpath adding '/link' to it.
 #     + Loop over related search options if existed and setup corresponding
 #       collections.
-#     - Clean the applied `searchOptions` namespace.
+#     + Clean the applied `searchOptions` namespace.
 #     - Resolve special objects namespace adding 'special_object/link' to
 #       current xpath.
 #     - Loop over related special objects adding them to corresponding
@@ -301,6 +301,7 @@ class OVirtResponseHydrator
     searchOptions = @_getSearchOptionsAtXPath xpath
 
     @_makeCollectionsSearchable collections, searchOptions
+    try delete @_collections["#{xpath}/#{@LINK_PROPERTY}"].searchOptions
 
   #
   # Registers subject in proper namespace.
@@ -480,8 +481,7 @@ class OVirtResponseHydrator
     xpath += "/#{@LINK_PROPERTY}"
     collections = undefined
 
-    try
-      collections = @_collections[xpath].instances
+    try collections = @_collections[xpath].instances
 
     collections
 
@@ -498,8 +498,7 @@ class OVirtResponseHydrator
     xpath += "/#{@LINK_PROPERTY}"
     searchOptions = undefined
 
-    try
-      searchOptions = @_collections[xpath].searchOptions
+    try searchOptions = @_collections[xpath].searchOptions
 
     searchOptions
 
