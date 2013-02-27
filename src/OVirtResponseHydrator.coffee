@@ -119,7 +119,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # - Detect resources.
 # - Delegate resource hydration to other hydrator instance.
-# - Save results in resources property.
+# - Replace node value with hydrated resource.
 #
 # ### Hydrate actions
 #
