@@ -238,14 +238,6 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._addSpecialObjects)
           .to.be.called.with 'collections', 'specialObjects'
 
-      it "should clean the applied special objects namespace", ->
-        hydrator = do getCollectionsHydrator
-        hydrator._collections['xpath/special_objects/link'] =
-          specialObjects: "specialObjects"
-        hydrator.hydrateCollections 'xpath', {}
-        expect(hydrator._collections['xpath/special_objects/link'])
-          .to.have.not.property 'specialObjects'
-
       it "should compact or remove link property", ->
         hydrator = do getCollectionsHydrator
         hydrator.hydrateCollections 'xpath', {}
@@ -277,9 +269,9 @@ describe 'OVirtResponseHydrator', ->
 
       it "should delete related namespace from collection instances", ->
         hydrator = do getCollectionsHydrator
-        hydrator._collections['xpath/link'] = 'collections stuff'
+        hydrator._collections["xpath"] = 'collections stuff'
         hydrator.hydrateCollections 'xpath', {}
-        expect(hydrator._collections).to.have.not.property 'xpath/link'
+        expect(hydrator._collections).to.have.not.property 'xpath'
 
 
     describe "#exportCollections", ->
@@ -335,15 +327,15 @@ describe 'OVirtResponseHydrator', ->
       it "should return collection object", ->
         hydrator = do getHydrator.withSpies
         result =
-          hydrator.hydrateCollectionLink '/api/link', testCollection.link
+          hydrator.hydrateCollectionLink "/api/#{LINK}", testCollection.link
         expect(result).to.be.instanceOf OVirtCollection
 
       it "should register created collection", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateCollectionLink '/api/link', testCollection.link
+        hydrator.hydrateCollectionLink "/api/#{LINK}", testCollection.link
 
         expect(hydrator.registerIn).to.have.been.called.once
-        expect(hydrator._collections['/api/link'].instances)
+        expect(hydrator._collections['/api'].instances)
           .to.have.property(testCollection.name)
           .to.be.instanceOf OVirtCollection
 
@@ -353,15 +345,15 @@ describe 'OVirtResponseHydrator', ->
       it "should return search options", ->
         hydrator = do getHydrator.withSpies
         result =
-          hydrator.hydrateSearchOption '/api/link', testCollection.search
+          hydrator.hydrateSearchOption "/api/#{LINK}", testCollection.search
         expect(result).to.be.equal testCollection.searchOptions
 
       it "should register search options", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateSearchOption '/api/link', testCollection.search
+        hydrator.hydrateSearchOption "/api/#{LINK}", testCollection.search
 
         expect(hydrator.registerIn).to.have.been.called.once
-        expect(hydrator._collections['/api/link'].searchOptions)
+        expect(hydrator._collections['/api'].searchOptions)
           .to.have.property testCollection.name, testCollection.searchOptions
 
 
@@ -377,10 +369,10 @@ describe 'OVirtResponseHydrator', ->
       it "should register special object instance to corresponding " +
       "collection", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateSpecialObject 'xpath', specialObject
+        hydrator.hydrateSpecialObject "/xpath/#{SPECIAL}/#{LINK}", specialObject
 
         expect(hydrator.registerIn).to.have.been.called.once
-        expect(hydrator._collections['xpath'].specialObjects)
+        expect(hydrator._collections['/xpath'].specialObjects)
           .to.have.property(testCollection.name)
           .to.have.property("blank")
           .to.be.instanceOf OVirtResource
@@ -743,7 +735,7 @@ describe 'OVirtResponseHydrator', ->
     
     it "should return collections for given xpath", ->
       hydrator = do getHydrator
-      hydrator._collections["/path/to/#{LINK}"] = instances: 'collections'
+      hydrator._collections["/path/to"] = instances: 'collections'
       expect(hydrator._getCollectionsAtXPath '/path/to')
         .to.be.equal 'collections'
     
@@ -757,7 +749,7 @@ describe 'OVirtResponseHydrator', ->
 
     it "should return search options for given xpath", ->
       hydrator = do getHydrator
-      hydrator._collections["/path/to/#{LINK}"] = searchOptions: 'options'
+      hydrator._collections["/path/to"] = searchOptions: 'options'
       expect(hydrator._getSearchOptionsAtXPath '/path/to')
         .to.be.equal 'options'
 
@@ -771,7 +763,7 @@ describe 'OVirtResponseHydrator', ->
 
     it "should return special objects for given xpath", ->
       hydrator = do getHydrator
-      hydrator._collections["/path/to/#{SPECIAL}/#{LINK}"] = specialObjects: 'special objects'
+      hydrator._collections["/path/to"] = specialObjects: 'special objects'
       expect(hydrator._getSpecialObjectsAtXPath '/path/to')
         .to.be.equal 'special objects'
 
@@ -879,19 +871,19 @@ describe 'OVirtResponseHydrator', ->
       hydrator = do getHydrator
       node = link: [1, 2, 3, undefined, 4]
       hydrator._cleanUpLinks node
-      expect(node).to.have.property('link').that.deep.equals node.link
+      expect(node).to.have.property("#{LINK}").that.deep.equals node.link
 
     it "should remove empty link array", ->
       hydrator = do getHydrator
       node = link: []
       hydrator._cleanUpLinks node
-      expect(node).to.have.not.property 'link'
+      expect(node).to.have.not.property "#{LINK}"
 
     it "should remove link array that have only undefined values", ->
       hydrator = do getHydrator
       node = link: [undefined, undefined]
       hydrator._cleanUpLinks node
-      expect(node).to.have.not.property 'link'
+      expect(node).to.have.not.property "#{LINK}"
 
 
   describe "#_cleanUpSpecialObjects", ->
@@ -1044,18 +1036,4 @@ describe 'OVirtResponseHydrator', ->
     it.skip "should treat attributes as a properties", ->
 
     it.skip "should keep passed parameter untoched", ->
-
-
-  describe "#_getSearchOptionCollectionName", ->
-
-    it "should extract first element of the collection search link 'rel'", ->
-      hydrator = do getHydrator.withSpies
-      expect(hydrator._getSearchOptionCollectionName "api/search")
-        .to.be.equal "api"
-
-    it "should return udefined for non searchable paths", ->
-      hydrator = do getHydrator.withSpies
-      expect(hydrator._getSearchOptionCollectionName "api/").to.be.undefined
-      expect(hydrator._getSearchOptionCollectionName "api").to.be.undefined
-      expect(hydrator._getSearchOptionCollectionName "").to.be.undefined
 

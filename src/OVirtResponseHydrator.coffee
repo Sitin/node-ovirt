@@ -60,20 +60,21 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Detect whether specified node is a collection links.
 #     + Instantiate collection objects.
 #     + Save link to collection object in `_collections` property with `rel` as
-#       a key in `<xpath>.instance` namespace.
+#       a key in `<parent element xpath>.instance` namespace.
 #     + Set node value to undefined.
 # + Search options
 #     + Detect search option.
 #     + Detect corresponding collection `rel`.
 #     + Save search options in `_collections` with `rel` base as a key and
-#       `<xpath>.searchOptions` as a namespace.
+#       `<parent element xpath>.searchOptions` as a namespace.
 #     + Set node to undefined.
 # + Special objects
 #     + Detect special object.
 #     + Detect special object related collection `rel`.
 #     + Detect special object name.
 #     + Save a link to special object in `_collections` with `rel` base as a
-#       key and `<xpath>.specialObjects.<collection rel>` as a namespace.
+#       key and `<xpath to owner node>.specialObjects.<collection rel>` as a
+#       namespace.
 #     + Set node to undefined.
 # + Setup collections
 #     + Detect that a set of the links are added to current node.
@@ -265,7 +266,10 @@ class OVirtResponseHydrator
   hydrateCollectionLink: (xpath, node) ->
     attributes = @_getAttributes node
     collection = new OVirtCollection attributes
-    @registerIn @_collections, xpath, 'instances', attributes.rel, collection
+    parentXpath = path.dirname xpath
+    @registerIn @_collections,
+      parentXpath, 'instances', attributes.rel,
+      collection
 
     collection
 
@@ -279,8 +283,11 @@ class OVirtResponseHydrator
   #
   hydrateSearchOption: (xpath, node) ->
     searchOptions = @_getAttributes node
-    name = @_getSearchOptionCollectionName searchOptions.rel
-    @registerIn @_collections, xpath, 'searchOptions', name, searchOptions
+    name = path.dirname searchOptions.rel
+    parentXpath = path.dirname xpath
+    @registerIn @_collections,
+      parentXpath, 'searchOptions', name,
+      searchOptions
 
     searchOptions
 
@@ -297,8 +304,9 @@ class OVirtResponseHydrator
     specialObject = new OVirtResource
     collection = path.dirname attributes.rel
     name = path.basename attributes.rel
+    ownerXpath = path.dirname path.dirname xpath
     @registerIn @_collections,
-      xpath, 'specialObjects', collection, name,
+      ownerXpath, 'specialObjects', collection, name,
       specialObject
 
     specialObject
@@ -336,11 +344,9 @@ class OVirtResponseHydrator
     specialObjects = @_getSpecialObjectsAtXPath xpath
 
     @_makeCollectionsSearchable collections, searchOptions
+    @_cleanUpLinks node
 
     @_addSpecialObjects collections, specialObjects
-    try delete @_collections["#{xpath}/#{@SPECIAL_OBJECTS}/#{@LINK_PROPERTY}"].specialObjects
-
-    @_cleanUpLinks node
     @_cleanUpSpecialObjects node
 
     if @_isRootElememntXPath xpath
@@ -348,12 +354,12 @@ class OVirtResponseHydrator
     else
       @populateOVirtNodeLinks collections, node
 
-    try delete @_collections["#{xpath}/#{@LINK_PROPERTY}"]
+    try delete @_collections["#{xpath}"]
 
     node
 
   #
-  # Removes empty values from links array and removes it became empty.
+  # Removes empty values from links array and removes if it became empty.
   #
   # @param node [Object] node to clean up
   #
@@ -584,9 +590,7 @@ class OVirtResponseHydrator
   # @private
   #
   _getCollectionsAtXPath: (xpath) ->
-    xpath += "/#{@LINK_PROPERTY}"
     collections = undefined
-
     try collections = @_collections[xpath].instances
 
     collections
@@ -601,9 +605,7 @@ class OVirtResponseHydrator
   # @private
   #
   _getSearchOptionsAtXPath: (xpath) ->
-    xpath += "/#{@LINK_PROPERTY}"
     searchOptions = undefined
-
     try searchOptions = @_collections[xpath].searchOptions
 
     searchOptions
@@ -618,9 +620,7 @@ class OVirtResponseHydrator
   # @private
   #
   _getSpecialObjectsAtXPath: (xpath) ->
-    xpath += "/#{@SPECIAL_OBJECTS}/#{@LINK_PROPERTY}"
     specialObjects = undefined
-
     try specialObjects = @_collections[xpath].specialObjects
 
     specialObjects
@@ -647,19 +647,6 @@ class OVirtResponseHydrator
   #
   getSearchHrefBase: (href) ->
     matches = href.match /^([\w\/;{}=]+\?search=)/
-    matches[1] if _.isArray(matches) and matches.length is 2
-
-  #
-  # Extracts first element of the collection search link `rel` atribute.
-  #
-  # @param rel [String] `rel` attribute of the collection search link
-  #
-  # @return [String]
-  #
-  # @private
-  #
-  _getSearchOptionCollectionName: (rel) ->
-    matches = rel.match /^(\w+)\/search$/
     matches[1] if _.isArray(matches) and matches.length is 2
 
   #
