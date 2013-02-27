@@ -117,9 +117,9 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate resources
 #
-# - Detect resources.
+# + Detect resources.
 # - Delegate resource hydration to other hydrator instance.
-# - Replace node value with hydrated resource.
+# + Replace node value with hydrated resource.
 #
 # ### Hydrate actions
 #
@@ -255,6 +255,8 @@ class OVirtResponseHydrator
     else if @isResourceLink newValue
       @hydrateResourceLink xpath, newValue
       undefined
+    else if @isResource newValue
+      @hydrateResource xpath, newValue
     else
       newValue
 
@@ -332,6 +334,17 @@ class OVirtResponseHydrator
     @registerIn @_resourceLinks, parentXpath, name, resourceLink
 
     resourceLink
+
+  #
+  # Hydrates a resource.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  #
+  # @return [OVirtResource] hydrated resource
+  #
+  hydrateResource: (xpath, node) ->
+    new OVirtResource
 
   #
   # Hydrates resource links.

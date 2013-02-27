@@ -71,7 +71,7 @@ describe 'OVirtResponseHydrator', ->
     searchOptions: apiHash.api.link[15].$
     specialObject: specialObjects[0]
 
-  resourceLinkName = 'cluster'
+  resource = vmHash.vm
   resourceLink = vmHash.vm.cluster
 
   it "should be a function", ->
@@ -201,6 +201,20 @@ describe 'OVirtResponseHydrator', ->
           isSpecialObject: yes, hydrateSpecialObject: 'defined'
         expect(hydrator.isResourceLink).to.have.not.been.called
 
+      it "should call #hydrateResource if node is a resource", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isResource: yes, hydrateResource: 'hydrated resource'
+
+        hydrator.hydrateNode 'xpath', 'old', 'value'
+
+        expect(hydrator.isResource).to.be.called.once
+        expect(hydrator.isResource).to.be.called.with 'value'
+        expect(hydrator.hydrateResource).to.be.called.once
+        expect(hydrator.hydrateResource).to.be.called.with 'xpath', 'value'
+
+        it "should return hydrated value for resources", ->
+          expect(hydrator.hydrateNode 'xpath', 'old', 'value')
+            .to.be.equal 'hydrated resource'
 
     describe "#hydrateCollections", ->
       # Related mock
@@ -419,6 +433,15 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._resourceLinks['/xpath'])
           .to.have.property('name')
           .to.be.instanceOf OVirtResource
+
+
+    describe "#hydrateResource", ->
+
+      it "should return a resource object", ->
+        hydrator = do getHydrator
+        result =
+          hydrator.hydrateResource '/api/name', resource
+        expect(result).to.be.instanceOf OVirtResource
 
 
     describe "#hydrateCollectionLink", ->
