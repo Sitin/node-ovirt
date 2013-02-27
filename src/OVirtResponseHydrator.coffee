@@ -106,11 +106,14 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Save the node instance in `_resources` property with `xpath` base as a
 #       namespace and element name as a key.
 #     + Set resource link node value to undefined.
-# - Resource link export
+# + Resource link export
 #     + Detect that current node has a resource links.
-#     - I current node is a root one then export corresponding `_resourceLinks`
-#       namespace to target.
-#     - Otherwise populate the namespace over the node.
+#     + Retrive resource links related to `xpath`.
+#     - Remove resource link child elements from target node.
+#     + If current node is a root one then export corresponding
+#       `_resourceLinks` namespace to target.
+#     + Otherwise populate the namespace over the node.
+#     + Remove related namespace from `_resourceLinks` property.
 #
 # ### Hydrate resources
 #
@@ -237,6 +240,9 @@ class OVirtResponseHydrator
     if @isCollectionsOwner xpath
       newValue = @hydrateCollections xpath, newValue
 
+    if @isResourcesLinksOwner xpath
+      newValue = @hydrateResourceLinks xpath, newValue
+
     if @isCollectionLink newValue
       @hydrateCollectionLink xpath, newValue
       undefined
@@ -328,6 +334,30 @@ class OVirtResponseHydrator
     resourceLink
 
   #
+  # Hydrates resource links.
+  #
+  # Loops over resource links assigned to xpath and exports them to the node or
+  # hydrator target if this is a root node.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  #
+  # @return [Object] hydrated node
+  #
+  hydrateResourceLinks: (xpath, node) ->
+    resourceLinks = @_getResourceLinksAtXPath xpath
+    @_removeChildElements node, resourceLinks
+
+    if @_isRootElememntXPath xpath
+      @exportResourceLinks resourceLinks
+    else
+      @populateOVirtNodeLinks resourceLinks, node
+
+    try delete @_resourceLinks["#{xpath}"]
+
+    node
+
+  #
   # Hydrates collections.
   #
   # Loops over collections instances assigned to xpath and setup them with
@@ -381,6 +411,28 @@ class OVirtResponseHydrator
     delete node[@SPECIAL_OBJECTS]
 
   #
+  # Removes specified child elements from the node.
+  #
+  # If object specified as a firs parameter its own property names will be
+  # considered as a keys.
+  #
+  # @param node [Object] node to clean up
+  # @param keys [Array, Object] keys to remove
+  #
+  # @return [Object] subject node
+  #
+  # @private
+  #
+  _removeChildElements: (node, keys) ->
+    unless _.isArray keys
+      keys = Object.getOwnPropertyNames keys
+
+    for key in keys
+      try delete node[key]
+
+    node
+
+  #
   # Registers subject in proper namespace.
   #
   # @overload registerIn(nsPath..., subject)
@@ -422,6 +474,14 @@ class OVirtResponseHydrator
   #
   exportCollections: (collections) ->
     @target.collections = collections
+
+  #
+  # Exports resource links to target API node
+  #
+  # @param resourceLinks [Object] resource links to export
+  #
+  exportResourceLinks: (resourceLinks) ->
+    @target.resourceLinks = resourceLinks
 
   #
   # Populates nodes over target as a lazy loading properties.

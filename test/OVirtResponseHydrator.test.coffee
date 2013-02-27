@@ -169,6 +169,17 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.hydrateCollections).to.be.called.once
         expect(hydrator.hydrateCollections).to.be.called.with 'xpath', 'value'
 
+      it "should call #hydrateResourceLinks for resource links owners", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isResourcesLinksOwner: yes, hydrateResourceLinks: undefined
+
+        hydrator.hydrateNode 'xpath', 'old', 'value'
+
+        expect(hydrator.isResourcesLinksOwner).to.be.called.once
+        expect(hydrator.isResourcesLinksOwner).to.be.called.with 'xpath'
+        expect(hydrator.hydrateResourceLinks).to.be.called.once
+        expect(hydrator.hydrateResourceLinks).to.be.called.with 'xpath', 'value'
+
       it "should call #hydrateResourceLink if node is a resource link", ->
         hydrator = getHydrator.withSpies.andStubs
           isResourceLink: yes, hydrateResourceLink: 'defined'
@@ -263,15 +274,21 @@ describe 'OVirtResponseHydrator', ->
       it.skip "should populate collections for not root node", ->
         hydrator = getCollectionsHydrator _isRootElememntXPath: no
         hydrator._collections = xpath: instances: 'collections'
-        hydrator.hydrateCollections 'xpath', {}
+        hydrator.hydrateCollections 'xpath', node = {}
         expect(hydrator.populateOVirtNodeLinks).to.be.called.once
-        expect(hydrator.populateOVirtNodeLinks).to.be.called.with 'collections'
+        expect(hydrator.populateOVirtNodeLinks)
+          .to.be.called.with 'collections', node
 
       it "should delete related namespace from collection instances", ->
         hydrator = do getCollectionsHydrator
         hydrator._collections["xpath"] = 'collections stuff'
         hydrator.hydrateCollections 'xpath', {}
         expect(hydrator._collections).to.have.not.property 'xpath'
+
+      it "should return hydrated node", ->
+        hydrator = do getCollectionsHydrator
+        result = hydrator.hydrateCollections 'xpath', node = {}
+        expect(result).to.be.equal node
 
 
     describe "#exportCollections", ->
@@ -280,6 +297,88 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator
         hydrator.exportCollections 'collections'
         expect(hydrator.target).to.have.property 'collections', 'collections'
+
+
+    describe "#hydrateResourceLinks", ->
+      # Related mock
+      getResourceLinksHydrator = (options) ->
+        defaults =
+          _getResourceLinksAtXPath: 'resourceLinks'
+          _removeChildElements: undefined
+          populateOVirtNodeLinks: undefined
+
+        getHydrator.withSpies.andStubs _.defaults defaults, options
+
+      it "should retrive resource links related to xpath", ->
+        hydrator = do getResourceLinksHydrator
+        hydrator.hydrateResourceLinks 'xpath', {}
+        expect(hydrator._getResourceLinksAtXPath).to.be.called.once
+        expect(hydrator._getResourceLinksAtXPath).to.be.called.with 'xpath'
+
+      it "should check whether this is a root node", ->
+        hydrator = do getResourceLinksHydrator
+        hydrator.hydrateResourceLinks 'xpath', {}
+        expect(hydrator._isRootElememntXPath).to.have.been.called.once
+
+      it "should remove resource link child elements from the subject node", ->
+        node = {}
+        hydrator = getResourceLinksHydrator
+          _removeChildElements: (subject, keys) ->
+            expect(subject).to.be.equal node
+            expect(keys).to.be.equal "resourceLinks"
+
+        hydrator.hydrateResourceLinks 'xpath', node
+        expect(hydrator._removeChildElements).to.be.called.once
+
+      it "should remove resource links from node before export/population", ->
+        hydrator = getResourceLinksHydrator
+          _removeChildElements: (subject, keys) ->
+            expect(hydrator.exportResourceLinks).to.have.not.been.called
+            expect(hydrator.populateOVirtNodeLinks).to.have.not.been.called
+
+        hydrator._isRootElememntXPath = -> no
+        hydrator.hydrateResourceLinks 'xpath', {}
+        hydrator._isRootElememntXPath = -> yes
+        hydrator.hydrateResourceLinks 'xpath', {}
+
+        expect(hydrator._removeChildElements).to.have.been.called.twice
+
+      it "should export resource links if this is a root node", ->
+        hydrator = getResourceLinksHydrator
+          _isRootElememntXPath: yes
+        hydrator.hydrateResourceLinks 'xpath', {}
+        hydrator._resourceLinks = xpath: 'resourceLinks'
+        expect(hydrator.exportResourceLinks).to.have.been.called.once
+        expect(hydrator.exportResourceLinks)
+          .to.be.called.with 'resourceLinks'
+
+      it "should populate resource links ower not root owners", ->
+        hydrator = getResourceLinksHydrator
+          _isRootElememntXPath: no
+        hydrator.hydrateResourceLinks 'xpath', node = {}
+        hydrator._resourceLinks = xpath: 'resourceLinks'
+        expect(hydrator.populateOVirtNodeLinks).to.have.been.called.once
+        expect(hydrator.populateOVirtNodeLinks)
+          .to.be.called.with 'resourceLinks', node
+
+      it "should delete related namespace from resource links", ->
+        hydrator = do getResourceLinksHydrator
+        hydrator._resourceLinks["xpath"] = 'resource links stuff'
+        hydrator.hydrateResourceLinks 'xpath', {}
+        expect(hydrator._resourceLinks).to.have.not.property 'xpath'
+
+      it "should return hydrated node", ->
+        hydrator = do getResourceLinksHydrator
+        result = hydrator.hydrateResourceLinks 'xpath', node = {}
+        expect(result).to.be.equal node
+
+
+    describe "#exportResourceLinks", ->
+
+      it "should assign resources to target's 'resourceLinks' property", ->
+        hydrator = do getHydrator
+        hydrator.exportResourceLinks 'resourceLinks'
+        expect(hydrator.target).to.have.property 'resourceLinks', 'resourceLinks'
 
 
     describe "#populateOVirtNodeLinks", ->
@@ -919,6 +1018,30 @@ describe 'OVirtResponseHydrator', ->
       node[SPECIAL] = {}
       hydrator._cleanUpSpecialObjects node
       expect(node).to.have.not.property SPECIAL
+
+
+  describe "#_removeChildElements", ->
+
+    it "should remove all specified keys from object", ->
+      hydrator = do getHydrator
+      node = spam: 'SPAM', eggs: 'EGGS', ham: 'SPAM'
+      keys = ['spam', 'eggs']
+      hydrator._removeChildElements node, keys
+      expect(node).to.be.deep.equal ham: 'SPAM'
+
+    it "should treat own property names as a keys if keys is a hash", ->
+      hydrator = do getHydrator
+      node = spam: 'SPAM', eggs: 'EGGS', ham: 'SPAM'
+      keys = spam: '', eggs: ''
+      keys.prototype = ham: ''
+      hydrator._removeChildElements node, keys
+      expect(node).to.be.deep.equal ham: 'SPAM'
+
+    it "should return subject node", ->
+      hydrator = do getHydrator
+      node = {}
+      expect(hydrator._removeChildElements node = {}, [])
+        .to.be.equal node
 
 
   describe "#_getAttributes", ->
