@@ -22,7 +22,7 @@ if not module.parent
     parser = new lib.OVirtResponseParser
       response: loadResponse response
       target: target
-#    parser._parser.options.validator = null
+    parser._parser.options.validator = null
     parser.parseXML (error, result) ->
       console.log error if error
       inspect result
