@@ -54,6 +54,15 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # - Save attributes in corresponding property if existed.
 #
+# ### General tasks
+#
+# - If current node is an owner of collections, resource links or actions
+#   (except the case when the node is a resource)then an API node instance
+#   should be created and set as a current target.
+# - If current node is a root one then current target should be a hydrator
+#   instance target.
+# - We should replace node value with current target (if exists).
+#
 # ### Hydrate collections
 #
 # + Collection links
@@ -87,14 +96,15 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Loop over related special objects adding them to corresponding
 #       collections.
 #     + Clean the applied `specialObjects` namespace.
-# + Export collections (right after collections setup)
+# - Hydrate collections owner (right after collections setup)
 #     + If `link` is array then remove undefined values from it.
 #     + Delete link if it is an epty array or is undefined.
 #     + Remove special objects element from node children.
 #     + Use collection `rel` attribute as a collection name.
 #     + Detect whether current `xpath` points to root node.
 #     + If current node is a root one export collections to target node.
-#     + Otherwise populate collections to node with collection name as a key.
+#     - Otherwise export collections to the current target (should be an API
+#       node instance).
 #     + Clean current namespace of the `_collections` property.
 #
 # ### Hydrate resource links
@@ -106,19 +116,20 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Save the node instance in `_resources` property with `xpath` base as a
 #       namespace and element name as a key.
 #     + Set resource link node value to undefined.
-# + Resource link export
+# - Resource links owner hydration
 #     + Detect that current node has a resource links.
 #     + Retrive resource links related to `xpath`.
 #     + Remove resource link child elements from target node.
 #     + If current node is a root one then export corresponding
 #       `_resourceLinks` namespace to target.
-#     + Otherwise populate the namespace over the node.
+#     - Otherwise export resource links to the current target (should be an API
+#       node instance).
 #     + Remove related namespace from `_resourceLinks` property.
 #
 # ### Hydrate resources
 #
 # + Detect resources.
-# - Delegate resource hydration to other hydrator instance.
+# - Create a resource object and set as a current target.
 # + Replace node value with hydrated resource.
 #
 # ### Hydrate actions
@@ -128,18 +139,11 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate properties
 #
-# - Detect properties
-# - Save them in corresponding property.
-#
-#
-# Export tasks
-# -------------
-#
-# - Export attributes.
-# - Export collections.
-# - Export resources.
-# - Export resource links.
-# - Export properties.
+# - If node has an attributes then they should be merged to node hash.
+# - For API nodes (e.g. when current target existed) attributes should be
+#     - exportet to current target
+#     - and removed from node hash.
+# - If current target is specified then properties should be exported to it.
 #
 #
 # Utility tasks
