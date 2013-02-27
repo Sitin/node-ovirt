@@ -2,6 +2,7 @@
 
 # Tools.
 _ = require 'lodash'
+path = require 'path'
 
 # Dependencies.
 config = require __dirname + '/config'
@@ -99,7 +100,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # - Value hydration
 #     + Detect link to resource.
-#     - Instantiate resource objects in link mode.
+#     + Instantiate resource object.
 #     - Get the element name from `xpath` (the last one).
 #     - Save the node instance in `_resources` property with `xpath` base as a
 #       namespace and element name as a key.
@@ -293,8 +294,8 @@ class OVirtResponseHydrator
   hydrateSpecialObject: (xpath, node) ->
     attributes = @_getAttributes node
     specialObject = new OVirtResource
-    collection = @_getSpecialObjectCollection attributes.rel
-    name = @_getSpecialObjectName attributes.rel
+    collection = path.dirname attributes.rel
+    name = path.basename attributes.rel
     @registerIn @_collections,
       xpath, 'specialObjects', collection, name,
       specialObject
@@ -651,33 +652,6 @@ class OVirtResponseHydrator
   #
   _getSearchOptionCollectionName: (rel) ->
     matches = rel.match /^(\w+)\/search$/
-    matches[1] if _.isArray(matches) and matches.length is 2
-
-  #
-  # Extracts special object collection `rel` from the special object `rel`
-  # attribute.
-  #
-  # @param rel [String] `rel` attribute of the special object link
-  #
-  # @return [String] related collection `rel`
-  #
-  # @private
-  #
-  _getSpecialObjectCollection: (rel) ->
-    matches = rel.match /([\w\/]+)\/\w+$/
-    matches[1] if _.isArray(matches) and matches.length is 2
-
-  #
-  # Extracts special object name from the 'rel' attribute.
-  #
-  # @param rel [String] rel attribute of the special object link
-  #
-  # @return [String]
-  #
-  # @private
-  #
-  _getSpecialObjectName: (rel) ->
-    matches = rel.match /[\w\/]+\/(\w+)$/
     matches[1] if _.isArray(matches) and matches.length is 2
 
   #

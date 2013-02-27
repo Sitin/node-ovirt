@@ -1028,35 +1028,3 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator._getSearchOptionCollectionName "api").to.be.undefined
       expect(hydrator._getSearchOptionCollectionName "").to.be.undefined
 
-
-  describe "#_getSpecialObjectCollection", ->
-
-    it "should extract base path from the special object's 'rel'", ->
-      hydrator = do getHydrator.withSpies
-      expect(hydrator._getSpecialObjectCollection "api/spam").to.be.equal "api"
-      expect(hydrator._getSpecialObjectCollection "if/you/want/ham/say/SPAM")
-        .to.be.equal "if/you/want/ham/say"
-
-    it "should return udefined for other paths", ->
-      hydrator = do getHydrator.withSpies
-      expect(hydrator._getSpecialObjectCollection "api/").to.be.undefined
-      expect(hydrator._getSpecialObjectCollection "api").to.be.undefined
-      expect(hydrator._getSpecialObjectCollection "").to.be.undefined
-
-
-  describe "#_getSpecialObjectName", ->
-
-    it "should extract last element the special object's 'rel'", ->
-      hydrator = do getHydrator.withSpies
-      expect(hydrator._getSpecialObjectName "eggs/spam").to.be.equal "spam"
-      expect(hydrator._getSpecialObjectName "if/you/want/ham/say/SPAM")
-        .to.be.equal "SPAM"
-
-    it "should return udefined for other paths", ->
-      hydrator = do getHydrator.withSpies
-      expect(hydrator._getSpecialObjectName "api/").to.be.undefined
-      expect(hydrator._getSpecialObjectName "api").to.be.undefined
-      expect(hydrator._getSpecialObjectName "").to.be.undefined
-
-
-
