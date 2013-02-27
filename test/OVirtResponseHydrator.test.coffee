@@ -271,7 +271,7 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.exportCollections).to.be.called.once
         expect(hydrator.exportCollections).to.be.called.with 'collections'
 
-      it.skip "should populate collections for not root node", ->
+      it "should populate collections for not root node", ->
         hydrator = getCollectionsHydrator _isRootElememntXPath: no
         hydrator._collections = xpath: instances: 'collections'
         hydrator.hydrateCollections 'xpath', node = {}
@@ -649,7 +649,7 @@ describe 'OVirtResponseHydrator', ->
       attrs = rel: "SPAM"
       hash[ATTRKEY] = attrs
 
-      it.skip "should return true if is link with rel attribute, href " +
+      it "should return true if is link with rel attribute, href " +
       "doesn't point to resource and isn't a search option", ->
         hydrator = getHydrator.withSpies.andStubs
           isLink: yes
@@ -668,7 +668,7 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._getAttributes).to.have.been.called.twice
         expect(hydrator._isResourceHref).to.have.been.called.once
 
-      it.skip "should return false for other cases", ->
+      it "should return false for other cases", ->
         hydrator = getHydrator.withSpies.andStubs
           isLink: yes
           isSearchOption: no
