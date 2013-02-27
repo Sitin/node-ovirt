@@ -18,24 +18,25 @@ if not module.parent
   loadResponse = (name) ->
     fs.readFileSync "#{__dirname}/test/responses/#{name}.xml"
 
-  dumpFileHash = ->
+  dumpFileHash = (response, target) ->
     parser = new lib.OVirtResponseParser
-      response: loadResponse 'api'
-      target: 'api'
+      response: loadResponse response
+      target: target
+    parser._parser.options.validator = null
     parser.parseXML (error, result) ->
       console.log error if error
       inspect result
 
-  dumpHydratedHash = ->
+  dumpHydratedHash = (response, target) ->
     parser = new lib.OVirtResponseParser
-      response: loadResponse 'api'
-      target: 'collection'
+      response: loadResponse response
+      target: target
     parser.parse (error, result) ->
       console.log error if error
       inspect parser._hydrator
       inspect parser.target
 
-  do dumpFileHash
-  do dumpHydratedHash
+  dumpFileHash 'api', 'api'
+#  dumpHydratedHash 'api', 'api'
 else
   module.exports = lib

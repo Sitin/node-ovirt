@@ -57,15 +57,21 @@ describe 'OVirtResponseHydrator', ->
 
     dehydrator
 
+  # Test data.
   apiHash = require './responses/api'
+  vmHash = require './responses/vms.ID'
+
   specialObjects = apiHash.api.special_objects.link
   specialObject = specialObjects[0]
+
   testCollection =
     link: apiHash.api.link[14]
     search: apiHash.api.link[15]
     name: apiHash.api.link[14].$.rel
     searchOptions: apiHash.api.link[15].$
     specialObject: specialObjects[0]
+
+  resourceLink = vmHash.vm.cluster
 
   it "should be a function", ->
     expect(OVirtResponseHydrator).to.be.a 'function'
@@ -144,6 +150,23 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.isCollectionsOwner).to.be.called.with 'xpath'
         expect(hydrator.hydrateCollections).to.be.called.once
         expect(hydrator.hydrateCollections).to.be.called.with 'xpath', 'value'
+
+      it "should call #hydrateResourceLink if node is a resource link", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isResourceLink: yes, hydrateResourceLink: undefined
+
+        expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        # @todo Find the way to test whether node is resource link only once.
+        expect(hydrator.isResourceLink).to.be.called.twice
+        expect(hydrator.isResourceLink).to.be.called.with 'value'
+        expect(hydrator.hydrateResourceLink).to.be.called.once
+        expect(hydrator.hydrateResourceLink).to.be.called.with 'xpath', 'value'
+
+      it "shouldn't test whether node value is a resource link if it is " +
+      "a special object", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isSpecialObject: yes, hydrateSpecialObject: 'defined'
+        expect(hydrator.isResourceLink).to.have.not.been.called
 
 
     describe "#hydrateCollections", ->
@@ -265,6 +288,15 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator
         hydrator.exportProperties 'properties'
         expect(hydrator.target).to.have.property 'properties', 'properties'
+
+
+    describe "#hydrateResourceLink", ->
+
+      it "should return a resource object", ->
+        hydrator = do getHydrator.withSpies
+        result =
+          hydrator.hydrateResourceLink '/api/name', resourceLink
+        expect(result).to.be.instanceOf OVirtResource
 
 
     describe "#hydrateCollectionLink", ->
