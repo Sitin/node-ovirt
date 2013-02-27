@@ -97,9 +97,18 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate resource links
 #
-# - Detect link to resource.
-# - Instantiate resource objects in link mode.
-# - Save results in resource links property.
+# - Value hydration
+#     - Detect link to resource.
+#     - Instantiate resource objects in link mode.
+#     - Get the element name from `xpath` (the last one).
+#     - Save a node name in `_resources` property with `xpath` base as a
+#       namespace and element name as a key.
+#     - Set resource link node value to undefined.
+# - Resource link export
+#     - Detect that current node has a resource links
+#     - I current node is a root one then export corresponding `_resources`
+#       namespace to target.
+#     - Otherwise populate the namespace over the node.
 #
 # ### Hydrate resources
 #
