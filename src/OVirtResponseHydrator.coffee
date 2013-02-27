@@ -98,13 +98,13 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate resource links
 #
-# - Value hydration
+# + Value hydration
 #     + Detect link to resource.
 #     + Instantiate resource object.
-#     - Get the element name from `xpath` (the last one).
-#     - Save the node instance in `_resources` property with `xpath` base as a
+#     + Get the element name from `xpath` (the last one).
+#     + Save the node instance in `_resources` property with `xpath` base as a
 #       namespace and element name as a key.
-#     - Set resource link node value to undefined.
+#     + Set resource link node value to undefined.
 # - Resource link export
 #     - Detect that current node has a resource links
 #     - I current node is a root one then export corresponding `_resources`
@@ -221,6 +221,7 @@ class OVirtResponseHydrator
   #
   constructor: (@target, @hash={}) ->
     @_collections = {}
+    @_resourceLinks = {}
 
   #
   # Hydrates node value if necessary.
@@ -300,8 +301,10 @@ class OVirtResponseHydrator
       xpath, 'specialObjects', collection, name,
       specialObject
 
+    specialObject
+
   #
-  # Hydrates link to resource.
+  # Hydrates a link to resource.
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
@@ -309,7 +312,12 @@ class OVirtResponseHydrator
   # @return [OVirtResource] hydrated resource link
   #
   hydrateResourceLink: (xpath, node) ->
-    new OVirtResource
+    resourceLink = new OVirtResource
+    name = path.basename xpath
+    parentXpath = path.dirname xpath
+    @registerIn @_resourceLinks, parentXpath, name, resourceLink
+
+    resourceLink
 
   #
   # Hydrates collections.

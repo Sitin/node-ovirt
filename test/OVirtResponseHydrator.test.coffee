@@ -71,6 +71,7 @@ describe 'OVirtResponseHydrator', ->
     searchOptions: apiHash.api.link[15].$
     specialObject: specialObjects[0]
 
+  resourceLinkName = 'cluster'
   resourceLink = vmHash.vm.cluster
 
   it "should be a function", ->
@@ -82,28 +83,35 @@ describe 'OVirtResponseHydrator', ->
     it "should accept target and hash as parameters", ->
       hash = api: []
       target = new OVirtApi
-      hydrator = getHydrator.withSpies target, hash
+      hydrator = getHydrator target, hash
       expect(hydrator).to.have.property 'hash', hash
       expect(hydrator).to.have.property 'target'
       expect(hydrator.target).to.be.not.null
+
+    it "should create private instance properties", ->
+      hydrator = do getHydrator
+      expect(hydrator).to.have.property('_collections')
+        .that.deep.equals {}
+      expect(hydrator).to.have.property('_resourceLinks')
+        .that.deep.equals {}
 
   describe "#setTarget", ->
 
     it "should throw an error if target couldn't be converted to " +
     "OVirtApiNode", ->
-      hydrator = do getHydrator.withSpies
+      hydrator = do getHydrator
       expect(-> hydrator.setTarget "something wrong")
         .to.throw TypeError,
           "Hydrator's target should be an OVirtApiNode instance"
 
     it "should try to construct target if function specified", ->
-      hydrator = do getHydrator.withSpies
+      hydrator = do getHydrator
       spy = chai.spy OVirtApiNode
       expect(hydrator.setTarget spy).to.be.an.instanceOf OVirtApiNode
       expect(spy).to.be.called.once
 
     it "should treat string as a target type", ->
-      hydrator = do getHydrator.withSpies
+      hydrator = do getHydrator
       expect(hydrator.setTarget 'api').to.be.instanceOf OVirtApi
 
 
@@ -111,41 +119,51 @@ describe 'OVirtResponseHydrator', ->
 
     describe "#hydrateNode", ->
 
-      it "should call #hydrateCollectionLink and return undefined if node " +
-      "value is a collection link", ->
+      it "should call #hydrateCollectionLink if node is a collection link", ->
         hydrator = getHydrator.withSpies.andStubs
           isCollectionLink: yes, hydrateCollectionLink: 'defined'
 
-        expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        hydrator.hydrateNode 'xpath', 'old', 'value'
+
         expect(hydrator.isCollectionLink).to.be.called.once
         expect(hydrator.isCollectionLink).to.be.called.with 'value'
         expect(hydrator.hydrateCollectionLink).to.be.called.once
 
-      it "should call #hydrateSearchOption and return undefined if node is " +
-      "a search option", ->
+        it "should return undefined for collection links", ->
+          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+
+      it "should call #hydrateSearchOption if node is a search option", ->
         hydrator = getHydrator.withSpies.andStubs
           isSearchOption: yes, hydrateSearchOption: 'defined'
 
-        expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        hydrator.hydrateNode 'xpath', 'old', 'value'
+
         expect(hydrator.isSearchOption).to.be.called.once
         expect(hydrator.isSearchOption).to.be.called.with 'value'
         expect(hydrator.hydrateSearchOption).to.be.called.once
 
-      it "should call #hydrateSpecialObject and return undefined if node is " +
-      "a special object", ->
+        it "should return undefined for search options", ->
+          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+
+      it "should call #hydrateSpecialObject if node is a special object", ->
         hydrator = getHydrator.withSpies.andStubs
           isSpecialObject: yes, hydrateSpecialObject: 'defined'
 
-        expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        hydrator.hydrateNode 'xpath', 'old', 'value'
+
         expect(hydrator.isSpecialObject).to.be.called.once
         expect(hydrator.isSpecialObject).to.be.called.with 'xpath', 'value'
         expect(hydrator.hydrateSpecialObject).to.be.called.once
+
+        it "should return undefined for special objects", ->
+          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
 
       it "should call #hydrateCollections if node is a collection owner", ->
         hydrator = getHydrator.withSpies.andStubs
           isCollectionsOwner: yes, hydrateCollections: undefined
 
-        expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        hydrator.hydrateNode 'xpath', 'old', 'value'
+
         expect(hydrator.isCollectionsOwner).to.be.called.once
         expect(hydrator.isCollectionsOwner).to.be.called.with 'xpath'
         expect(hydrator.hydrateCollections).to.be.called.once
@@ -153,14 +171,18 @@ describe 'OVirtResponseHydrator', ->
 
       it "should call #hydrateResourceLink if node is a resource link", ->
         hydrator = getHydrator.withSpies.andStubs
-          isResourceLink: yes, hydrateResourceLink: undefined
+          isResourceLink: yes, hydrateResourceLink: 'defined'
 
-        expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        hydrator.hydrateNode 'xpath', 'old', 'value'
+
         # @todo Find the way to test whether node is resource link only once.
         expect(hydrator.isResourceLink).to.be.called.twice
         expect(hydrator.isResourceLink).to.be.called.with 'value'
         expect(hydrator.hydrateResourceLink).to.be.called.once
         expect(hydrator.hydrateResourceLink).to.be.called.with 'xpath', 'value'
+
+        it "should return undefined for resource links", ->
+          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
 
       it "shouldn't test whether node value is a resource link if it is " +
       "a special object", ->
@@ -293,10 +315,19 @@ describe 'OVirtResponseHydrator', ->
     describe "#hydrateResourceLink", ->
 
       it "should return a resource object", ->
-        hydrator = do getHydrator.withSpies
+        hydrator = do getHydrator
         result =
           hydrator.hydrateResourceLink '/api/name', resourceLink
         expect(result).to.be.instanceOf OVirtResource
+
+      it "should register resource instance to corresponding namespace", ->
+        hydrator = do getHydrator.withSpies
+        hydrator.hydrateResourceLink '/xpath/name', resourceLink
+
+        expect(hydrator.registerIn).to.have.been.called.once
+        expect(hydrator._resourceLinks['/xpath'])
+          .to.have.property('name')
+          .to.be.instanceOf OVirtResource
 
 
     describe "#hydrateCollectionLink", ->
