@@ -109,7 +109,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Resource link export
 #     + Detect that current node has a resource links.
 #     + Retrive resource links related to `xpath`.
-#     - Remove resource link child elements from target node.
+#     + Remove resource link child elements from target node.
 #     + If current node is a root one then export corresponding
 #       `_resourceLinks` namespace to target.
 #     + Otherwise populate the namespace over the node.
