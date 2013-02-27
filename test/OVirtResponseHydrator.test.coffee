@@ -504,10 +504,21 @@ describe 'OVirtResponseHydrator', ->
     describe "#isCollectionsOwner", ->
 
       it "should return true if collections registered to specified xpath", ->
-        hydrator = getHydrator.withSpies.andStubs _getCollectionsAtXPath: name: 'instance'
+        hydrator = getHydrator.withSpies.andStubs
+          _getCollectionsAtXPath: name: 'instance'
         expect(hydrator.isCollectionsOwner 'xpath').to.be.true
         expect(hydrator._getCollectionsAtXPath).to.be.called.once
         expect(hydrator._getCollectionsAtXPath).to.be.called.with 'xpath'
+
+
+    describe "#isResourcesLinksOwner", ->
+
+      it "should return true if resource links registered to xpath", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _getResourceLinksAtXPath: name: 'instance'
+        expect(hydrator.isResourcesLinksOwner 'xpath').to.be.true
+        expect(hydrator._getResourceLinksAtXPath).to.be.called.once
+        expect(hydrator._getResourceLinksAtXPath).to.be.called.with 'xpath'
 
 
     describe "#isLink", ->
@@ -770,6 +781,20 @@ describe 'OVirtResponseHydrator', ->
     it "should return undefined if special objects namespace inaccessible", ->
       hydrator = do getHydrator
       expect(hydrator._getSpecialObjectsAtXPath '/path/to/nowhere')
+        .to.be.undefined
+
+
+  describe "#_getResourceLinksAtXPath", ->
+
+    it "should return resource links for given xpath", ->
+      hydrator = do getHydrator
+      hydrator._resourceLinks["/path/to"] = 'instances'
+      expect(hydrator._getResourceLinksAtXPath '/path/to')
+        .to.be.equal 'instances'
+
+    it "should return undefined if resource links namespace inaccessible", ->
+      hydrator = do getHydrator
+      expect(hydrator._getResourceLinksAtXPath '/path/to/nowhere')
         .to.be.undefined
 
 

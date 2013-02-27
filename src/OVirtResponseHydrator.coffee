@@ -107,8 +107,8 @@ OVirtResource = require __dirname + '/OVirtResource'
 #       namespace and element name as a key.
 #     + Set resource link node value to undefined.
 # - Resource link export
-#     - Detect that current node has a resource links
-#     - I current node is a root one then export corresponding `_resources`
+#     + Detect that current node has a resource links.
+#     - I current node is a root one then export corresponding `_resourceLinks`
 #       namespace to target.
 #     - Otherwise populate the namespace over the node.
 #
@@ -466,6 +466,18 @@ class OVirtResponseHydrator
     Object.getOwnPropertyNames(instances).length > 0
 
   #
+  # Tests whether node under current xpath is a resource links owner.
+  #
+  # @param xpath [String] xpath to node
+  #
+  # @return [Boolean]
+  #
+  isResourcesLinksOwner: (xpath) ->
+    links = @_getResourceLinksAtXPath xpath
+    return no unless _.isObject links
+    Object.getOwnPropertyNames(links).length > 0
+
+  #
   # Tests whether specified subject is a link to collection.
   #
   # @param subject [Object, Array] tested subject
@@ -626,6 +638,21 @@ class OVirtResponseHydrator
     specialObjects
 
   #
+  # Returns resource link objects for specified xpath.
+  #
+  # @param xpath [String]
+  #
+  # @return [Object] resource link objects for xpath
+  #
+  # @private
+  #
+  _getResourceLinksAtXPath: (xpath) ->
+    specialObjects = undefined
+    try specialObjects = @_resourceLinks[xpath]
+
+    specialObjects
+
+  #
   # Tests whether xpath points to root element.
   #
   # @param xpath [String] xpath to test
@@ -636,7 +663,6 @@ class OVirtResponseHydrator
   #
   _isRootElememntXPath: (xpath) ->
     /^\/\w+$/.test xpath
-
 
   #
   # Returns href base for specified search pattern.
