@@ -28,6 +28,7 @@ describe 'OVirtApiNode', ->
   describe ".API_NODE_TYPES", ->
     it "should have links to api, resource and collection constructors", ->
       API_NODE_TYPES = OVirtApiNode.API_NODE_TYPES
+      expect(API_NODE_TYPES).to.have.property 'node', OVirtApiNode
       expect(API_NODE_TYPES).to.have.property 'api', OVirtApi
       expect(API_NODE_TYPES).to.have.property 'collection', OVirtCollection
       expect(API_NODE_TYPES).to.have.property 'resource', OVirtResource

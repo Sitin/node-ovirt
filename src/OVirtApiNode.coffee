@@ -61,5 +61,7 @@ class OVirtApiNode
     @
 
 
+OVirtApiNode.API_NODE_TYPES.node = OVirtApiNode
+
 module.exports = OVirtApiNode
 
