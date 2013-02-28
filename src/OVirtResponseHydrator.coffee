@@ -288,7 +288,7 @@ class OVirtResponseHydrator
   # @return [mixed] hydrated node value
   #
   hydrateNode: (xpath, value) ->
-    if @isCollectionLink value
+    if @isCollectionLink xpath, value
       @hydrateCollectionLink xpath, value
       undefined
     else if @isSearchOption value
@@ -600,11 +600,13 @@ class OVirtResponseHydrator
   #
   # Tests whether specified subject is a link to collection.
   #
-  # @param subject [Object, Array] tested subject
+  # @param xpath [String] xpath to node
+  # @param subject [Object] tested subject
   #
   # @return [Boolean] whether specified subject is a collection hash
   #
-  isCollectionLink: (subject) ->
+  isCollectionLink: (xpath, subject) ->
+    return no if @_isActionXPath xpath
     return no unless @isLink subject
     return no if @isSearchOption subject
     attributes = @_getAttributes subject

@@ -258,7 +258,7 @@ describe 'OVirtResponseHydrator', ->
         result = hydrator.hydrateNode 'xpath', 'value'
 
         expect(hydrator.isCollectionLink).to.be.called.once
-        expect(hydrator.isCollectionLink).to.be.called.with 'value'
+        expect(hydrator.isCollectionLink).to.be.called.with 'xpath', 'value'
         expect(hydrator.hydrateCollectionLink).to.be.called.once
 
         it "should return undefined for collection links", ->
@@ -767,23 +767,28 @@ describe 'OVirtResponseHydrator', ->
       hash[ATTRKEY] = attrs
 
       it "should return true if is link with rel attribute, href " +
-      "doesn't point to resource and isn't a search option", ->
+      "doesn't point to resource and isn't a search option or action", ->
         hydrator = getHydrator.withSpies.andStubs
           isLink: yes
           isSearchOption: no
           _isResourceHref: no
           _getAttributes: rel: '/rel'
-        expect(hydrator.isCollectionLink hash).to.be.true
+          _isActionXPath: no
+        expect(hydrator.isCollectionLink 'xpath', hash).to.be.true
 
       it "should call every helper function to return true", ->
         hydrator = getHydrator.withSpies.andStubs
-          isLink: yes, _isResourceHref: no, _getAttributes: rel: '/rel'
-        hydrator.isCollectionLink hash
+          isLink: yes
+          _isResourceHref: no
+          _getAttributes: rel: '/rel'
+          _isActionXPath: no
+        hydrator.isCollectionLink 'xpath', hash
 
         expect(hydrator.isLink).to.have.been.called.twice
         expect(hydrator.isSearchOption).to.have.been.called.once
         expect(hydrator._getAttributes).to.have.been.called.twice
         expect(hydrator._isResourceHref).to.have.been.called.once
+        expect(hydrator._isActionXPath).to.have.been.called.once
 
       it "should return false for other cases", ->
         hydrator = getHydrator.withSpies.andStubs
@@ -791,25 +796,36 @@ describe 'OVirtResponseHydrator', ->
           isSearchOption: no
           _isResourceHref: no
           _getAttributes: eggs: 'SPAM'
-        expect(hydrator.isResourceLink hash).to.be.false
+          _isActionXPath: no
+        expect(hydrator.isCollectionLink 'xpath', hash).to.be.false
         hydrator = getHydrator.withSpies.andStubs
           isLink: no
           isSearchOption: no
           _isResourceHref: no
           _getAttributes: rel: '/rel'
-        expect(hydrator.isResourceLink hash).to.be.false
+          _isActionXPath: no
+        expect(hydrator.isCollectionLink 'xpath', hash).to.be.false
         hydrator = getHydrator.withSpies.andStubs
           isLink: yes
           isSearchOption: no
           _isResourceHref: yes
           _getAttributes: rel: '/rel'
-        expect(hydrator.isResourceLink hash).to.be.false
+          _isActionXPath: no
+        expect(hydrator.isCollectionLink 'xpath', hash).to.be.false
         hydrator = getHydrator.withSpies.andStubs
           isLink: yes
           isSearchOption: yes
           _isResourceHref: no
           _getAttributes: rel: '/rel'
-        expect(hydrator.isResourceLink hash).to.be.false
+          _isActionXPath: no
+        expect(hydrator.isCollectionLink 'xpath', hash).to.be.false
+        hydrator = getHydrator.withSpies.andStubs
+          isLink: no
+          isSearchOption: no
+          _isResourceHref: no
+          _getAttributes: rel: '/rel'
+          _isActionXPath: yes
+        expect(hydrator.isCollectionLink 'xpath', hash).to.be.false
 
 
     describe "#isSearchOption", ->
