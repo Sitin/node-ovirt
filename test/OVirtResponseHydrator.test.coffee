@@ -117,52 +117,46 @@ describe 'OVirtResponseHydrator', ->
 
   describe "Node hydration", ->
 
-    describe "#hydrateNode", ->
+    describe "#hydrate", ->
 
-      it "should call #hydrateCollectionLink if node is a collection link", ->
+      it "should call #hydrateApiNode when the node represents an API node", ->
         hydrator = getHydrator.withSpies.andStubs
-          isCollectionLink: yes, hydrateCollectionLink: 'defined'
+          isApiNode: yes, hydrateApiNode: 'an API node'
 
-        hydrator.hydrateNode 'xpath', 'old', 'value'
+        result = hydrator.hydrate 'xpath', 'old', 'value'
 
-        expect(hydrator.isCollectionLink).to.be.called.once
-        expect(hydrator.isCollectionLink).to.be.called.with 'value'
-        expect(hydrator.hydrateCollectionLink).to.be.called.once
+        expect(hydrator.isApiNode).to.be.called.once
+        expect(hydrator.isApiNode).to.be.called.with 'xpath', 'value'
+        expect(hydrator.hydrateApiNode).to.be.called.once
+        expect(hydrator.hydrateApiNode)
+          .to.be.called.with 'xpath', 'value'
 
-        it "should return undefined for collection links", ->
-          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        it "should return hydrated API node", ->
+          expect(result).to.be.equal 'an API node'
 
-      it "should call #hydrateSearchOption if node is a search option", ->
+      it "should call #hydrateNode for a plain node", ->
         hydrator = getHydrator.withSpies.andStubs
-          isSearchOption: yes, hydrateSearchOption: 'defined'
+          isApiNode: no, hydrateNode: 'a node'
 
-        hydrator.hydrateNode 'xpath', 'old', 'value'
+        result = hydrator.hydrate 'xpath', 'old', 'value'
 
-        expect(hydrator.isSearchOption).to.be.called.once
-        expect(hydrator.isSearchOption).to.be.called.with 'value'
-        expect(hydrator.hydrateSearchOption).to.be.called.once
+        expect(hydrator.isApiNode).to.be.called.once
+        expect(hydrator.isApiNode).to.be.called.with 'xpath', 'value'
+        expect(hydrator.hydrateNode).to.be.called.once
+        expect(hydrator.hydrateNode)
+          .to.be.called.with 'xpath', 'value'
 
-        it "should return undefined for search options", ->
-          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+        it "should return hydrated API node", ->
+          expect(result).to.be.equal 'an API node'
 
-      it "should call #hydrateSpecialObject if node is a special object", ->
-        hydrator = getHydrator.withSpies.andStubs
-          isSpecialObject: yes, hydrateSpecialObject: 'defined'
 
-        hydrator.hydrateNode 'xpath', 'old', 'value'
-
-        expect(hydrator.isSpecialObject).to.be.called.once
-        expect(hydrator.isSpecialObject).to.be.called.with 'xpath', 'value'
-        expect(hydrator.hydrateSpecialObject).to.be.called.once
-
-        it "should return undefined for special objects", ->
-          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+    describe "#hydrateApiNode", ->
 
       it "should call #hydrateCollections if node is a collection owner", ->
         hydrator = getHydrator.withSpies.andStubs
           isCollectionsOwner: yes, hydrateCollections: undefined
 
-        hydrator.hydrateNode 'xpath', 'old', 'value'
+        hydrator.hydrateApiNode 'xpath', 'value'
 
         expect(hydrator.isCollectionsOwner).to.be.called.once
         expect(hydrator.isCollectionsOwner).to.be.called.with 'xpath'
@@ -173,18 +167,74 @@ describe 'OVirtResponseHydrator', ->
         hydrator = getHydrator.withSpies.andStubs
           isResourcesLinksOwner: yes, hydrateResourceLinks: undefined
 
-        hydrator.hydrateNode 'xpath', 'old', 'value'
+        hydrator.hydrateApiNode 'xpath', 'value'
 
         expect(hydrator.isResourcesLinksOwner).to.be.called.once
         expect(hydrator.isResourcesLinksOwner).to.be.called.with 'xpath'
         expect(hydrator.hydrateResourceLinks).to.be.called.once
         expect(hydrator.hydrateResourceLinks).to.be.called.with 'xpath', 'value'
 
+      it "should call #hydrateResource if node is a resource", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isResource: yes, hydrateResource: 'hydrated resource'
+
+        result = hydrator.hydrateApiNode 'xpath', 'value'
+
+        expect(hydrator.isResource).to.be.called.once
+        expect(hydrator.isResource).to.be.called.with 'value'
+        expect(hydrator.hydrateResource).to.be.called.once
+        expect(hydrator.hydrateResource).to.be.called.with 'xpath', 'value'
+
+        it "should return hydrated value for resources", ->
+          expect(result).to.be.equal 'hydrated resource'
+
+
+    describe "#hydrateNode", ->
+
+      it "should call #hydrateCollectionLink if node is a collection link", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isCollectionLink: yes, hydrateCollectionLink: 'defined'
+
+        result = hydrator.hydrateNode 'xpath', 'value'
+
+        expect(hydrator.isCollectionLink).to.be.called.once
+        expect(hydrator.isCollectionLink).to.be.called.with 'value'
+        expect(hydrator.hydrateCollectionLink).to.be.called.once
+
+        it "should return undefined for collection links", ->
+          expect(result).to.be.undefined
+
+      it "should call #hydrateSearchOption if node is a search option", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isSearchOption: yes, hydrateSearchOption: 'defined'
+
+        result = hydrator.hydrateNode 'xpath', 'value'
+
+        expect(hydrator.isSearchOption).to.be.called.once
+        expect(hydrator.isSearchOption).to.be.called.with 'value'
+        expect(hydrator.hydrateSearchOption).to.be.called.once
+
+        it "should return undefined for search options", ->
+          expect(result).to.be.undefined
+
+      it "should call #hydrateSpecialObject if node is a special object", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isSpecialObject: yes, hydrateSpecialObject: 'defined'
+
+        result = hydrator.hydrateNode 'xpath', 'value'
+
+        expect(hydrator.isSpecialObject).to.be.called.once
+        expect(hydrator.isSpecialObject).to.be.called.with 'xpath', 'value'
+        expect(hydrator.hydrateSpecialObject).to.be.called.once
+
+        it "should return undefined for special objects", ->
+          expect(result).to.be.undefined
+
       it "should call #hydrateResourceLink if node is a resource link", ->
         hydrator = getHydrator.withSpies.andStubs
           isResourceLink: yes, hydrateResourceLink: 'defined'
 
-        hydrator.hydrateNode 'xpath', 'old', 'value'
+        result = hydrator.hydrateNode 'xpath', 'value'
 
         # @todo Find the way to test whether node is resource link only once.
         expect(hydrator.isResourceLink).to.be.called.twice
@@ -193,7 +243,7 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.hydrateResourceLink).to.be.called.with 'xpath', 'value'
 
         it "should return undefined for resource links", ->
-          expect(hydrator.hydrateNode 'xpath', 'old', 'value').to.be.undefined
+          expect(result).to.be.undefined
 
       it "shouldn't test whether node value is a resource link if it is " +
       "a special object", ->
@@ -201,20 +251,6 @@ describe 'OVirtResponseHydrator', ->
           isSpecialObject: yes, hydrateSpecialObject: 'defined'
         expect(hydrator.isResourceLink).to.have.not.been.called
 
-      it "should call #hydrateResource if node is a resource", ->
-        hydrator = getHydrator.withSpies.andStubs
-          isResource: yes, hydrateResource: 'hydrated resource'
-
-        hydrator.hydrateNode 'xpath', 'old', 'value'
-
-        expect(hydrator.isResource).to.be.called.once
-        expect(hydrator.isResource).to.be.called.with 'value'
-        expect(hydrator.hydrateResource).to.be.called.once
-        expect(hydrator.hydrateResource).to.be.called.with 'xpath', 'value'
-
-        it "should return hydrated value for resources", ->
-          expect(hydrator.hydrateNode 'xpath', 'old', 'value')
-            .to.be.equal 'hydrated resource'
 
     describe "#hydrateCollections", ->
       # Related mock
@@ -622,6 +658,33 @@ describe 'OVirtResponseHydrator', ->
 
 
   describe "Detection of different node types", ->
+
+
+    describe "#isApiNode", ->
+
+      it "should return true if subject is a resource", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isResource: yes
+        expect(do hydrator.isApiNode).to.be.true
+
+      it "should return true if subject is a collections owner", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isCollectionsOwner: yes
+        expect(do hydrator.isApiNode).to.be.true
+
+      it "should return true if subject is a resource links owner", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isResourcesLinksOwner: yes
+        expect(do hydrator.isApiNode).to.be.true
+
+      it "should return false in other cases", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isResource: no
+          isCollectionsOwner: no
+          isResourcesLinksOwner: no
+
+        expect(do hydrator.isApiNode).to.be.false
+
 
     describe "#isCollectionsOwner", ->
 

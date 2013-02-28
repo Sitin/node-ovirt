@@ -234,35 +234,63 @@ class OVirtResponseHydrator
   #
   # Hydrates node value if necessary.
   #
+  # This function called by parser every time it processes a node value.
+  #
   # @param xpath [String] node's XPath
   # @param currentValue [undefined, mixed] current value of the node
   # @param newValue [mixed] node value
   #
   # @return [mixed] hydrated node value
   #
-  hydrateNode: (xpath, currentValue, newValue) ->
+  hydrate: (xpath, currentValue, newValue) ->
+    if @isApiNode xpath, newValue
+      @hydrateApiNode xpath, newValue
+    else
+      @hydrateNode xpath, newValue
+
+  #
+  # Hydrates value for an API nodes.
+  #
+  # @param xpath [String] node's XPath
+  # @param value [Object] node value
+  #
+  # @return [OVirtApiNode] hydrated API node
+  #
+  hydrateApiNode: (xpath, value) ->
     if @isCollectionsOwner xpath
-      newValue = @hydrateCollections xpath, newValue
+      value = @hydrateCollections xpath, value
 
     if @isResourcesLinksOwner xpath
-      newValue = @hydrateResourceLinks xpath, newValue
+      value = @hydrateResourceLinks xpath, value
 
-    if @isCollectionLink newValue
-      @hydrateCollectionLink xpath, newValue
+    if @isResource value
+      value = @hydrateResource xpath, value
+
+    value
+
+  #
+  # Hydrates value of the "plain" node if necessary.
+  #
+  # @param xpath [String] node's XPath
+  # @param value [mixed] node value
+  #
+  # @return [mixed] hydrated node value
+  #
+  hydrateNode: (xpath, value) ->
+    if @isCollectionLink value
+      @hydrateCollectionLink xpath, value
       undefined
-    else if @isSearchOption newValue
-      @hydrateSearchOption xpath, newValue
+    else if @isSearchOption value
+      @hydrateSearchOption xpath, value
       undefined
-    else if @isSpecialObject xpath, newValue
-      @hydrateSpecialObject xpath, newValue
+    else if @isSpecialObject xpath, value
+      @hydrateSpecialObject xpath, value
       undefined
-    else if @isResourceLink newValue
-      @hydrateResourceLink xpath, newValue
+    else if @isResourceLink value
+      @hydrateResourceLink xpath, value
       undefined
-    else if @isResource newValue
-      @hydrateResource xpath, newValue
     else
-      newValue
+      value
 
   #
   # Hydrates collection link.
@@ -517,6 +545,19 @@ class OVirtResponseHydrator
   #
   exportProperties: (properties) ->
     @target.properties = properties
+
+  #
+  # Tests whether specified subject is an API node.
+  #
+  # @param xpath [String] subject xpath
+  # @param node [Object] subject xpath
+  #
+  # @return [Boolean] whether specified subject is a link
+  #
+  isApiNode: (xpath, node) ->
+    @isCollectionsOwner(xpath) or
+    @isResourcesLinksOwner(xpath) or
+    @isResource node
 
   #
   # Tests whether specified subject is a link to resource or collection.

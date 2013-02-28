@@ -104,7 +104,7 @@ class OVirtResponseParser
   # @return [mixed] hydrated node value
   #
   hydrateNode: (xpath, currentValue, newValue) ->
-    @_hydrator.hydrateNode xpath, currentValue, newValue
+    @_hydrator.hydrate xpath, currentValue, newValue
 
   #
   # Sets current target.
