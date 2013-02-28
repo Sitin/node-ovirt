@@ -310,6 +310,13 @@ describe 'OVirtResponseHydrator', ->
           isSpecialObject: yes, hydrateSpecialObject: 'defined'
         expect(hydrator.isResourceLink).to.have.not.been.called
 
+      it "should merge attributes with properties for plain nodes", ->
+        hydrator = do getHydrator.withSpies
+        hydrator.hydrateNode 'xpath', node = {}
+        expect(hydrator._mergeAttributes).to.have.been.called.once
+        expect(hydrator._mergeAttributes)
+          .to.have.been.called.with node
+
 
     describe "#hydrateCollections", ->
       # Related mock

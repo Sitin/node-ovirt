@@ -142,7 +142,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate properties of plain nodes
 #
-# - If node has an attributes then they should be merged to node hash.
+# + If node has an attributes then they should be merged to node hash.
 # + For API nodes see "High level objects hydration" section.
 #
 #
@@ -292,6 +292,7 @@ class OVirtResponseHydrator
       @hydrateResourceLink xpath, value
       undefined
     else
+      @_mergeAttributes value
       value
 
   #
