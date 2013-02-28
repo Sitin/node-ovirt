@@ -66,9 +66,9 @@ OVirtResource = require __dirname + '/OVirtResource'
 #       created.
 # - Export attributes from node hash to current target.
 # - Remove attributes from node hash.
-# - Treat remaining node hash as a properties and export them to the current
+# + Treat remaining node hash as a properties and export them to the current
 #   target.
-# - Finally we should replace node value with current target (if exists).
+# + Finally we should replace node value with current target (if exists).
 #
 # ### Hydrate collections
 #
@@ -143,7 +143,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # ### Hydrate properties of plain nodes
 #
 # - If node has an attributes then they should be merged to node hash.
-# - For API nodes see "High level objects hydration" section.
+# + For API nodes see "High level objects hydration" section.
 #
 #
 # Utility tasks
@@ -264,6 +264,8 @@ class OVirtResponseHydrator
 
     if @isResourcesLinksOwner xpath
       value = @hydrateResourceLinks xpath, value, target
+
+    @exportProperties value, target
 
     target
 
@@ -526,12 +528,13 @@ class OVirtResponseHydrator
       target.__defineGetter__ key, nodes[key].initiated
 
   #
-  # Exports properties to target API node
+  # Exports node properties to target API node
   #
-  # @param properties [Object] properties to export
+  # @param properties [Object] resource links to export
+  # @param target [OVirtApiNode] hydration target
   #
-  exportProperties: (properties) ->
-    @target.properties = properties
+  exportProperties: (properties, target) ->
+    target.properties = properties
 
   #
   # Tests whether specified subject is an API node.

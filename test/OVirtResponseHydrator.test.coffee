@@ -187,6 +187,16 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.hydrateResourceLinks).to.be.called.once
         expect(hydrator.hydrateResourceLinks).to.be.called.with 'xpath', 'value'
 
+      it "should export remaining properties to target", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _getTargetForNode: 'current target'
+          exportProperties: (node, target) ->
+            expect(node).to.be.equal 'value'
+            expect(target).to.be.equal 'current target'
+
+        hydrator.hydrateApiNode 'xpath', 'value'
+        expect(hydrator.exportProperties).to.have.been.called.once
+
       it "should return node hydration target", ->
         hydrator = getHydrator.withSpies.andStubs
           _getTargetForNode: 'current target'
@@ -371,6 +381,14 @@ describe 'OVirtResponseHydrator', ->
         expect(target).to.have.property 'collections', 'collections'
 
 
+    describe "#exportProperties", ->
+
+      it "should assign properties to target's 'properties' property", ->
+        hydrator = do getHydrator
+        hydrator.exportProperties 'properties', target = {}
+        expect(target).to.have.property 'properties', 'properties'
+
+
     describe "#hydrateResourceLinks", ->
       # Related mock
       getResourceLinksHydrator = (options) ->
@@ -448,14 +466,6 @@ describe 'OVirtResponseHydrator', ->
         for key of nodes
           expect(target).to.have.property key, nodes[key]
           expect(target.__lookupGetter__ key).to.be.equal nodes[key].initiated
-
-
-    describe "#exportProperties", ->
-
-      it "should assign properties to target's 'properties' property", ->
-        hydrator = do getHydrator
-        hydrator.exportProperties 'properties'
-        expect(hydrator.target).to.have.property 'properties', 'properties'
 
 
     describe "#hydrateResourceLink", ->
