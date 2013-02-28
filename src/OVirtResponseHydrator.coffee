@@ -518,16 +518,6 @@ class OVirtResponseHydrator
     target.resourceLinks = resourceLinks
 
   #
-  # Populates nodes over target as a lazy loading properties.
-  #
-  # @param nodes [Object<OVirtApiNode>] nodes hash to populate
-  # @param target [Object] target object
-  #
-  populateOVirtNodeLinks: (nodes, target) ->
-    for key of nodes
-      target.__defineGetter__ key, nodes[key].initiated
-
-  #
   # Exports node properties to target API node
   #
   # @param properties [Object] resource links to export

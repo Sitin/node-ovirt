@@ -395,7 +395,6 @@ describe 'OVirtResponseHydrator', ->
         defaults =
           _getResourceLinksAtXPath: 'resourceLinks'
           _removeChildElements: undefined
-          populateOVirtNodeLinks: undefined
 
         getHydrator.withSpies.andStubs _.defaults defaults, options
 
@@ -452,20 +451,6 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator
         hydrator.exportResourceLinks 'resourceLinks', target = {}
         expect(target).to.have.property 'resourceLinks', 'resourceLinks'
-
-
-    describe "#populateOVirtNodeLinks", ->
-      # Test data
-      hydrator = do getHydrator
-      nodes = eggs: new OVirtApiNode, spam: new OVirtApiNode
-      target = {}
-      hydrator.populateOVirtNodeLinks nodes, target
-
-      it "should add add getters for all API nodes with a key as a property " +
-      "name", ->
-        for key of nodes
-          expect(target).to.have.property key, nodes[key]
-          expect(target.__lookupGetter__ key).to.be.equal nodes[key].initiated
 
 
     describe "#hydrateResourceLink", ->
