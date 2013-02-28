@@ -24,6 +24,7 @@ describe 'OVirtResponseHydrator', ->
   ATTRKEY = config.parser.attrkey
   SPECIAL = config.api.specialObjects
   LINK = config.api.link
+  ACTION = config.api.action
   
   # Returns response hydrator
   getHydrator = (target, hash) ->
@@ -841,6 +842,40 @@ describe 'OVirtResponseHydrator', ->
       it "should treat leading slash as an error", ->
         hydrator = do getHydrator.withSpies
         expect(hydrator._isSearchOptionRel "api/search/").to.be.false
+
+
+    describe "#isAction", ->
+
+      it "should return true if current xpath points to action link" +
+      "contents and node is a link", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isLink: yes, _isActionXPath: yes
+        expect(do hydrator.isAction).to.be.true
+
+      it "should return false in other cases", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isLink: no, _isActionXPath: yes
+        expect(do hydrator.isAction).to.be.false
+        hydrator = getHydrator.withSpies.andStubs
+          isLink: yes, _isActionXPath: no
+        expect(do hydrator.isAction).to.be.false
+
+
+      describe "#_isActionXPath", ->
+        hydrator = do getHydrator.withSpies
+
+        it "should return true if xpath ends with link prceded by action" +
+        "tag name", ->
+          expect(hydrator._isActionXPath "/api/#{ACTION}/#{LINK}")
+            .to.be.true
+
+        it "should return false in other cases", ->
+          expect(hydrator._isActionXPath "/api/regular/#{LINK}")
+            .to.be.false
+          expect(hydrator._isActionXPath "/api/#{ACTION}/not_a_link")
+            .to.be.false
+          expect(hydrator._isActionXPath "/api/path/to.nowhere")
+            .to.be.false
 
 
     describe "#isSpecialObject", ->

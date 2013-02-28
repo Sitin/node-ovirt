@@ -137,7 +137,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # ### Hydrate actions
 #
 # - Hydrate action value
-#     - Detect action.
+#     + Detect action.
 #     - Instantiate actions object.
 #     - Register action object in `_actions` with an action name as a key and
 #       an owner node xpath as a namespace.
@@ -673,6 +673,18 @@ class OVirtResponseHydrator
     @_isSpecialObjectXPath xpath
 
   #
+  # Tests whether specified node is an action.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node value
+  #
+  # @return [Boolean]
+  #
+  isAction: (xpath, node) ->
+    return no unless @isLink node
+    @_isActionXPath xpath
+
+  #
   # Returns hydration target for specified node.
   #
   # * It returns instance target for the root node.
@@ -703,6 +715,19 @@ class OVirtResponseHydrator
   #
   _isSpecialObjectXPath: (xpath) ->
     regExp = new RegExp "[\\w\\/]+\\/#{@SPECIAL_OBJECTS}\\/#{@LINK_PROPERTY}"
+    regExp.test xpath
+
+  #
+  # Tests whether specified xpath leads to an action.
+  #
+  # @param xpath [String] xpath to node
+  #
+  # @return [Boolean]
+  #
+  # @private
+  #
+  _isActionXPath: (xpath) ->
+    regExp = new RegExp "[\\w\\/]+\\/#{@ACTION_PROPERTY}\\/#{@LINK_PROPERTY}"
     regExp.test xpath
 
   #
