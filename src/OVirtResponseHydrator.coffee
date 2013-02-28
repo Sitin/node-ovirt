@@ -136,16 +136,14 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate actions
 #
-# - Detect actions
-# - Instantiates actions objects
+# - Detect action.
+# - Instantiate an actions object an set as a current hydration target.
+# + Proceed with API node hydration procedure.
 #
-# ### Hydrate properties
+# ### Hydrate properties of plain nodes
 #
 # - If node has an attributes then they should be merged to node hash.
-# - For API nodes (e.g. when current target existed) attributes should be
-#     - exportet to current target
-#     - and removed from node hash.
-# - If current target is specified then properties should be exported to it.
+# - For API nodes see "High level objects hydration" section.
 #
 #
 # Utility tasks
