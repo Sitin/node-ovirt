@@ -52,7 +52,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate top level element attributes
 #
-# - Save attributes in corresponding property if existed.
+# + Save attributes in corresponding property if existed.
 #
 # ### High level objects hydration.
 #
