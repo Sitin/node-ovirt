@@ -2,6 +2,7 @@
 
 
 module.exports =
+  OVirtAction: require __dirname + '/OVirtAction'
   OVirtApi: require __dirname + '/OVirtApi'
   OVirtApiNode: require __dirname + '/OVirtApiNode'
   OVirtApiRequest: require __dirname + '/OVirtApiRequest'

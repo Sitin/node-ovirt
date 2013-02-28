@@ -9,7 +9,7 @@ chai.use spies
 # Utilities:
 _ = require 'lodash'
 
-{OVirtApiNode, OVirtApi, OVirtCollection, OVirtConnection, OVirtResource} = require '../lib/'
+{OVirtAction, OVirtApiNode, OVirtApi, OVirtCollection, OVirtConnection, OVirtResource} = require '../lib/'
 
 
 describe 'OVirtApiNode', ->
@@ -32,6 +32,7 @@ describe 'OVirtApiNode', ->
       expect(API_NODE_TYPES).to.have.property 'api', OVirtApi
       expect(API_NODE_TYPES).to.have.property 'collection', OVirtCollection
       expect(API_NODE_TYPES).to.have.property 'resource', OVirtResource
+      expect(API_NODE_TYPES).to.have.property 'action', OVirtAction
 
     it "should have .collections property", ->
       apiNode = do getApiNode
