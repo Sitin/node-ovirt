@@ -103,12 +103,12 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Loop over related special objects adding them to corresponding
 #       collections.
 #     + Clean the applied `specialObjects` namespace.
-# - Hydrate collections owner (right after collections setup)
+# + Hydrate collections owner (right after collections setup).
 #     + If `link` is array then remove undefined values from it.
 #     + Delete link if it is an epty array or is undefined.
 #     + Remove special objects element from node children.
 #     + Use collection `rel` attribute as a collection name.
-#     - Export collections to the current target (should be an API
+#     + Export collections to the current target (should be an API
 #       node instance).
 #     + Clean current namespace of the `_collections` property.
 #
@@ -121,11 +121,11 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Save the node instance in `_resources` property with `xpath` base as a
 #       namespace and element name as a key.
 #     + Set resource link node value to undefined.
-# - Resource links owner hydration
+# + Resource links owner hydration.
 #     + Detect that current node has a resource links.
 #     + Retrive resource links related to `xpath`.
 #     + Remove resource link child elements from target node.
-#     - Export corresponding `_resourceLinks` namespace to current target.
+#     + Export corresponding `_resourceLinks` namespace to current target.
 #     + Remove related namespace from `_resourceLinks` property.
 #
 # ### Hydrate resources
@@ -376,17 +376,16 @@ class OVirtResponseHydrator
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
+  # @param target [OVirtApiNode] node hydration target
   #
   # @return [Object] hydrated node
   #
-  hydrateResourceLinks: (xpath, node) ->
+  hydrateResourceLinks: (xpath, node, target) ->
     resourceLinks = @_getResourceLinksAtXPath xpath
+
     @_removeChildElements node, resourceLinks
 
-    if @_isRootElememntXPath xpath
-      @exportResourceLinks resourceLinks
-    else
-      @populateOVirtNodeLinks resourceLinks, node
+    @exportResourceLinks resourceLinks, target
 
     try delete @_resourceLinks["#{xpath}"]
 
@@ -400,10 +399,11 @@ class OVirtResponseHydrator
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
+  # @param target [OVirtApiNode] node hydration target
   #
   # @return [Object] hydrated node
   #
-  hydrateCollections: (xpath, node) ->
+  hydrateCollections: (xpath, node, target) ->
     collections = @_getCollectionsAtXPath xpath
     searchOptions = @_getSearchOptionsAtXPath xpath
     specialObjects = @_getSpecialObjectsAtXPath xpath
@@ -414,10 +414,7 @@ class OVirtResponseHydrator
     @_addSpecialObjects collections, specialObjects
     @_cleanUpSpecialObjects node
 
-    if @_isRootElememntXPath xpath
-      @exportCollections collections
-    else
-      @populateOVirtNodeLinks collections, node
+    @exportCollections collections, target
 
     try delete @_collections["#{xpath}"]
 
@@ -506,17 +503,19 @@ class OVirtResponseHydrator
   # Exports colections to target API node
   #
   # @param collections [Object] collections to export
+  # @param target [OVirtApiNode] hydration target
   #
-  exportCollections: (collections) ->
-    @target.collections = collections
+  exportCollections: (collections, target) ->
+    target.collections = collections
 
   #
   # Exports resource links to target API node
   #
   # @param resourceLinks [Object] resource links to export
+  # @param target [OVirtApiNode] hydration target
   #
-  exportResourceLinks: (resourceLinks) ->
-    @target.resourceLinks = resourceLinks
+  exportResourceLinks: (resourceLinks, target) ->
+    target.resourceLinks = resourceLinks
 
   #
   # Populates nodes over target as a lazy loading properties.

@@ -292,32 +292,35 @@ describe 'OVirtResponseHydrator', ->
           _getSpecialObjectsAtXPath: 'specialObjects'
           _makeCollectionsSearchable: undefined
           _addSpecialObjects: undefined
-          populateOVirtNodeLinks: undefined
 
         getHydrator.withSpies.andStubs _.defaults defaults, options
 
+      # Shortcut for collections hydration
+      requestHydration = (hydrator) ->
+        hydrator.hydrateCollections 'xpath', {}, new OVirtApiNode
+
       it "should retrieve collections related to xpath", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._getCollectionsAtXPath).to.be.called.once
         expect(hydrator._getCollectionsAtXPath).to.be.called.with 'xpath'
 
       it "should retrieve search options related to xpath", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.once
         expect(hydrator._getSearchOptionsAtXPath).to.be.called.with 'xpath'
 
       it "should retrieve special objects related to xpath", ->
         hydrator = do getHydrator.withSpies
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._getSpecialObjectsAtXPath).to.be.called.once
         expect(hydrator._getSpecialObjectsAtXPath).to.be.called.with 'xpath'
 
       it "should loop over related search options if existed and setup " +
       "corresponding collections", ->
         hydrator = do getCollectionsHydrator
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._makeCollectionsSearchable).to.be.called.once
         expect(hydrator._makeCollectionsSearchable)
           .to.be.called.with 'collections', 'searchOptions'
@@ -325,50 +328,38 @@ describe 'OVirtResponseHydrator', ->
       it "should loop over related sspecial objects if existed and add them " +
       "to corresponding collections", ->
         hydrator = do getCollectionsHydrator
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._addSpecialObjects).to.be.called.once
         expect(hydrator._addSpecialObjects)
           .to.be.called.with 'collections', 'specialObjects'
 
       it "should compact or remove link property", ->
         hydrator = do getCollectionsHydrator
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._cleanUpLinks).to.have.been.called.once
 
       it "should delete special objects element from node", ->
         hydrator = do getCollectionsHydrator
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._cleanUpSpecialObjects).to.have.been.called.once
 
-      it "should check whether this is a root node", ->
+      it "should export collections to current target", ->
         hydrator = do getCollectionsHydrator
-        hydrator.hydrateCollections 'xpath', {}
-        expect(hydrator._isRootElememntXPath).to.have.been.called.once
-
-      it "should export collections if this is a root node", ->
-        hydrator = getCollectionsHydrator _isRootElememntXPath: yes
-        hydrator._collections = xpath: instances: 'collections'
-        hydrator.hydrateCollections 'xpath', {}
-        expect(hydrator.exportCollections).to.be.called.once
-        expect(hydrator.exportCollections).to.be.called.with 'collections'
-
-      it "should populate collections for not root node", ->
-        hydrator = getCollectionsHydrator _isRootElememntXPath: no
-        hydrator._collections = xpath: instances: 'collections'
-        hydrator.hydrateCollections 'xpath', node = {}
-        expect(hydrator.populateOVirtNodeLinks).to.be.called.once
-        expect(hydrator.populateOVirtNodeLinks)
-          .to.be.called.with 'collections', node
+        hydrator.hydrateCollections 'xpath', {}, target = new OVirtApiNode
+        expect(hydrator.exportCollections).to.have.been.called.once
+        expect(hydrator.exportCollections)
+          .to.have.been.called.with 'collections', target
 
       it "should delete related namespace from collection instances", ->
         hydrator = do getCollectionsHydrator
         hydrator._collections["xpath"] = 'collections stuff'
-        hydrator.hydrateCollections 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._collections).to.have.not.property 'xpath'
 
-      it "should return hydrated node", ->
+      it "should return hydrated node raw value", ->
         hydrator = do getCollectionsHydrator
-        result = hydrator.hydrateCollections 'xpath', node = {}
+        result =
+          hydrator.hydrateCollections 'xpath',node = {}, new OVirtApiNode
         expect(result).to.be.equal node
 
 
@@ -376,8 +367,8 @@ describe 'OVirtResponseHydrator', ->
 
       it "should assign collections to target's 'collection' property", ->
         hydrator = do getHydrator
-        hydrator.exportCollections 'collections'
-        expect(hydrator.target).to.have.property 'collections', 'collections'
+        hydrator.exportCollections 'collections', target = {}
+        expect(target).to.have.property 'collections', 'collections'
 
 
     describe "#hydrateResourceLinks", ->
@@ -390,16 +381,15 @@ describe 'OVirtResponseHydrator', ->
 
         getHydrator.withSpies.andStubs _.defaults defaults, options
 
+      # Shortcut for resource links links hydration
+      requestHydration = (hydrator) ->
+        hydrator.hydrateResourceLinks 'xpath', {}, new OVirtApiNode
+
       it "should retrive resource links related to xpath", ->
         hydrator = do getResourceLinksHydrator
-        hydrator.hydrateResourceLinks 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._getResourceLinksAtXPath).to.be.called.once
         expect(hydrator._getResourceLinksAtXPath).to.be.called.with 'xpath'
-
-      it "should check whether this is a root node", ->
-        hydrator = do getResourceLinksHydrator
-        hydrator.hydrateResourceLinks 'xpath', {}
-        expect(hydrator._isRootElememntXPath).to.have.been.called.once
 
       it "should remove resource link child elements from the subject node", ->
         node = {}
@@ -408,49 +398,33 @@ describe 'OVirtResponseHydrator', ->
             expect(subject).to.be.equal node
             expect(keys).to.be.equal "resourceLinks"
 
-        hydrator.hydrateResourceLinks 'xpath', node
+        hydrator.hydrateResourceLinks 'xpath', node, new OVirtApiNode
         expect(hydrator._removeChildElements).to.be.called.once
 
-      it "should remove resource links from node before export/population", ->
+      it "should remove resource links from node before export", ->
         hydrator = getResourceLinksHydrator
           _removeChildElements: (subject, keys) ->
             expect(hydrator.exportResourceLinks).to.have.not.been.called
-            expect(hydrator.populateOVirtNodeLinks).to.have.not.been.called
+        requestHydration hydrator
+        expect(hydrator._removeChildElements).to.have.been.called.once
 
-        hydrator._isRootElememntXPath = -> no
-        hydrator.hydrateResourceLinks 'xpath', {}
-        hydrator._isRootElememntXPath = -> yes
-        hydrator.hydrateResourceLinks 'xpath', {}
-
-        expect(hydrator._removeChildElements).to.have.been.called.twice
-
-      it "should export resource links if this is a root node", ->
-        hydrator = getResourceLinksHydrator
-          _isRootElememntXPath: yes
-        hydrator.hydrateResourceLinks 'xpath', {}
-        hydrator._resourceLinks = xpath: 'resourceLinks'
+      it "should export resource links to current target", ->
+        hydrator = do getResourceLinksHydrator
+        hydrator.hydrateResourceLinks 'xpath', {}, target = new OVirtApiNode
         expect(hydrator.exportResourceLinks).to.have.been.called.once
         expect(hydrator.exportResourceLinks)
-          .to.be.called.with 'resourceLinks'
-
-      it "should populate resource links ower not root owners", ->
-        hydrator = getResourceLinksHydrator
-          _isRootElememntXPath: no
-        hydrator.hydrateResourceLinks 'xpath', node = {}
-        hydrator._resourceLinks = xpath: 'resourceLinks'
-        expect(hydrator.populateOVirtNodeLinks).to.have.been.called.once
-        expect(hydrator.populateOVirtNodeLinks)
-          .to.be.called.with 'resourceLinks', node
+          .to.have.been.called.with 'resourceLinks', target
 
       it "should delete related namespace from resource links", ->
         hydrator = do getResourceLinksHydrator
         hydrator._resourceLinks["xpath"] = 'resource links stuff'
-        hydrator.hydrateResourceLinks 'xpath', {}
+        requestHydration hydrator
         expect(hydrator._resourceLinks).to.have.not.property 'xpath'
 
-      it "should return hydrated node", ->
+      it "should return hydrated node raw value", ->
         hydrator = do getResourceLinksHydrator
-        result = hydrator.hydrateResourceLinks 'xpath', node = {}
+        result =
+          hydrator.hydrateResourceLinks 'xpath', node = {}, new OVirtApiNode
         expect(result).to.be.equal node
 
 
@@ -458,8 +432,8 @@ describe 'OVirtResponseHydrator', ->
 
       it "should assign resources to target's 'resourceLinks' property", ->
         hydrator = do getHydrator
-        hydrator.exportResourceLinks 'resourceLinks'
-        expect(hydrator.target).to.have.property 'resourceLinks', 'resourceLinks'
+        hydrator.exportResourceLinks 'resourceLinks', target = {}
+        expect(target).to.have.property 'resourceLinks', 'resourceLinks'
 
 
     describe "#populateOVirtNodeLinks", ->
