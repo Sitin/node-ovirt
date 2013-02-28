@@ -36,7 +36,7 @@ if not module.parent
       inspect parser._hydrator
       inspect parser.target
 
-  dumpFileHash 'api', 'api'
-#  dumpHydratedHash 'api', 'api'
+#  dumpFileHash 'api', 'api'
+  dumpHydratedHash 'api', 'api'
 else
   module.exports = lib
