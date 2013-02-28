@@ -189,6 +189,32 @@ describe 'OVirtResponseHydrator', ->
           expect(result).to.be.equal 'hydrated resource'
 
 
+    describe "#_getTargetForNode", ->
+
+      it "should return instance target for the root node", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _isRootElememntXPath: yes
+        expect(hydrator._getTargetForNode 'xpath', 'value')
+          .to.be.equal hydrator.target
+        expect(hydrator._isRootElememntXPath).to.have.been.called.once
+        expect(hydrator._isRootElememntXPath).to.have.been.called.with 'xpath'
+
+      it "should return a resource object if node is a resource", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _isRootElememntXPath: no, isResource: yes
+        expect(hydrator._getTargetForNode 'xpath', 'value')
+          .to.be.instanceOf OVirtResource
+        expect(hydrator.isResource).to.have.been.called.once
+        expect(hydrator.isResource).to.have.been.called.with 'value'
+
+      it "should return API node if subject is neither resource nor root " +
+      "node", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _isRootElememntXPath: no, isResource: no
+        expect(hydrator._getTargetForNode 'xpath', 'value')
+          .to.be.instanceOf OVirtApiNode
+
+
     describe "#hydrateNode", ->
 
       it "should call #hydrateCollectionLink if node is a collection link", ->

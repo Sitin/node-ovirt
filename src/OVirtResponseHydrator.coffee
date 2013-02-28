@@ -56,13 +56,13 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### High level objects hydration.
 #
-# - Detect current hydration target
-#     - If current node is a root one then current target should be a hydrator
+# + Detect current hydration target.
+#     + If current node is a root one then current target should be a hydrator
 #       instance target.
-#     - If current node is an owner of collections, resource links or actions
+#     + If current node is an owner of collections, resource links or actions
 #       (except the case when the node is a resource)then an API node instance
 #       should be created and set as a current target.
-#     - If node is a resource then new resource object instance should be
+#     + If node is a resource then new resource object instance should be
 #       created.
 # - Export attributes from node hash to current target.
 # - Remove attributes from node hash.
@@ -671,6 +671,26 @@ class OVirtResponseHydrator
   isSpecialObject: (xpath, node) ->
     return no unless @isResourceLink node
     @_isSpecialObjectXPath xpath
+
+  #
+  # Returns hydration target for specified node.
+  #
+  # * It returns instance target for the root node.
+  # * A resource object for nodes that could be considered as a resources.
+  # * An API node for everything else.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node value (a hash)
+  #
+  # @return [OVirtApiNode] a target for node hydration
+  #
+  _getTargetForNode: (xpath, node) ->
+    if @_isRootElememntXPath xpath
+      @target
+    else if @isResource node
+      new OVirtResource
+    else
+      new OVirtApiNode
 
   #
   # Tests whether specified xpath leads to a special object.
