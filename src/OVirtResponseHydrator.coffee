@@ -54,14 +54,19 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # - Save attributes in corresponding property if existed.
 #
-# ### General tasks
+# ### High level objects hydration.
 #
+# - If current node is a root one then current target should be a hydrator
+#   instance target.
 # - If current node is an owner of collections, resource links or actions
 #   (except the case when the node is a resource)then an API node instance
 #   should be created and set as a current target.
-# - If current node is a root one then current target should be a hydrator
-#   instance target.
-# - We should replace node value with current target (if exists).
+# - Node is a resource then new resource object instance should be created.
+# - Export attributes from node hash to current target.
+# - Remove attributes from node hash.
+# - Treat remaining node hash as a properties and export them to the current
+#   target.
+# - Finally we should replace node value with current target (if exists).
 #
 # ### Hydrate collections
 #
@@ -101,9 +106,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Delete link if it is an epty array or is undefined.
 #     + Remove special objects element from node children.
 #     + Use collection `rel` attribute as a collection name.
-#     + Detect whether current `xpath` points to root node.
-#     + If current node is a root one export collections to target node.
-#     - Otherwise export collections to the current target (should be an API
+#     - Export collections to the current target (should be an API
 #       node instance).
 #     + Clean current namespace of the `_collections` property.
 #
@@ -120,17 +123,14 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Detect that current node has a resource links.
 #     + Retrive resource links related to `xpath`.
 #     + Remove resource link child elements from target node.
-#     + If current node is a root one then export corresponding
-#       `_resourceLinks` namespace to target.
-#     - Otherwise export resource links to the current target (should be an API
-#       node instance).
+#     - Export corresponding `_resourceLinks` namespace to current target.
 #     + Remove related namespace from `_resourceLinks` property.
 #
 # ### Hydrate resources
 #
 # + Detect resources.
 # - Create a resource object and set as a current target.
-# + Replace node value with hydrated resource.
+# - Proceed with API node hydration procedure.
 #
 # ### Hydrate actions
 #
