@@ -59,7 +59,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Detect current hydration target.
 #     + If current node is a root one then current target should be a hydrator
 #       instance target.
-#     + If current node is an owner of collections, resource links or actions
+#     - If current node is an owner of collections, resource links or actions
 #       (except the case when the node is a resource)then an API node instance
 #       should be created and set as a current target.
 #     + If node is a resource then new resource object instance should be
@@ -136,9 +136,18 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate actions
 #
-# - Detect action.
-# - Instantiate an actions object an set as a current hydration target.
-# + Proceed with API node hydration procedure.
+# - Hydrate action value
+#     - Detect action.
+#     - Instantiate actions object.
+#     - Register action object in `_actions` with an action name as a key and
+#       an owner node xpath as a namespace.
+#     - Set raw node value to undefined.
+# - Hydrate actions owner.
+#     - Detect that current node has actions.
+#     - Retrieve corresponding actions.
+#     - Export related actions to current node.
+#     - Remove `actions` child element from node value.
+#     - Remove related namespace from `_actions` property.
 #
 # ### Hydrate properties of plain nodes
 #
