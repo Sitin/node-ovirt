@@ -185,14 +185,32 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.isResourcesLinksOwner).to.be.called.once
         expect(hydrator.isResourcesLinksOwner).to.be.called.with 'xpath'
         expect(hydrator.hydrateResourceLinks).to.be.called.once
-        expect(hydrator.hydrateResourceLinks).to.be.called.with 'xpath', 'value'
+        expect(hydrator.hydrateResourceLinks)
+          .to.be.called.with 'xpath', 'value'
+
+      it "should extract attributes from node hash to target", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _getTargetForNode: 'current target'
+
+        hydrator.hydrateApiNode 'xpath', 'value'
+        expect(hydrator.extractAttributes).to.have.been.called.once
+        expect(hydrator.extractAttributes)
+          .to.have.been.called.with 'value', 'current target'
 
       it "should export remaining properties to target", ->
         hydrator = getHydrator.withSpies.andStubs
           _getTargetForNode: 'current target'
-          exportProperties: (node, target) ->
-            expect(node).to.be.equal 'value'
-            expect(target).to.be.equal 'current target'
+
+        hydrator.hydrateApiNode 'xpath', 'value'
+        expect(hydrator.exportProperties).to.have.been.called.once
+        expect(hydrator.exportProperties)
+          .to.have.been.called.with 'value', 'current target'
+
+      it "should export properties after attributes extraction", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _getTargetForNode: 'current target'
+          exportProperties: ->
+            expect(hydrator.extractAttributes).to.have.been.called.once
 
         hydrator.hydrateApiNode 'xpath', 'value'
         expect(hydrator.exportProperties).to.have.been.called.once
@@ -387,6 +405,20 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator
         hydrator.exportProperties 'properties', target = {}
         expect(target).to.have.property 'properties', 'properties'
+
+
+    describe "#extractAttributes", ->
+      hydrator = do getHydrator
+      node = eggs: 'SPAM'
+      attributes = ham: 'SPAM'
+      node[ATTRKEY] = attributes
+      hydrator.extractAttributes node, target = {}
+
+      it "should assign node attributes to target 'attribute' property", ->
+        expect(target).to.have.property 'attributes', attributes
+
+      it "should remove attributes from node", ->
+        expect(node).to.have.not.property ATTRKEY
 
 
     describe "#hydrateResourceLinks", ->

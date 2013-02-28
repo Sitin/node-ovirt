@@ -16,9 +16,9 @@ OVirtResource = require __dirname + '/OVirtResource'
 # {OVirtResponseParser}.
 #
 # + It tries to find top-level collections links and exports them to target.
-# - Tries to detect construct links to resources.
-# - Investigates for embedded collections links and process them.
-# - Exports all other "plain" properties as hashes.
+# + Tries to detect and construct links to resources.
+# + Investigates for embedded collections links and process them.
+# + Exports all other "plain" properties as hashes.
 #
 #
 # Currently oVirt API responses has a following structure:
@@ -37,7 +37,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Resources
 #
-# * ID and hreg attributes that identifies resource
+# * ID and href attributes that identifies resource
 # * Subcollections (same as collections) as a links
 # * Special objects as mentioned before.
 # * Links to resources
@@ -64,8 +64,8 @@ OVirtResource = require __dirname + '/OVirtResource'
 #       should be created and set as a current target.
 #     + If node is a resource then new resource object instance should be
 #       created.
-# - Export attributes from node hash to current target.
-# - Remove attributes from node hash.
+# + Extract attributes from node hash to current target.
+# + Remove attributes from node hash.
 # + Treat remaining node hash as a properties and export them to the current
 #   target.
 # + Finally we should replace node value with current target (if exists).
@@ -265,6 +265,7 @@ class OVirtResponseHydrator
     if @isResourcesLinksOwner xpath
       value = @hydrateResourceLinks xpath, value, target
 
+    @extractAttributes value, target
     @exportProperties value, target
 
     target
@@ -525,6 +526,17 @@ class OVirtResponseHydrator
   #
   exportProperties: (properties, target) ->
     target.properties = properties
+
+  #
+  # Extract attributes from node and assign to hydration target.
+  #
+  # @param properties [Object] raw node value
+  # @param target [OVirtApiNode] hydration target
+  #
+  extractAttributes: (node, target) ->
+    attributes = @_getAttributes node
+    target.attributes = attributes
+    try delete node[@ATTRIBUTE_KEY]
 
   #
   # Tests whether specified subject is an API node.
