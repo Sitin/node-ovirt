@@ -131,8 +131,8 @@ OVirtResource = require __dirname + '/OVirtResource'
 # ### Hydrate resources
 #
 # + Detect resources.
-# - Create a resource object and set as a current target.
-# - Proceed with API node hydration procedure.
+# + Create a resource object and set as a current target.
+# + Proceed with API node hydration procedure.
 #
 # ### Hydrate actions
 #
@@ -259,16 +259,15 @@ class OVirtResponseHydrator
   # @return [OVirtApiNode] hydrated API node
   #
   hydrateApiNode: (xpath, value) ->
+    target = @_getTargetForNode xpath, value
+
     if @isCollectionsOwner xpath
-      value = @hydrateCollections xpath, value
+      value = @hydrateCollections xpath, value, target
 
     if @isResourcesLinksOwner xpath
-      value = @hydrateResourceLinks xpath, value
+      value = @hydrateResourceLinks xpath, value, target
 
-    if @isResource value
-      value = @hydrateResource xpath, value
-
-    value
+    target
 
   #
   # Hydrates value of the "plain" node if necessary.
@@ -368,17 +367,6 @@ class OVirtResponseHydrator
     @registerIn @_resourceLinks, parentXpath, name, resourceLink
 
     resourceLink
-
-  #
-  # Hydrates a resource.
-  #
-  # @param xpath [String] xpath to node
-  # @param node [Object] node to be hydrated
-  #
-  # @return [OVirtResource] hydrated resource
-  #
-  hydrateResource: (xpath, node) ->
-    new OVirtResource
 
   #
   # Hydrates resource links.

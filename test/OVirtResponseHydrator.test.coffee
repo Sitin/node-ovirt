@@ -152,9 +152,19 @@ describe 'OVirtResponseHydrator', ->
 
     describe "#hydrateApiNode", ->
 
-      it "should call #hydrateCollections if node is a collection owner", ->
+      it "should determine current hydration target", ->
+        hydrator = do getHydrator.withSpies
+        hydrator.hydrateApiNode 'xpath', 'value'
+        expect(hydrator._getTargetForNode).to.have.been.called.once
+        expect(hydrator._getTargetForNode)
+          .to.have.been.called.with 'xpath', 'value'
+
+      it "should hydrate related collections if node is a collection owner", ->
         hydrator = getHydrator.withSpies.andStubs
-          isCollectionsOwner: yes, hydrateCollections: undefined
+          isCollectionsOwner: yes
+          _getTargetForNode: 'current target'
+          hydrateCollections: (xpath, node, target) ->
+            expect(target).to.be.equal 'current target'
 
         hydrator.hydrateApiNode 'xpath', 'value'
 
@@ -165,7 +175,10 @@ describe 'OVirtResponseHydrator', ->
 
       it "should call #hydrateResourceLinks for resource links owners", ->
         hydrator = getHydrator.withSpies.andStubs
-          isResourcesLinksOwner: yes, hydrateResourceLinks: undefined
+          isResourcesLinksOwner: yes
+          _getTargetForNode: 'current target'
+          hydrateResourceLinks: (xpath, node, target) ->
+            expect(target).to.be.equal 'current target'
 
         hydrator.hydrateApiNode 'xpath', 'value'
 
@@ -174,19 +187,11 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.hydrateResourceLinks).to.be.called.once
         expect(hydrator.hydrateResourceLinks).to.be.called.with 'xpath', 'value'
 
-      it "should call #hydrateResource if node is a resource", ->
+      it "should return node hydration target", ->
         hydrator = getHydrator.withSpies.andStubs
-          isResource: yes, hydrateResource: 'hydrated resource'
-
-        result = hydrator.hydrateApiNode 'xpath', 'value'
-
-        expect(hydrator.isResource).to.be.called.once
-        expect(hydrator.isResource).to.be.called.with 'value'
-        expect(hydrator.hydrateResource).to.be.called.once
-        expect(hydrator.hydrateResource).to.be.called.with 'xpath', 'value'
-
-        it "should return hydrated value for resources", ->
-          expect(result).to.be.equal 'hydrated resource'
+          _getTargetForNode: 'current target'
+        expect(hydrator.hydrateApiNode 'xpath', {})
+          .to.be.equal 'current target'
 
 
     describe "#_getTargetForNode", ->
@@ -495,15 +500,6 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._resourceLinks['/xpath'])
           .to.have.property('name')
           .to.be.instanceOf OVirtResource
-
-
-    describe "#hydrateResource", ->
-
-      it "should return a resource object", ->
-        hydrator = do getHydrator
-        result =
-          hydrator.hydrateResource '/api/name', resource
-        expect(result).to.be.instanceOf OVirtResource
 
 
     describe "#hydrateCollectionLink", ->
