@@ -6,6 +6,7 @@ path = require 'path'
 
 # Dependencies.
 config = require __dirname + '/config'
+OVirtAction = require __dirname + '/OVirtAction'
 OVirtApi = require __dirname + '/OVirtApi'
 OVirtApiNode = require __dirname + '/OVirtApiNode'
 OVirtCollection = require __dirname + '/OVirtCollection'
@@ -136,12 +137,12 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### Hydrate actions
 #
-# - Hydrate action value
+# + Hydrate action value
 #     + Detect action.
-#     - Instantiate actions object.
-#     - Register action object in `_actions` with an action name as a key and
+#     + Instantiate actions object.
+#     + Register action object in `_actions` with an action name as a key and
 #       an owner node xpath as a namespace.
-#     - Set raw node value to undefined.
+#     + Set raw node value to undefined.
 # - Hydrate actions owner.
 #     - Detect that current node has actions.
 #     - Retrieve corresponding actions.
@@ -237,6 +238,7 @@ class OVirtResponseHydrator
   # @throw ["Hydrator's target should be an OVirtApiNode instance"]
   #
   constructor: (@target, @hash={}) ->
+    @_actions = {}
     @_collections = {}
     @_resourceLinks = {}
 
@@ -288,7 +290,10 @@ class OVirtResponseHydrator
   # @return [mixed] hydrated node value
   #
   hydrateNode: (xpath, value) ->
-    if @isCollectionLink xpath, value
+    if @isAction xpath, value
+      @hydrateAction xpath, value
+      undefined
+    else if @isCollectionLink xpath, value
       @hydrateCollectionLink xpath, value
       undefined
     else if @isSearchOption value
@@ -378,6 +383,23 @@ class OVirtResponseHydrator
     @registerIn @_resourceLinks, parentXpath, name, resourceLink
 
     resourceLink
+
+  #
+  # Hydrates an action.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  #
+  # @return [OVirtAction] hydrated action
+  #
+  hydrateAction: (xpath, node) ->
+    attributes = @_getAttributes node
+    action = new OVirtAction
+    ownerXpath = path.dirname path.dirname xpath
+    name = attributes.rel
+    @registerIn @_actions, ownerXpath, name, action
+
+    action
 
   #
   # Hydrates resource links.

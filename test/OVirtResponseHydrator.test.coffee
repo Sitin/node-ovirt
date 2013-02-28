@@ -17,7 +17,7 @@ config = require '../lib/config'
 {OVirtResponseHydrator} = require '../lib/'
 
 # Dependencies
-{OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource} = require '../lib/'
+{OVirtAction, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource} = require '../lib/'
 
 
 describe 'OVirtResponseHydrator', ->
@@ -74,6 +74,8 @@ describe 'OVirtResponseHydrator', ->
 
   resource = vmHash.vm
   resourceLink = vmHash.vm.cluster
+  action = vmHash.vm.actions.link[0]
+  actionName = action.$.rel
 
   it "should be a function", ->
     expect(OVirtResponseHydrator).to.be.a 'function'
@@ -94,6 +96,8 @@ describe 'OVirtResponseHydrator', ->
       expect(hydrator).to.have.property('_collections')
         .that.deep.equals {}
       expect(hydrator).to.have.property('_resourceLinks')
+        .that.deep.equals {}
+      expect(hydrator).to.have.property('_actions')
         .that.deep.equals {}
 
   describe "#setTarget", ->
@@ -250,6 +254,19 @@ describe 'OVirtResponseHydrator', ->
 
 
     describe "#hydrateNode", ->
+
+      it "should call #hydrateAction if node is an action", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isAction: yes, hydrateAction: 'defined'
+
+        result = hydrator.hydrateNode 'xpath', 'value'
+
+        expect(hydrator.isAction).to.be.called.once
+        expect(hydrator.isAction).to.be.called.with 'xpath', 'value'
+        expect(hydrator.hydrateAction).to.be.called.once
+
+        it "should return undefined for actions", ->
+          expect(result).to.be.undefined
 
       it "should call #hydrateCollectionLink if node is a collection link", ->
         hydrator = getHydrator.withSpies.andStubs
@@ -491,6 +508,23 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator
         hydrator.exportResourceLinks 'resourceLinks', target = {}
         expect(target).to.have.property 'resourceLinks', 'resourceLinks'
+
+
+    describe "#hydrateAction", ->
+
+      it "should return an action object", ->
+        hydrator = do getHydrator
+        result = hydrator.hydrateAction '/api/name', action
+        expect(result).to.be.instanceOf OVirtAction
+
+      it "should register action instance to corresponding namespace", ->
+        hydrator = do getHydrator.withSpies
+        hydrator.hydrateAction "/path/to/node", action
+
+        expect(hydrator.registerIn).to.have.been.called.once
+        expect(hydrator._actions['/path'])
+          .to.have.property(actionName)
+          .to.be.instanceOf OVirtAction
 
 
     describe "#hydrateResourceLink", ->
