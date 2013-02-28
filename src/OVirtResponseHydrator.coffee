@@ -56,12 +56,14 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # ### High level objects hydration.
 #
-# - If current node is a root one then current target should be a hydrator
-#   instance target.
-# - If current node is an owner of collections, resource links or actions
-#   (except the case when the node is a resource)then an API node instance
-#   should be created and set as a current target.
-# - Node is a resource then new resource object instance should be created.
+# - Detect current hydration target
+#     - If current node is a root one then current target should be a hydrator
+#       instance target.
+#     - If current node is an owner of collections, resource links or actions
+#       (except the case when the node is a resource)then an API node instance
+#       should be created and set as a current target.
+#     - If node is a resource then new resource object instance should be
+#       created.
 # - Export attributes from node hash to current target.
 # - Remove attributes from node hash.
 # - Treat remaining node hash as a properties and export them to the current
