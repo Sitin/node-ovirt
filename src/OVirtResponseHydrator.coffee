@@ -146,9 +146,9 @@ OVirtResource = require __dirname + '/OVirtResource'
 # - Hydrate actions owner.
 #     + Detect that current node has actions.
 #     + Retrieve corresponding actions.
-#     - Export related actions to current node.
-#     - Remove `actions` child element from node value.
-#     - Remove related namespace from `_actions` property.
+#     + Export related actions to current node.
+#     + Remove `actions` child element from node value.
+#     + Remove related namespace from `_actions` property.
 #
 # ### Hydrate properties of plain nodes
 #
@@ -276,6 +276,9 @@ class OVirtResponseHydrator
     if @isResourcesLinksOwner xpath
       value = @hydrateResourceLinks xpath, value, target
 
+    if @isActionsOwner xpath
+      value = @hydrateActions xpath, value, target
+
     @extractAttributes value, target
     @exportProperties value, target
 
@@ -402,10 +405,31 @@ class OVirtResponseHydrator
     action
 
   #
+  # Hydrates actions.
+  #
+  # Loops over actionss assigned to xpath and exports them to the target.
+  #
+  # @param xpath [String] xpath to node
+  # @param node [Object] node to be hydrated
+  # @param target [OVirtApiNode] node hydration target
+  #
+  # @return [Object] hydrated node
+  #
+  hydrateActions: (xpath, node, target) ->
+    actions = @_getActionsAtXPath xpath
+
+    @_removeChildElements node, [@ACTION_PROPERTY]
+
+    @exportActions actions, target
+
+    try delete @_actions["#{xpath}"]
+
+    node
+
+  #
   # Hydrates resource links.
   #
-  # Loops over resource links assigned to xpath and exports them to the node or
-  # hydrator target if this is a root node.
+  # Loops over resource links assigned to xpath and exports them to the target.
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
@@ -428,7 +452,7 @@ class OVirtResponseHydrator
   # Hydrates collections.
   #
   # Loops over collections instances assigned to xpath and setup them with
-  # corresponding search options and special objects.
+  # corresponding search options and special objects to the target..
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
@@ -535,7 +559,7 @@ class OVirtResponseHydrator
   #
   # Exports colections to target API node
   #
-  # @param collections [Object] collections to export
+  # @param collections [Object<OVirtCollections>] collections to export
   # @param target [OVirtApiNode] hydration target
   #
   exportCollections: (collections, target) ->
@@ -558,6 +582,15 @@ class OVirtResponseHydrator
   #
   exportProperties: (properties, target) ->
     target.properties = properties
+
+  #
+  # Exports actions to target API node
+  #
+  # @param properties [Object<OVirtAction>] actions to export
+  # @param target [OVirtApiNode] hydration target
+  #
+  exportActions: (actions, target) ->
+    target.actions = actions
 
   #
   # Extract attributes from node and assign to hydration target.

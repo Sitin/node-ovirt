@@ -178,7 +178,7 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.hydrateCollections).to.be.called.once
         expect(hydrator.hydrateCollections).to.be.called.with 'xpath', 'value'
 
-      it "should call #hydrateResourceLinks for resource links owners", ->
+      it "should hydrate related collections if existed", ->
         hydrator = getHydrator.withSpies.andStubs
           isResourcesLinksOwner: yes
           _getTargetForNode: 'current target'
@@ -191,6 +191,21 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.isResourcesLinksOwner).to.be.called.with 'xpath'
         expect(hydrator.hydrateResourceLinks).to.be.called.once
         expect(hydrator.hydrateResourceLinks)
+          .to.be.called.with 'xpath', 'value'
+
+      it "should hydrate related actions if existed", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isActionsOwner: yes
+          _getTargetForNode: 'current target'
+          hydrateActions: (xpath, node, target) ->
+            expect(target).to.be.equal 'current target'
+
+        hydrator.hydrateApiNode 'xpath', 'value'
+
+        expect(hydrator.isActionsOwner).to.be.called.once
+        expect(hydrator.isActionsOwner).to.be.called.with 'xpath'
+        expect(hydrator.hydrateActions).to.be.called.once
+        expect(hydrator.hydrateActions)
           .to.be.called.with 'xpath', 'value'
 
       it "should extract attributes from node hash to target", ->
@@ -216,6 +231,17 @@ describe 'OVirtResponseHydrator', ->
           _getTargetForNode: 'current target'
           exportProperties: ->
             expect(hydrator.extractAttributes).to.have.been.called.once
+
+        hydrator.hydrateApiNode 'xpath', 'value'
+        expect(hydrator.exportProperties).to.have.been.called.once
+
+      it "should export properties after hydration", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _getTargetForNode: 'current target'
+          exportProperties: ->
+            expect(hydrator.isActionsOwner).to.have.been.called.once
+            expect(hydrator.isCollectionsOwner).to.have.been.called.once
+            expect(hydrator.isResourcesLinksOwner).to.have.been.called.once
 
         hydrator.hydrateApiNode 'xpath', 'value'
         expect(hydrator.exportProperties).to.have.been.called.once
@@ -502,12 +528,75 @@ describe 'OVirtResponseHydrator', ->
         expect(result).to.be.equal node
 
 
+    describe "#hydrateActions", ->
+      # Related mock
+      getActionsHydrator = (options) ->
+        defaults =
+          _getActionsAtXPath: 'actions'
+
+        getHydrator.withSpies.andStubs _.defaults defaults, options
+
+      # Shortcut for actions links hydration
+      requestHydration = (hydrator) ->
+        hydrator.hydrateActions 'xpath', {}, new OVirtApiNode
+
+      it "should retrive actions related to xpath", ->
+        hydrator = do getActionsHydrator
+        requestHydration hydrator
+        expect(hydrator._getActionsAtXPath).to.be.called.once
+        expect(hydrator._getActionsAtXPath).to.be.called.with 'xpath'
+
+      it "should remove action child elements from the subject node", ->
+        node = {}
+        hydrator = getActionsHydrator
+          _removeChildElements: (subject, keys) ->
+            expect(subject).to.be.equal node
+            expect(keys).to.be.deep.equal [ACTION]
+
+        hydrator.hydrateActions 'xpath', node, new OVirtApiNode
+        expect(hydrator._removeChildElements).to.be.called.once
+
+      it "should remove actions from node before export", ->
+        hydrator = getActionsHydrator
+          _removeChildElements: (subject, keys) ->
+            expect(hydrator.exportActions).to.have.not.been.called
+        requestHydration hydrator
+        expect(hydrator._removeChildElements).to.have.been.called.once
+
+      it "should export actionss to current target", ->
+        hydrator = do getActionsHydrator
+        hydrator.hydrateActions 'xpath', {}, target = new OVirtApiNode
+        expect(hydrator.exportActions).to.have.been.called.once
+        expect(hydrator.exportActions)
+          .to.have.been.called.with 'actions', target
+
+      it "should delete related namespace from resource links", ->
+        hydrator = do getActionsHydrator
+        hydrator._actions["xpath"] = 'actions stuff'
+        requestHydration hydrator
+        expect(hydrator._actions).to.have.not.property 'xpath'
+
+      it "should return hydrated node raw value", ->
+        hydrator = do getActionsHydrator
+        result =
+          hydrator.hydrateActions 'xpath', node = {}, new OVirtApiNode
+        expect(result).to.be.equal node
+
+
     describe "#exportResourceLinks", ->
 
       it "should assign resources to target's 'resourceLinks' property", ->
         hydrator = do getHydrator
         hydrator.exportResourceLinks 'resourceLinks', target = {}
         expect(target).to.have.property 'resourceLinks', 'resourceLinks'
+
+
+    describe "#exportActions", ->
+
+      it "should assign actions to target's 'actions' property", ->
+        hydrator = do getHydrator
+        hydrator.exportActions 'actions', target = {}
+        expect(target).to.have.property 'actions', 'actions'
 
 
     describe "#hydrateAction", ->
