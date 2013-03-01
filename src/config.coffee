@@ -7,5 +7,5 @@ module.exports =
   api:
     specialProperties: ['link', 'action', 'special_objects']
     link: 'link'
-    action: 'action'
+    action: 'actions'
     specialObjects: 'special_objects'
