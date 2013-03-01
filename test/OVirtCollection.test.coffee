@@ -24,3 +24,18 @@ describe 'OVirtCollection', ->
   it "should be inherited from OVirtApiNode", ->
     api = do getCollection
     expect(api).to.be.an.instanceOf OVirtApiNode
+
+
+  describe "#constructor", ->
+
+    it "should set isSearchable to false", ->
+      collection = do getCollection
+      expect(collection.isSearchable).to.be.false
+
+    it "should set search options to empty hash", ->
+      collection = do getCollection
+      expect(collection.searchOptions).to.be.deep.equal {}
+
+    it "should set special objects to empty hash", ->
+      collection = do getCollection
+      expect(collection.specialObjects).to.be.deep.equal {}

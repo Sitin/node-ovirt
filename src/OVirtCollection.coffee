@@ -5,8 +5,6 @@ OVirtApiNode = require __dirname + '/OVirtApiNode'
 
 
 class OVirtCollection extends OVirtApiNode
-  _isSearchable: no
-
   #
   # Utility methods that help to create getters and setters.
   #
@@ -21,9 +19,21 @@ class OVirtCollection extends OVirtApiNode
     @setSearchOptions options
 
   #
+  # @property [Object] special objects
+  #
+  get specialObjects: -> @_specialObjects
+  set specialObjects: (objects) ->
+    @_specialObjects = objects
+
+  #
   # @property [Boolean] whether collection is searchable
   #
   get isSearchable: -> @_isSearchable
+
+  constructor: ->
+    @_isSearchable = no
+    @_searchOptions = {}
+    @_specialObjects = {}
 
   setSearchOptions: (options) ->
     @_isSearchable = yes
