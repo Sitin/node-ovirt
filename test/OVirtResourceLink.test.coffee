@@ -9,7 +9,7 @@ chai.use spies
 # Utilities:
 _ = require 'lodash'
 
-{OVirtResourceLink, OVirtApiNode, OVirtConnection} = require '../lib/'
+{OVirtResource, OVirtResourceLink, OVirtApiNode, OVirtConnection} = require '../lib/'
 
 
 describe 'OVirtResourceLink', ->
@@ -24,3 +24,14 @@ describe 'OVirtResourceLink', ->
   it "should be inherited from OVirtApiNode", ->
     api = do getResourceLink
     expect(api).to.be.an.instanceOf OVirtApiNode
+
+
+  describe "#resolve", ->
+
+    it "should return resource object instance", ->
+      link = do getResourceLink
+      expect(do link.resolve).to.be.instanceOf OVirtResource
+
+    it "should be binded to an instance", ->
+      node = do getResourceLink
+      expect(do node.resolve.call).to.be.deep.equal do node.resolve

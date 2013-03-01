@@ -52,14 +52,6 @@ class OVirtApiNode
     for key of options
       @['_' + key] = options[key] if typeof @['_' + key] isnt 'undefined'
 
-  #
-  # Initiates instance and returns it.
-  #
-  # @return [OVirtApiNode] initiated instance
-  #
-  initiated: =>
-    @
-
 
 OVirtApiNode.API_NODE_TYPES.node = OVirtApiNode
 

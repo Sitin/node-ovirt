@@ -46,14 +46,3 @@ describe 'OVirtApiNode', ->
       apiNode = do getApiNode
       for property of apiNode.properties
         expect(apiNode).to.have.own.property property, apiNode.properties[property]
-
-
-  describe "#initiated", ->
-
-    it "should return an instance itself", ->
-      node = do getApiNode
-      expect(do node.initiated).to.be.equal node
-
-    it "should be binded to an instance", ->
-      node = do getApiNode
-      expect(do node.initiated.call).to.be.equal node
