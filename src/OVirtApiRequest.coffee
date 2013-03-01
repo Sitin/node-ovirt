@@ -24,9 +24,7 @@ class OVirtApiRequest
   request: (options, callback) ->
     request options, (error, response, body) ->
       if not error and response.statusCode is 200
-        xml2js.parseString body, (error, result) ->
-          callback error if error
-          callback null, result
+        callback error, body
       else
         if error
           callback error
@@ -35,12 +33,6 @@ class OVirtApiRequest
 
   getRequestUri: (options) ->
     url = @uri
-
-  getRequestOptions: (params) ->
-    options =
-      collection:
-        name: ''
-        id: ''
 
   call: (params, callback) ->
     if typeof params is 'function'
