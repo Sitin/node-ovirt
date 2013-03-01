@@ -144,8 +144,8 @@ OVirtResource = require __dirname + '/OVirtResource'
 #       an owner node xpath as a namespace.
 #     + Set raw node value to undefined.
 # - Hydrate actions owner.
-#     - Detect that current node has actions.
-#     - Retrieve corresponding actions.
+#     + Detect that current node has actions.
+#     + Retrieve corresponding actions.
 #     - Export related actions to current node.
 #     - Remove `actions` child element from node value.
 #     - Remove related namespace from `_actions` property.
@@ -620,6 +620,18 @@ class OVirtResponseHydrator
     Object.getOwnPropertyNames(links).length > 0
 
   #
+  # Tests whether node under current xpath is a actions owner.
+  #
+  # @param xpath [String] xpath to node
+  #
+  # @return [Boolean]
+  #
+  isActionsOwner: (xpath) ->
+    actions = @_getActionsAtXPath xpath
+    return no unless _.isObject actions
+    Object.getOwnPropertyNames(actions).length > 0
+
+  #
   # Tests whether specified subject is a link to collection.
   #
   # @param xpath [String] xpath to node
@@ -840,6 +852,21 @@ class OVirtResponseHydrator
     try specialObjects = @_resourceLinks[xpath]
 
     specialObjects
+
+  #
+  # Returns action objects for specified xpath.
+  #
+  # @param xpath [String]
+  #
+  # @return [Object] action objects for xpath
+  #
+  # @private
+  #
+  _getActionsAtXPath: (xpath) ->
+    actions = undefined
+    try actions = @_actions[xpath]
+
+    actions
 
   #
   # Tests whether xpath points to root element.

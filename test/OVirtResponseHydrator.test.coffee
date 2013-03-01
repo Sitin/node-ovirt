@@ -771,6 +771,16 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._getResourceLinksAtXPath).to.be.called.with 'xpath'
 
 
+    describe "#isActionsOwner", ->
+
+      it "should return true if actions registered to xpath", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _getActionsAtXPath: name: 'instance'
+        expect(hydrator.isActionsOwner 'xpath').to.be.true
+        expect(hydrator._getActionsAtXPath).to.be.called.once
+        expect(hydrator._getActionsAtXPath).to.be.called.with 'xpath'
+
+
     describe "#isLink", ->
       hydrator = do getHydrator.withSpies
       relLink = idLink = {}
@@ -1095,6 +1105,20 @@ describe 'OVirtResponseHydrator', ->
     it "should return undefined if resource links namespace inaccessible", ->
       hydrator = do getHydrator
       expect(hydrator._getResourceLinksAtXPath '/path/to/nowhere')
+        .to.be.undefined
+
+
+  describe "#_getActionsAtXPath", ->
+
+    it "should return actions for given xpath", ->
+      hydrator = do getHydrator
+      hydrator._actions["/path/to"] = 'instances'
+      expect(hydrator._getActionsAtXPath '/path/to')
+        .to.be.equal 'instances'
+
+    it "should return undefined if actionss namespace inaccessible", ->
+      hydrator = do getHydrator
+      expect(hydrator._getActionsAtXPath '/path/to/nowhere')
         .to.be.undefined
 
 
