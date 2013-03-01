@@ -60,7 +60,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 # + Detect current hydration target.
 #     + If current node is a root one then current target should be a hydrator
 #       instance target.
-#     - If current node is an owner of collections, resource links or actions
+#     + If current node is an owner of collections, resource links or actions
 #       (except the case when the node is a resource)then an API node instance
 #       should be created and set as a current target.
 #     + If node is a resource then new resource object instance should be
@@ -612,8 +612,10 @@ class OVirtResponseHydrator
   # @return [Boolean] whether specified subject is a link
   #
   isApiNode: (xpath, node) ->
+    @_isRootElememntXPath(xpath) or
     @isCollectionsOwner(xpath) or
     @isResourcesLinksOwner(xpath) or
+    @isActionsOwner(xpath) or
     @isResource node
 
   #

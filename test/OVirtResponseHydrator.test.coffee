@@ -816,9 +816,19 @@ describe 'OVirtResponseHydrator', ->
 
     describe "#isApiNode", ->
 
+      it "should return true if subject is a root node", ->
+        hydrator = getHydrator.withSpies.andStubs
+          _isRootElememntXPath: yes
+        expect(do hydrator.isApiNode).to.be.true
+
       it "should return true if subject is a resource", ->
         hydrator = getHydrator.withSpies.andStubs
           isResource: yes
+        expect(do hydrator.isApiNode).to.be.true
+
+      it "should return true if subject is an action", ->
+        hydrator = getHydrator.withSpies.andStubs
+          isActionsOwner: yes
         expect(do hydrator.isApiNode).to.be.true
 
       it "should return true if subject is a collections owner", ->
@@ -833,6 +843,8 @@ describe 'OVirtResponseHydrator', ->
 
       it "should return false in other cases", ->
         hydrator = getHydrator.withSpies.andStubs
+          _isRootElememntXPath: no
+          isActionsOwner: no
           isResource: no
           isCollectionsOwner: no
           isResourcesLinksOwner: no
