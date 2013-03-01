@@ -69,9 +69,8 @@ class OVirtResponseParser
   # @param callback [Function] callback function
   #
   parse: (callback) ->
-    @parseXML (error, result) =>
-      @_exportParseResults result unless error
-      callback error
+    @parseXML (error) =>
+      callback error, @target
 
   #
   # Asynchroniously parses XML contained in the #response to the hash.
@@ -79,11 +78,11 @@ class OVirtResponseParser
   # @param callback [Function] callback function
   #
   parseXML: (callback) ->
-    @_parser.parseString @response, (error, result) ->
-      callback error, result
+    @_parser.parseString @response, (error) ->
+      callback error
 
   #
-  # Passes all parameters to {#hydrateNode node hydrator function}.
+  # Passes all parameters to {#hydrateNodeValue node hydrator function}.
   #
   # This functon is binded to current responce parser instance.
   #
@@ -92,7 +91,7 @@ class OVirtResponseParser
   # @return [mixed] new node value
   #
   hydrate: (params...) =>
-    @hydrateNode params...
+    @hydrateNodeValue params...
 
   #
   # Calls inner hydrator instance to convert node value if necessary.
@@ -103,7 +102,7 @@ class OVirtResponseParser
   #
   # @return [mixed] hydrated node value
   #
-  hydrateNode: (xpath, currentValue, newValue) ->
+  hydrateNodeValue: (xpath, currentValue, newValue) ->
     @_hydrator.hydrate xpath, currentValue, newValue
 
   #
@@ -131,14 +130,6 @@ class OVirtResponseParser
         TypeError "OVirtResponseParser requires OVirtApiNode as a target"
 
     @_target = target
-
-  #
-  # Exports oVirt response that was represented as a hash.
-  #
-  # @private
-  # @param hash [Object] oVirt response as a hash
-  #
-  _exportParseResults: (hash) ->
 
 
 module.exports = OVirtResponseParser

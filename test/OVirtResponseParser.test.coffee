@@ -95,29 +95,23 @@ describe 'OVirtResponseParser', ->
       parser.parse ->
         do done
 
-    it "should parse XML and then export parse results", (done) ->
+    it "should parse XML", (done) ->
       parser = do getResponseParser
 
       parser.parseXML = chai.spy (callback) ->
-        # XML spy should check that it was called before the export spy.
-        expect(parser._exportParseResults).have.not.been.called
         do callback
-      parser._exportParseResults = chai.spy ->
-        # Export spy should check that it called after the export spy.
-        expect(parser.parseXML).have.been.called.once
 
       parser.parse ->
-        expect(parser._exportParseResults).have.been.called.once
+        expect(parser.parseXML).to.have.been.called.once
         do done
 
-    it "shouldn't invoke #_exportParseResults if parse failed", (done) ->
+    it "should pass hydrated target to callback", (done) ->
       parser = do getResponseParser
-      parser.parseXML = (callback) ->
-        callback "Error!"
-      spy = parser._exportParseResults = chai.spy ->
-      parser.parse ->
-        expect(spy).to.have.not.been.called
+      parser.parseXML = (callback) -> do callback
+      spy = (error, result)->
+        expect(result).to.be.equal parser.target
         do done
+      parser.parse spy
 
 
   describe "#parseXML", ->
@@ -127,11 +121,10 @@ describe 'OVirtResponseParser', ->
       parser.parseXML ->
         do done
 
-    it "should pass parsing result to the callback", (done) ->
+    it "should not throw an error for successfull parsing", (done) ->
       parser = do getResponseParser
-      parser.parseXML (error, result) ->
+      parser.parseXML (error) ->
         expect(error).to.not.exist
-        expect(result).to.be.an.instanceOf Object
         do done
 
     it "should pass an error if #response couldn't be parsed", (done) ->
@@ -144,25 +137,25 @@ describe 'OVirtResponseParser', ->
 
   describe "#hydrate", ->
 
-    it "should pass all parameters to #hydrateNode() and return it's result", ->
+    it "should pass all parameters to #hydrateNodeValue() and return it's result", ->
       parser = do getResponseParser
       params = [1, 2, 3]
-      parser.hydrateNode = chai.spy ->
+      parser.hydrateNodeValue = chai.spy ->
         expect(_.toArray arguments).to.be.deep.equal params
         'result'
       expect(parser.hydrate params...).to.be.equal 'result'
-      expect(parser.hydrateNode).to.be.called.once
+      expect(parser.hydrateNodeValue).to.be.called.once
 
     it "should be binded to parser instance", ->
       parser = do getResponseParser
       hydrate = parser.hydrate
-      parser.hydrateNode = chai.spy ->
+      parser.hydrateNodeValue = chai.spy ->
 
       do hydrate
 
-      expect(parser.hydrateNode).to.be.called.once
+      expect(parser.hydrateNodeValue).to.be.called.once
 
-  describe "#hydrateNode", ->
+  describe "#hydrateNodeValue", ->
 
     it "should call hydrator's #hydrate method with passed parameters " +
       "and return it's result", ->
@@ -173,7 +166,3 @@ describe 'OVirtResponseParser', ->
           'result'
         expect(parser.hydrate params...).to.be.equal 'result'
         expect(spy).to.be.called.once
-
-  describe.skip "#_exportParseResults", ->
-
-    it "should export results to target", ->
