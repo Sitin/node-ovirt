@@ -18,7 +18,21 @@ if not module.parent
   loadResponse = (name) ->
     fs.readFileSync "#{__dirname}/test/responses/#{name}.xml"
 
-  dumpFileHash = (response, target) ->
+  dumpHydratedRequest = (options = null, target = 'api') ->
+    request = new lib.OVirtApiRequest require './private.json'
+    request.call options, (error, xml) ->
+      console.log error if error
+      console.log xml unless error
+
+      parser = new lib.OVirtResponseParser
+        response: xml
+        target: target
+
+      parser.parse (error, node) ->
+        console.log error if error
+        inspect node unless error
+
+  dumpFileHash = (response, target = 'api') ->
     parser = new lib.OVirtResponseParser
       response: loadResponse response
       target: target
@@ -27,7 +41,7 @@ if not module.parent
       console.log error if error
       inspect result
 
-  dumpHydratedHash = (response, target) ->
+  dumpHydratedHash = (response, target = 'api') ->
     parser = new lib.OVirtResponseParser
       response: loadResponse response
       target: target
@@ -36,7 +50,8 @@ if not module.parent
       inspect parser._hydrator
       inspect parser.target
 
-#  dumpFileHash 'api', 'api'
-  dumpHydratedHash 'api', 'api'
+#  dumpFileHash 'api'
+  dumpHydratedHash 'api'
+#  do dumpHydratedRequest
 else
   module.exports = lib
