@@ -11,6 +11,7 @@ OVirtApi = require __dirname + '/OVirtApi'
 OVirtApiNode = require __dirname + '/OVirtApiNode'
 OVirtCollection = require __dirname + '/OVirtCollection'
 OVirtResource = require __dirname + '/OVirtResource'
+OVirtResourceLink = require __dirname + '/OVirtResourceLink'
 
 #
 # This class hydrates oVirt API responses mapped to hashes by
@@ -89,6 +90,7 @@ OVirtResource = require __dirname + '/OVirtResource'
 #     + Detect special object.
 #     + Detect special object related collection `rel`.
 #     + Detect special object name.
+#     + Instantiate resource link that points to special object.
 #     + Save a link to special object in `_collections` with `rel` base as a
 #       key and `<xpath to owner node>.specialObjects.<collection rel>` as a
 #       namespace.
@@ -117,10 +119,10 @@ OVirtResource = require __dirname + '/OVirtResource'
 #
 # + Value hydration
 #     + Detect link to resource.
-#     + Instantiate resource object.
+#     + Instantiate resource link object.
 #     + Get the element name from `xpath` (the last one).
-#     + Save the node instance in `_resources` property with `xpath` base as a
-#       namespace and element name as a key.
+#     + Save the node instance in `_resourceLinks` property with `xpath` base
+#       as a namespace and element name as a key.
 #     + Set resource link node value to undefined.
 # + Resource links owner hydration.
 #     + Detect that current node has a resource links.
@@ -361,7 +363,7 @@ class OVirtResponseHydrator
   #
   hydrateSpecialObject: (xpath, node) ->
     attributes = @_getAttributes node
-    specialObject = new OVirtResource
+    specialObject = new OVirtResourceLink
     collection = path.dirname attributes.rel
     name = path.basename attributes.rel
     ownerXpath = path.dirname path.dirname xpath
@@ -380,7 +382,7 @@ class OVirtResponseHydrator
   # @return [OVirtResource] hydrated resource link
   #
   hydrateResourceLink: (xpath, node) ->
-    resourceLink = new OVirtResource
+    resourceLink = new OVirtResourceLink
     name = path.basename xpath
     parentXpath = path.dirname xpath
     @registerIn @_resourceLinks, parentXpath, name, resourceLink
@@ -1070,18 +1072,6 @@ class OVirtResponseHydrator
       return undefined
 
     _.omit subject, @ATTRIBUTE_KEY
-
-  #
-  # Converts hash to resource.
-  #
-  # @param value [Object]
-  #
-  # @return [<OVirtResource>]
-  #
-  # @private
-  #
-  _setupResourceLink: (hash) ->
-    new OVirtResource @_mergeAttributes _.clone hash
 
   #
   # Returns the name of the hash's root key if exist.

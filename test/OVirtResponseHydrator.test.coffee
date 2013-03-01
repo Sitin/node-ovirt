@@ -17,7 +17,7 @@ config = require '../lib/config'
 {OVirtResponseHydrator} = require '../lib/'
 
 # Dependencies
-{OVirtAction, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource} = require '../lib/'
+{OVirtAction, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource, OVirtResourceLink} = require '../lib/'
 
 
 describe 'OVirtResponseHydrator', ->
@@ -622,7 +622,7 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator
         result =
           hydrator.hydrateResourceLink '/api/name', resourceLink
-        expect(result).to.be.instanceOf OVirtResource
+        expect(result).to.be.instanceOf OVirtResourceLink
 
       it "should register resource instance to corresponding namespace", ->
         hydrator = do getHydrator.withSpies
@@ -631,7 +631,7 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator.registerIn).to.have.been.called.once
         expect(hydrator._resourceLinks['/xpath'])
           .to.have.property('name')
-          .to.be.instanceOf OVirtResource
+          .to.be.instanceOf OVirtResourceLink
 
 
     describe "#hydrateCollectionLink", ->
@@ -676,7 +676,7 @@ describe 'OVirtResponseHydrator', ->
         hydrator = do getHydrator.withSpies
         result = hydrator.hydrateSpecialObject 'xpath', specialObject
 
-        expect(result).to.be.instanceOf OVirtResource
+        expect(result).to.be.instanceOf OVirtResourceLink
 
       it "should register special object instance to corresponding " +
       "collection", ->
@@ -687,7 +687,7 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._collections['/xpath'].specialObjects)
           .to.have.property(testCollection.name)
           .to.have.property("blank")
-          .to.be.instanceOf OVirtResource
+          .to.be.instanceOf OVirtResourceLink
 
 
     describe "#registerIn", ->
@@ -1500,14 +1500,4 @@ describe 'OVirtResponseHydrator', ->
       hydrator._getPlainedElement hash
 
       expect(spy).to.have.been.called.twice
-
-
-  describe "#_setupResourceLink", ->
-    it "should return OVirtResource instance", ->
-      hydrator = do getHydrator.withSpies
-      expect(hydrator._setupResourceLink {}).to.be.an.instanceOf OVirtResource
-
-    it.skip "should treat attributes as a properties", ->
-
-    it.skip "should keep passed parameter untoched", ->
 
