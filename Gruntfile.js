@@ -13,7 +13,9 @@ module.exports = function (grunt) {
 
     coffeelint: {
       main: {
-        files: [options.coffeePath + '/**/*.coffee', './*.coffee'],
+        files: {
+          src: [options.coffeePath + '/**/*.coffee', './*.coffee']
+        },
         options: {
           "max_line_length": {
             "level": "warn"
@@ -24,24 +26,23 @@ module.exports = function (grunt) {
 
     coffee:     {
       main: {
-        src:     [options.coffeePath + '/**/*.coffee'],
+        expand:  true,
+        cwd:     options.coffeePath,
+        src:     '**/*.coffee',
         dest:    options.buildPath,
-        options: {
-          bare:          false,
-          preserve_dirs: true,
-          base_path:     options.coffeePath
-        }
+        ext: '.js'
       },
 
       index: {
-        src:     ['./*.coffee'],
-        options: {
-          bare:          false
+        files: {
+          'index.js':     'index.coffee'
         }
       },
 
       tests: {
-        src: [options.testPath + '/**/*.coffee']
+        expand:  true,
+        src: options.testPath + '/**/*.coffee',
+        ext: '.test.js'
       }
     },
 
@@ -115,28 +116,28 @@ module.exports = function (grunt) {
     }
   });
 
-  grunt.loadNpmTasks('grunt-coffee');
+  grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-coffeelint');
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-bg-shell');
 
   // Documentation task.
-  grunt.registerTask('codo', 'bgShell:codo');
+  grunt.registerTask('codo', ['bgShell:codo']);
 
   // Test task.
-  grunt.registerTask('test', 'mochaTest clean:tests');
+  grunt.registerTask('test', ['mochaTest', 'clean:tests']);
 
   // Compile task.
-  grunt.registerTask('compile', 'coffeelint coffee');
+  grunt.registerTask('compile', ['coffeelint', 'coffee']);
 
   // Default task.
-  grunt.registerTask('default', 'clean compile test codo');
+  grunt.registerTask('default', ['clean', 'compile', 'test', 'codo']);
 
   // Publishing task.
-  grunt.registerTask('publish', 'default');
+  grunt.registerTask('publish', ['default']);
 
   // Standalone execution task.
-  grunt.registerTask('run', 'clean compile bgShell:run');
+  grunt.registerTask('run', ['clean', 'compile', 'bgShell:run']);
 
 };
