@@ -55,36 +55,12 @@ module.exports = function (grunt) {
       }
     },
 
-    lint:       {
-      files: ['*.js', options.buildPath + '/**/*.js']
-    },
-
     watch:      [
       {
         files: [options.coffeePath + '/**/*.coffee', './*.coffee'],
         tasks: 'default'
       }
     ],
-
-    jshint:     {
-      options: {
-        curly:   true,
-        eqeqeq:  true,
-        immed:   true,
-        latedef: true,
-        newcap:  true,
-        noarg:   true,
-        sub:     true,
-        undef:   true,
-        boss:    true,
-        eqnull:  true,
-        node:    true,
-        strict:  true
-      },
-      globals: {
-        exports: true
-      }
-    },
 
     clean: {
       build: [
