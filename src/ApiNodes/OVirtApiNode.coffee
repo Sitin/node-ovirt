@@ -104,13 +104,18 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   # @property [OVirtConnection]
   #   current connection instance
   #
-  get $connection: -> @_$connection
+  get $connection: -> do @getConnection
+  set $connection: (connection) -> @_$connection = connection
   #
-  # Sets API node connection.
+  # Gets API node connection.
   #
-  # @param collections [OVirtConnection]
+  # @return [OVirtConnection] current connection
   #
-  setConnection: (connection) ->
+  getConnection: ->
+    if not @_$connection? and @$owner?
+      @$connection = @$owner.$connection
+
+    @_$connection
 
   #
   # @property [ApiNodes.OVirtApiNode] current node owner
@@ -151,6 +156,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     @_$actions = {}
     @_$attributes = {}
     @_$collections = {}
+    @_$connection = null
     @_$owner = null
     @_$properties = {}
     @_$resourceLinks = {}
