@@ -10,8 +10,9 @@ chai.use spies
 _ = require 'lodash'
 fs = require 'fs'
 
-{OVirtResponseParser, OVirtResponseHydrator, ApiNodes} = require '../lib/'
+{OVirtResponseParser, OVirtResponseHydrator, ApiNodes, Mixins} = require '../lib/'
 {OVirtApi, OVirtApiNode} = ApiNodes
+{ApiNodeTargetOwner} = Mixins
 
 xml2js = require 'xml2js'
 
@@ -71,21 +72,9 @@ describe 'OVirtResponseParser', ->
 
   describe "#setTarget", ->
 
-    it "should throw an error if target couldn't be converted" +
-      "to OVirtApiNode", ->
-        parser = do getResponseParser
-        expect(-> parser.setTarget "something wrong")
-          .to.throw TypeError, "OVirtResponseParser requires OVirtApiNode as a target"
-
-    it "should try to construct target if function specified", ->
+    it "should be mixed from Mixins.ApiNodeTargetOwner", ->
       parser = do getResponseParser
-      spy = chai.spy OVirtApiNode
-      expect(parser.setTarget spy).to.be.an.instanceOf OVirtApiNode
-      expect(spy).to.be.called.once
-
-    it "should treat string as a target type", ->
-      parser = do getResponseParser
-      expect(parser.setTarget 'api').to.be.instanceOf OVirtApi
+      expect(parser.setTarget).to.be.equal ApiNodeTargetOwner.setTarget
 
 
   describe "#parse", ->
