@@ -15,6 +15,7 @@ OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 class OVirtResponseParser extends CoffeeMix
   # Included Mixins
   @include Mixins.PropertyDistributor
+  @include Mixins.ApiNodeTargetOwner
 
   # Hack that forces Codo to see properties
   get = @get
@@ -102,32 +103,6 @@ class OVirtResponseParser extends CoffeeMix
   #
   hydrateNodeValue: (xpath, currentValue, newValue) ->
     @_hydrator.hydrate xpath, currentValue, newValue
-
-  #
-  # Sets current target.
-  #
-  # If target is a function the it considered as a constructor of the response
-  # subject.
-  #
-  # If target is a string then it tries convert it to API node constructor
-  # using {ApiNodes.OVirtApiNode API node's} types hash (API_NODE_TYPES).
-  #
-  # @param target [String, Function, ApiNodes.OVirtApiNode] response subject
-  #
-  # @throw [TypeError]
-  #
-  setTarget: (target) ->
-    if typeof target is 'string'
-      target = OVirtApiNode.API_NODE_TYPES[target]
-
-    if typeof target is 'function'
-      target = new target connection: @connection
-
-    if not (target instanceof OVirtApiNode)
-      throw new
-        TypeError "OVirtResponseParser requires OVirtApiNode as a target"
-
-    @_target = target
 
 
 module.exports = OVirtResponseParser
