@@ -6,11 +6,9 @@ ApiNodes =
 
 
 OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
-  #
-  # Utility methods that help to create getters and setters.
-  #
-  get = (props) => @:: __defineGetter__ name, getter for name, getter of props
-  set = (props) => @::__defineSetter__ name, setter for name, setter of props
+  # Hack that forces Codo to see properties
+  get = @get
+  set = @set
 
   #
   # @property [Object] search options

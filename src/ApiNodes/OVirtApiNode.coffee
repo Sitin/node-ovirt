@@ -1,7 +1,18 @@
 "use strict"
 
 
+{CoffeeMix} = require 'coffee-mix'
+_ = require 'lodash'
 ApiNodes = {}
+
+
+RESTRICTED_KEYS = [
+  'actions'
+  'attributes'
+  'collections'
+  'properties'
+  'resourceLinks'
+]
 
 
 #
@@ -26,7 +37,11 @@ ApiNodes = {}
 # 36. To perform API call a node requests oVirt connection to create an API
 #     request object, configurates it and executes.
 #
-OVirtApiNode = class ApiNodes.OVirtApiNode
+OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
+  # Hack that forces Codo to see properties
+  get = @get
+  set = @set
+
   #
   # Each OVirtApiNode child adds themself to this hash.
   #
@@ -34,23 +49,180 @@ OVirtApiNode = class ApiNodes.OVirtApiNode
     {}
 
   #
+  # @property [Object<ApiNodes.OVirtAction>]
+  #   actions that belongs to current API node
+  #
+  get $actions: -> @_$actions
+  #
+  # Sets API node actions.
+  #
+  # @param actions [Object<ApiNodes.OVirtAction>]
+  #
+  setActions: (actions) ->
+    @populateActions actions
+    @_$actions = actions
+
+  #
   # @property [Object]
+  #   attributes that belongs to current API node
+  #
+  get $attributes: -> @_$attributes
+  #
+  # Sets API node attributes.
+  #
+  # @param attributes [Object]
+  #
+  setAttributes: (attributes) ->
+    @populateProperties attributes, @_$attributes
+    @_$attributes = attributes
+
+  #
+  # @property [Object<ApiNodes.OVirtCollection>]
   #   collections that belongs to current API level
   #
-  collections:
-    {}
+  get $collections: -> @_$collections
+  #
+  # Sets API node collections.
+  #
+  # @param collections [Object<ApiNodes.OVirtCollection>]
+  #
+  setCollections: (collections) ->
+    @populateProperties collections, @_$collections
+    @_$collections = collections
+
+  #
+  # @property [ApiNodes.OVirtApiNode] current node owner
+  #
+  get $owner: -> @_$owner
+  set $owner: (owner) -> @_$owner = owner
 
   #
   # @property [Object]
   #   properties that belongs to current API node
   #
-  properties:
-    {}
+  get $properties: -> @_$properties
+  #
+  # Sets API node properties.
+  #
+  # @param properties [Object]
+  #
+  setProperties: (properties) ->
+    @populateProperties properties, @_$properties
+    @_$properties = properties
 
-  constructor: (options) ->
-    # We need only properties those are in the prototype
-    for key of options
-      @['_' + key] = options[key] if typeof @['_' + key] isnt 'undefined'
+  #
+  # @property [Object<ApiNodes.OVirtResourceLinks>]
+  #   resource links that belongs to current API node
+  #
+  get $resourceLinks: -> @_$resourceLinks
+  #
+  # Sets API node resource links.
+  #
+  # @param resourceLinks [Object]
+  #
+  setResourceLinks: (resourceLinks) ->
+    @populateResourceLinks resourceLinks
+    @_$resourceLinks = resourceLinks
+
+  constructor: ->
+    # Set instance defaults
+    @_$actions = {}
+    @_$attributes = {}
+    @_$collections = {}
+    @_$owner = null
+    @_$properties = {}
+    @_$resourceLinks = {}
+
+  #
+  # Populates passed properties over API node instance.
+  #
+  # Deletes old properties if specified.
+  #
+  # @param properties [Object] property hash to populate
+  # @param oldProperties [Object] recent properties to delete
+  #
+  populateProperties: (properties = {}, oldProperties = {}) ->
+    delete @[key] for key of oldProperties
+    return unless typeof properties is 'object'
+
+    for key, value of properties when key not in RESTRICTED_KEYS
+      @consumeProperty value
+      @[key] = value
+
+  #
+  # Populates actions over API node instance.
+  #
+  # Adds methods that perform corresponding actions and unpopulates current
+  # actions.
+  #
+  # @param actions [Object<[ApiNodes.OVirtAction>] actions hash to populate
+  #
+  populateActions: (actions = {})->
+    delete @[key] for key of @_actions
+    return unless typeof actions is 'object'
+
+    for key, value of actions when key not in RESTRICTED_KEYS
+      @addAction key, value
+
+  #
+  # Populates resource links over API node instance.
+  #
+  # Adds properties that lazy loads resources from specified resource links and
+  # unpopulates current resource links.
+  #
+  # @param resourceLinks [Object<[ApiNodes.OVirtResourceLink>] actions hash to
+  #   populate
+  #
+  populateResourceLinks: (resourceLinks = {}) ->
+    delete @[key] for key of @_resourceLinks
+    return unless typeof resourceLinks is 'object'
+
+    for key, value of resourceLinks when key not in RESTRICTED_KEYS
+      @addResourceLink key, value
+
+  #
+  # Adds action to API node.
+  #
+  # Binds action to current node and creates instance method with specified
+  # name that performs the action.
+  #
+  # @param name [String] action name
+  # @param action [ApiNodes.OVirtAction] action to add
+  #
+  addAction: (name, action) ->
+    action.$owner = @
+    @[name] = action.perform
+
+  #
+  # Adds resource link to API node.
+  #
+  # Adds property to current node that lazy loads resource from the resource
+  # link.
+  #
+  # @param name [String] resource link name
+  # @param action [ApiNodes.OVirtResourceLink] resource link to add
+  #
+  addResourceLink: (name, resourceLink) ->
+    resourceLink.$owner = @
+    resourceLink.name = name
+    @.__defineGetter__ name, resourceLink.resolve
+
+  #
+  # Sets current node as a property owner if property is an API node.
+  #
+  # If property value is an array then method will try to consume it contents.
+  #
+  # @param value [mixed] property value
+  #
+  # @return [mixed] property value
+  #
+  consumeProperty: (value) ->
+    if _.isArray value
+      @consumeProperty entry for entry in value
+    else
+      value.$owner = @ if value instanceof OVirtApiNode
+
+    value
 
 
 OVirtApiNode.API_NODE_TYPES.node = OVirtApiNode

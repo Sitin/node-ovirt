@@ -51,7 +51,7 @@ if not module.parent
       inspect parser.target
 
 #  dumpFileHash 'api'
-  dumpHydratedHash 'api'
+  dumpHydratedHash 'vms.ID'
 #  do dumpHydratedRequest
 else
   module.exports = lib

@@ -167,9 +167,9 @@ describe 'OVirtResponseHydrator', ->
       it "should hydrate related collections if node is a collection owner", ->
         hydrator = getHydrator.withSpies.andStubs
           isCollectionsOwner: yes
-          _getTargetForNode: 'current target'
+          _getTargetForNode: target = new OVirtApiNode
           hydrateCollections: (xpath, node, target) ->
-            expect(target).to.be.equal 'current target'
+            expect(target).to.be.equal target
 
         hydrator.hydrateApiNode 'xpath', 'value'
 
@@ -181,9 +181,9 @@ describe 'OVirtResponseHydrator', ->
       it "should hydrate related collections if existed", ->
         hydrator = getHydrator.withSpies.andStubs
           isResourcesLinksOwner: yes
-          _getTargetForNode: 'current target'
+          _getTargetForNode: target = new OVirtApiNode
           hydrateResourceLinks: (xpath, node, target) ->
-            expect(target).to.be.equal 'current target'
+            expect(target).to.be.equal target
 
         hydrator.hydrateApiNode 'xpath', 'value'
 
@@ -196,9 +196,9 @@ describe 'OVirtResponseHydrator', ->
       it "should hydrate related actions if existed", ->
         hydrator = getHydrator.withSpies.andStubs
           isActionsOwner: yes
-          _getTargetForNode: 'current target'
+          _getTargetForNode: target = new OVirtApiNode
           hydrateActions: (xpath, node, target) ->
-            expect(target).to.be.equal 'current target'
+            expect(target).to.be.equal target
 
         hydrator.hydrateApiNode 'xpath', 'value'
 
@@ -210,25 +210,25 @@ describe 'OVirtResponseHydrator', ->
 
       it "should extract attributes from node hash to target", ->
         hydrator = getHydrator.withSpies.andStubs
-          _getTargetForNode: 'current target'
+          _getTargetForNode: target = new OVirtApiNode
 
         hydrator.hydrateApiNode 'xpath', 'value'
         expect(hydrator.extractAttributes).to.have.been.called.once
         expect(hydrator.extractAttributes)
-          .to.have.been.called.with 'value', 'current target'
+          .to.have.been.called.with 'value', target
 
       it "should export remaining properties to target", ->
         hydrator = getHydrator.withSpies.andStubs
-          _getTargetForNode: 'current target'
+          _getTargetForNode: target = new OVirtApiNode
 
         hydrator.hydrateApiNode 'xpath', 'value'
         expect(hydrator.exportProperties).to.have.been.called.once
         expect(hydrator.exportProperties)
-          .to.have.been.called.with 'value', 'current target'
+          .to.have.been.called.with 'value', target
 
       it "should export properties after attributes extraction", ->
         hydrator = getHydrator.withSpies.andStubs
-          _getTargetForNode: 'current target'
+          _getTargetForNode: new OVirtApiNode
           exportProperties: ->
             expect(hydrator.extractAttributes).to.have.been.called.once
 
@@ -237,7 +237,7 @@ describe 'OVirtResponseHydrator', ->
 
       it "should export properties after hydration", ->
         hydrator = getHydrator.withSpies.andStubs
-          _getTargetForNode: 'current target'
+          _getTargetForNode: new OVirtApiNode
           exportProperties: ->
             expect(hydrator.isActionsOwner).to.have.been.called.once
             expect(hydrator.isCollectionsOwner).to.have.been.called.once
@@ -248,9 +248,9 @@ describe 'OVirtResponseHydrator', ->
 
       it "should return node hydration target", ->
         hydrator = getHydrator.withSpies.andStubs
-          _getTargetForNode: 'current target'
+          _getTargetForNode: target = new OVirtApiNode
         expect(hydrator.hydrateApiNode 'xpath', {})
-          .to.be.equal 'current target'
+          .to.be.equal target
 
 
     describe "#_getTargetForNode", ->
@@ -442,34 +442,73 @@ describe 'OVirtResponseHydrator', ->
         expect(result).to.be.equal node
 
 
-    describe "#exportCollections", ->
+    describe.skip "Properties export", ->
+      addSpy = (target, key, value) ->
+        target[key] = chai.spy value
 
-      it "should assign collections to target's 'collection' property", ->
+      # Target mock
+      getTarget = ->
+        target = new OVirtApiNode
+        for key, value of target when _.isFunction value
+          addSpy target, key, value
+
+        target
+
+      describe "#exportCollections", ->
+
+        it "should set target's collections", ->
+          hydrator = do getHydrator
+          target = do getTarget
+          hydrator.exportCollections 'collections', target
+          expect(target.setCollections).to.have.been.called.once
+          expect(target.setCollections).to.have.been.called.with 'collections'
+
+
+      describe "#exportProperties", ->
+
+        it "should assign properties to target's 'properties' property", ->
+          hydrator = do getHydrator
+          target = do getTarget
+          hydrator.exportProperties 'properties', target
+          expect(target.setProperties).to.have.been.called.once
+          expect(target.setProperties).to.have.been.called.with 'properties'
+
+
+      describe "#extractAttributes", ->
         hydrator = do getHydrator
-        hydrator.exportCollections 'collections', target = {}
-        expect(target).to.have.property 'collections', 'collections'
+        target = do getTarget
+        node = eggs: 'SPAM'
+        attributes = ham: 'SPAM'
+        node[ATTRKEY] = attributes
+        hydrator.extractAttributes node, target
+
+        it "should assign node attributes to target 'attribute' property", ->
+          expect(target.setAttributes).to.have.been.called.once
+          expect(target.setAttributes).to.have.been.called.with attributes
+
+        it "should remove attributes from node", ->
+          expect(node).to.have.not.property ATTRKEY
 
 
-    describe "#exportProperties", ->
+      describe "#exportResourceLinks", ->
 
-      it "should assign properties to target's 'properties' property", ->
-        hydrator = do getHydrator
-        hydrator.exportProperties 'properties', target = {}
-        expect(target).to.have.property 'properties', 'properties'
+        it "should assign resources to target's 'resourceLinks' property", ->
+          hydrator = do getHydrator
+          target = do getTarget
+          hydrator.exportResourceLinks 'resourceLinks', target
+          expect(target.setResourceLinks).to.have.been.called.once
+          expect(target.setResourceLinks)
+            .to.have.been.called.with 'resourceLinks'
 
 
-    describe "#extractAttributes", ->
-      hydrator = do getHydrator
-      node = eggs: 'SPAM'
-      attributes = ham: 'SPAM'
-      node[ATTRKEY] = attributes
-      hydrator.extractAttributes node, target = {}
+      describe "#exportActions", ->
 
-      it "should assign node attributes to target 'attribute' property", ->
-        expect(target).to.have.property 'attributes', attributes
-
-      it "should remove attributes from node", ->
-        expect(node).to.have.not.property ATTRKEY
+        it "should assign actions to target's 'actions' property", ->
+          hydrator = do getHydrator
+          target = do getTarget
+          hydrator.exportActions 'actions', target
+          expect(target.setActions).to.have.been.called.once
+          expect(target.setActions).to.have.been.called.with 'actions'
 
 
     describe "#hydrateResourceLinks", ->
@@ -581,22 +620,6 @@ describe 'OVirtResponseHydrator', ->
         result =
           hydrator.hydrateActions 'xpath', node = {}, new OVirtApiNode
         expect(result).to.be.equal node
-
-
-    describe "#exportResourceLinks", ->
-
-      it "should assign resources to target's 'resourceLinks' property", ->
-        hydrator = do getHydrator
-        hydrator.exportResourceLinks 'resourceLinks', target = {}
-        expect(target).to.have.property 'resourceLinks', 'resourceLinks'
-
-
-    describe "#exportActions", ->
-
-      it "should assign actions to target's 'actions' property", ->
-        hydrator = do getHydrator
-        hydrator.exportActions 'actions', target = {}
-        expect(target).to.have.property 'actions', 'actions'
 
 
     describe "#hydrateAction", ->

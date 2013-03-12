@@ -35,15 +35,31 @@ describe 'OVirtApiNode', ->
       expect(API_NODE_TYPES).to.have.property 'resource', OVirtResource
       expect(API_NODE_TYPES).to.have.property 'action', OVirtAction
 
-    it "should have .collections property", ->
+    it "should have #$actions property", ->
       apiNode = do getApiNode
-      expect(apiNode).to.have.property 'collections'
+      expect(apiNode).to.have.property '$actions'
 
-    it "should have .properties property", ->
+    it "should have #$attributes property", ->
       apiNode = do getApiNode
-      expect(apiNode).to.have.property 'properties'
+      expect(apiNode).to.have.property '$attributes'
 
-    it "should map all .properties to itself", ->
+    it "should have #$collections property", ->
+      apiNode = do getApiNode
+      expect(apiNode).to.have.property '$collections'
+
+    it "should have #$owner property", ->
+      apiNode = do getApiNode
+      expect(apiNode).to.have.property '$owner'
+
+    it "should have #$properties property", ->
+      apiNode = do getApiNode
+      expect(apiNode).to.have.property '$properties'
+
+    it "should have #$resourceLinks property", ->
+      apiNode = do getApiNode
+      expect(apiNode).to.have.property '$resourceLinks'
+
+    it "should map all #properties to itself", ->
       apiNode = do getApiNode
       for property of apiNode.properties
         expect(apiNode).to.have.own.property property, apiNode.properties[property]

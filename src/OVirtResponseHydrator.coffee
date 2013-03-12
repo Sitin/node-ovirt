@@ -567,7 +567,7 @@ class OVirtResponseHydrator
   # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportCollections: (collections, target) ->
-    target.collections = collections
+    target.setCollections collections
 
   #
   # Exports resource links to target API node
@@ -576,7 +576,7 @@ class OVirtResponseHydrator
   # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportResourceLinks: (resourceLinks, target) ->
-    target.resourceLinks = resourceLinks
+    target.setResourceLinks resourceLinks
 
   #
   # Exports node properties to target API node
@@ -585,7 +585,7 @@ class OVirtResponseHydrator
   # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportProperties: (properties, target) ->
-    target.properties = properties
+    target.setProperties properties
 
   #
   # Exports actions to target API node
@@ -594,7 +594,7 @@ class OVirtResponseHydrator
   # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportActions: (actions, target) ->
-    target.actions = actions
+    target.setActions actions
 
   #
   # Extract attributes from node and assign to hydration target.
@@ -604,7 +604,7 @@ class OVirtResponseHydrator
   #
   extractAttributes: (node, target) ->
     attributes = @_getAttributes node
-    target.attributes = attributes
+    target.setAttributes attributes
     try delete node[@ATTRIBUTE_KEY]
 
   #
