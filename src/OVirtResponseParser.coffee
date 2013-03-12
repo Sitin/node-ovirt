@@ -5,11 +5,16 @@ xml2js = require 'xml2js'
 
 # Dependencies.
 config = require __dirname + '/config'
+{CoffeeMix} = require 'coffee-mix'
+Mixins = require __dirname + '/Mixins/'
 {OVirtApiNode} = require __dirname + '/ApiNodes'
 OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 
 
-class OVirtResponseParser
+# @include Mixins.PropertyDistributor
+class OVirtResponseParser extends CoffeeMix
+  @include Mixins.PropertyDistributor
+
   # Defaults
   _target: null
   _response: ''
@@ -45,14 +50,8 @@ class OVirtResponseParser
   # @option options response [String] oVirt XML response
   #
   constructor: (options) ->
-    # We need only properties those are in the prototype
-    for key of options
-      if typeof @['_' + key] isnt 'undefined'
-        # Try to set via setter if exists:
-        if typeof @__lookupSetter__(key) isnt 'function'
-          @['_' + key] = options[key]
-        else
-          @[key] = options[key]
+    # Setup properties
+    @setupExistedProperties options
 
     # Set validator to current instance #hydrate method
     @_parserOptions.validator = @hydrate

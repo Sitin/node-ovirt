@@ -442,7 +442,7 @@ describe 'OVirtResponseHydrator', ->
         expect(result).to.be.equal node
 
 
-    describe.skip "Properties export", ->
+    describe "Properties export", ->
       addSpy = (target, key, value) ->
         target[key] = chai.spy value
 

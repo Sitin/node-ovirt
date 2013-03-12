@@ -4,6 +4,7 @@
 {CoffeeMix} = require 'coffee-mix'
 _ = require 'lodash'
 ApiNodes = {}
+Mixins = require __dirname + '/../Mixins/'
 
 
 RESTRICTED_KEYS = [
@@ -37,7 +38,11 @@ RESTRICTED_KEYS = [
 # 36. To perform API call a node requests oVirt connection to create an API
 #     request object, configurates it and executes.
 #
+# @include Mixins.PropertyDistributor
+#
 OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
+  @include Mixins.PropertyDistributor
+
   # Hack that forces Codo to see properties
   get = @get
   set = @set
@@ -91,6 +96,18 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     @_$collections = collections
 
   #
+  # @property [OVirtConnection]
+  #   current connection instance
+  #
+  get $connection: -> @_$connection
+  #
+  # Sets API node connection.
+  #
+  # @param collections [OVirtConnection]
+  #
+  setConnection: (connection) ->
+
+  #
   # @property [ApiNodes.OVirtApiNode] current node owner
   #
   get $owner: -> @_$owner
@@ -124,7 +141,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     @populateResourceLinks resourceLinks
     @_$resourceLinks = resourceLinks
 
-  constructor: ->
+  constructor: (options = {}) ->
     # Set instance defaults
     @_$actions = {}
     @_$attributes = {}
@@ -132,6 +149,9 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     @_$owner = null
     @_$properties = {}
     @_$resourceLinks = {}
+
+    # Setup properties
+    @setupExistedProperties options
 
   #
   # Populates passed properties over API node instance.

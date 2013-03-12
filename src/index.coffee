@@ -7,3 +7,4 @@ module.exports =
   OVirtResponseHydrator: require __dirname + '/OVirtResponseHydrator'
   OVirtResponseParser: require __dirname + '/OVirtResponseParser'
   ApiNodes: require __dirname + '/ApiNodes/'
+  Mixins: require __dirname + '/Mixins/'
