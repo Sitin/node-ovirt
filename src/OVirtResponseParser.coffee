@@ -13,7 +13,12 @@ OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 
 # @include Mixins.PropertyDistributor
 class OVirtResponseParser extends CoffeeMix
+  # Included Mixins
   @include Mixins.PropertyDistributor
+
+  # Hack that forces Codo to see properties
+  get = @get
+  set = @set
 
   # Defaults
   _target: null
@@ -21,12 +26,6 @@ class OVirtResponseParser extends CoffeeMix
   _Hydrator: OVirtResponseHydrator
   _hydrator: null
   _parserOptions: config.parser
-
-  #
-  # Utility methods that help to create getters and setters.
-  #
-  get = (props) => @:: __defineGetter__ name, getter for name, getter of props
-  set = (props) => @::__defineSetter__ name, setter for name, setter of props
 
   #
   # @property [ApiNodes.OVirtApiNode] target API node
