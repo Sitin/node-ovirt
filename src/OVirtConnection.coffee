@@ -72,9 +72,8 @@ class OVirtConnection extends CoffeeMix
   # @option options password [String]
   #
   constructor: (options) ->
-    # We need only properties those are in the prototype
-    for key of options
-      @['_' + key] = options[key] if typeof @['_' + key] isnt 'undefined'
+    # Setup privates
+    @setupPrivateProperties options
 
 
 module.exports = OVirtConnection

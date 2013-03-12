@@ -30,5 +30,18 @@ Mixins.PropertyDistributor =
 
     @
 
+  #
+  # Sets values for existed private properties.
+  #
+  # @param properties [Object] property values
+  #
+  # @return [Object] current instance
+  #
+  setupPrivateProperties: (properties) ->
+    for key of properties
+      @['_' + key] = properties[key] if typeof @['_' + key] isnt 'undefined'
+
+    @
+
 
 module.exports = Mixins.PropertyDistributor
