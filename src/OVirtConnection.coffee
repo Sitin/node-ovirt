@@ -1,7 +1,7 @@
 "use strict"
 
 
-OVirtApi = require __dirname + '/OVirtApi'
+{OVirtApi} = require __dirname + '/ApiNodes/'
 
 
 #

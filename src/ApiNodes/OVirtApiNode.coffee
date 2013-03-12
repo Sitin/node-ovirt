@@ -1,7 +1,7 @@
 "use strict"
 
 
-OVirtCollection = require __dirname + '/OVirtCollection'
+ApiNodes = {}
 
 
 #
@@ -26,7 +26,7 @@ OVirtCollection = require __dirname + '/OVirtCollection'
 # 36. To perform API call a node requests oVirt connection to create an API
 #     request object, configurates it and executes.
 #
-class OVirtApiNode
+OVirtApiNode = class ApiNodes.OVirtApiNode
   #
   # Each OVirtApiNode child adds themself to this hash.
   #

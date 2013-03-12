@@ -1,10 +1,11 @@
 "use strict"
 
 
-OVirtApiNode = require __dirname + '/OVirtApiNode'
+ApiNodes =
+  OVirtApiNode: require __dirname + '/OVirtApiNode'
 
 
-class OVirtCollection extends OVirtApiNode
+OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   #
   # Utility methods that help to create getters and setters.
   #
@@ -40,7 +41,7 @@ class OVirtCollection extends OVirtApiNode
     @_searchOptions = options
 
 
-OVirtApiNode.API_NODE_TYPES.collection = OVirtCollection
+ApiNodes.OVirtApiNode.API_NODE_TYPES.collection = OVirtCollection
 
 module.exports = OVirtCollection
 

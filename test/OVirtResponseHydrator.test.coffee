@@ -14,10 +14,10 @@ fs = require 'fs'
 config = require '../lib/config'
 
 # SUT
-{OVirtResponseHydrator} = require '../lib/'
+{OVirtResponseHydrator, ApiNodes} = require '../lib/'
 
 # Dependencies
-{OVirtAction, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource, OVirtResourceLink} = require '../lib/'
+{OVirtAction, OVirtApi, OVirtApiNode, OVirtCollection, OVirtResource, OVirtResourceLink} = ApiNodes
 
 
 describe 'OVirtResponseHydrator', ->

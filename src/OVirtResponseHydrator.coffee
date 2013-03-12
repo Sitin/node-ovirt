@@ -6,12 +6,14 @@ path = require 'path'
 
 # Dependencies.
 config = require __dirname + '/config'
-OVirtAction = require __dirname + '/OVirtAction'
-OVirtApi = require __dirname + '/OVirtApi'
-OVirtApiNode = require __dirname + '/OVirtApiNode'
-OVirtCollection = require __dirname + '/OVirtCollection'
-OVirtResource = require __dirname + '/OVirtResource'
-OVirtResourceLink = require __dirname + '/OVirtResourceLink'
+{
+  OVirtAction
+  OVirtApi
+  OVirtApiNode
+  OVirtCollection
+  OVirtResource
+  OVirtResourceLink
+} = require '../lib/ApiNodes/'
 
 #
 # This class hydrates oVirt API responses mapped to hashes by
@@ -192,7 +194,7 @@ class OVirtResponseHydrator
   set = (props) => @::__defineSetter__ name, setter for name, setter of props
 
   #
-  # @property [OVirtApiNode] target API node
+  # @property [ApiNodes.OVirtApiNode] target API node
   #
   get target: -> @_target
   set target: (target) ->
@@ -212,7 +214,7 @@ class OVirtResponseHydrator
   # subject.
   #
   # If target is a string then it tries convert it to API node constructor
-  # using {OVirtApiNode API node's} types hash (API_NODE_TYPES).
+  # using {ApiNodes.OVirtApiNode API node's} types hash (API_NODE_TYPES).
   #
   # @param target [String, Function, OVirtApiNode] response subject
   #
@@ -234,7 +236,7 @@ class OVirtResponseHydrator
   #
   # Accepts hydration parameters.
   #
-  # @param  target [OVirtApiNode] response subject
+  # @param  target [ApiNodes.OVirtApiNode] response subject
   # @param  hash [Object] oVirt response as a hash
   #
   # @throw ["Hydrator's target should be an OVirtApiNode instance"]
@@ -267,7 +269,7 @@ class OVirtResponseHydrator
   # @param xpath [String] node's XPath
   # @param value [Object] node value
   #
-  # @return [OVirtApiNode] hydrated API node
+  # @return [ApiNodes.OVirtApiNode] hydrated API node
   #
   hydrateApiNode: (xpath, value) ->
     target = @_getTargetForNode xpath, value
@@ -413,7 +415,7 @@ class OVirtResponseHydrator
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
-  # @param target [OVirtApiNode] node hydration target
+  # @param target [ApiNodes.OVirtApiNode] node hydration target
   #
   # @return [Object] hydrated node
   #
@@ -435,7 +437,7 @@ class OVirtResponseHydrator
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
-  # @param target [OVirtApiNode] node hydration target
+  # @param target [ApiNodes.OVirtApiNode] node hydration target
   #
   # @return [Object] hydrated node
   #
@@ -458,7 +460,7 @@ class OVirtResponseHydrator
   #
   # @param xpath [String] xpath to node
   # @param node [Object] node to be hydrated
-  # @param target [OVirtApiNode] node hydration target
+  # @param target [ApiNodes.OVirtApiNode] node hydration target
   #
   # @return [Object] hydrated node
   #
@@ -562,7 +564,7 @@ class OVirtResponseHydrator
   # Exports colections to target API node
   #
   # @param collections [Object<OVirtCollections>] collections to export
-  # @param target [OVirtApiNode] hydration target
+  # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportCollections: (collections, target) ->
     target.collections = collections
@@ -571,7 +573,7 @@ class OVirtResponseHydrator
   # Exports resource links to target API node
   #
   # @param resourceLinks [Object] resource links to export
-  # @param target [OVirtApiNode] hydration target
+  # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportResourceLinks: (resourceLinks, target) ->
     target.resourceLinks = resourceLinks
@@ -580,7 +582,7 @@ class OVirtResponseHydrator
   # Exports node properties to target API node
   #
   # @param properties [Object] resource links to export
-  # @param target [OVirtApiNode] hydration target
+  # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportProperties: (properties, target) ->
     target.properties = properties
@@ -589,7 +591,7 @@ class OVirtResponseHydrator
   # Exports actions to target API node
   #
   # @param properties [Object<OVirtAction>] actions to export
-  # @param target [OVirtApiNode] hydration target
+  # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   exportActions: (actions, target) ->
     target.actions = actions
@@ -598,7 +600,7 @@ class OVirtResponseHydrator
   # Extract attributes from node and assign to hydration target.
   #
   # @param properties [Object] raw node value
-  # @param target [OVirtApiNode] hydration target
+  # @param target [ApiNodes.OVirtApiNode] hydration target
   #
   extractAttributes: (node, target) ->
     attributes = @_getAttributes node
@@ -767,7 +769,7 @@ class OVirtResponseHydrator
   # @param xpath [String] xpath to node
   # @param node [Object] node value (a hash)
   #
-  # @return [OVirtApiNode] a target for node hydration
+  # @return [ApiNodes.OVirtApiNode] a target for node hydration
   #
   _getTargetForNode: (xpath, node) ->
     if @_isRootElememntXPath xpath

@@ -9,18 +9,19 @@ chai.use spies
 # Utilities:
 _ = require 'lodash'
 
-{OVirtApi, OVirtApiNode, OVirtConnection} = require '../lib/'
+{OVirtConnection, ApiNodes} = require '../../lib/'
+{OVirtResource, OVirtApiNode} = ApiNodes
 
 
-describe 'OVirtApi', ->
-  getApi = (mixin) ->
+describe 'OVirtResource', ->
+  getResource = (mixin) ->
     mixin = {} unless mixin?
-    new OVirtApi _.defaults mixin,
+    new OVirtResource _.defaults mixin,
       connection: new OVirtConnection
 
   it "should be a function", ->
-    expect(OVirtApi).to.be.a 'function'
+    expect(OVirtResource).to.be.a 'function'
 
   it "should be inherited from OVirtApiNode", ->
-    api = do getApi
+    api = do getResource
     expect(api).to.be.an.instanceOf OVirtApiNode

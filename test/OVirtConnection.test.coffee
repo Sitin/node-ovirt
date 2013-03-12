@@ -9,7 +9,8 @@ chai.use spies
 # Utilities:
 _ = require 'lodash'
 
-{OVirtConnection, OVirtApi} = require '../lib/'
+{OVirtConnection, ApiNodes} = require '../lib/'
+{OVirtApi} = ApiNodes
 
 
 describe 'OVirtConnection', ->

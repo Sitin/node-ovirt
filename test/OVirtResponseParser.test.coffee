@@ -10,7 +10,8 @@ chai.use spies
 _ = require 'lodash'
 fs = require 'fs'
 
-{OVirtResponseParser, OVirtResponseHydrator, OVirtApi, OVirtApiNode} = require '../lib/'
+{OVirtResponseParser, OVirtResponseHydrator, ApiNodes} = require '../lib/'
+{OVirtApi, OVirtApiNode} = ApiNodes
 
 xml2js = require 'xml2js'
 

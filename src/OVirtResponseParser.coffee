@@ -5,7 +5,7 @@ xml2js = require 'xml2js'
 
 # Dependencies.
 config = require __dirname + '/config'
-OVirtApiNode = require __dirname + '/OVirtApiNode'
+{OVirtApiNode} = require __dirname + '/ApiNodes'
 OVirtResponseHydrator = require __dirname + '/OVirtResponseHydrator'
 
 
@@ -24,7 +24,7 @@ class OVirtResponseParser
   set = (props) => @::__defineSetter__ name, setter for name, setter of props
 
   #
-  # @property [OVirtApiNode] target API node
+  # @property [ApiNodes.OVirtApiNode] target API node
   #
   get target: -> @_target
   set target: (target) ->
@@ -112,9 +112,9 @@ class OVirtResponseParser
   # subject.
   #
   # If target is a string then it tries convert it to API node constructor
-  # using {OVirtApiNode API node's} types hash (API_NODE_TYPES).
+  # using {ApiNodes.OVirtApiNode API node's} types hash (API_NODE_TYPES).
   #
-  # @param target [String, Function, OVirtApiNode] response subject
+  # @param target [String, Function, ApiNodes.OVirtApiNode] response subject
   #
   # @throw [TypeError]
   #
