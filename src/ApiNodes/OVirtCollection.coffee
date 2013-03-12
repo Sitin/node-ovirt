@@ -10,6 +10,11 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   get = => @get arguments...
   set = => @set arguments...
 
+  # Defaults
+  _isSearchable: no
+  _searchOptions: {}
+  _specialObjects: {}
+
   #
   # @property [Object] search options
   #
@@ -29,13 +34,15 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   #
   get isSearchable: -> @_isSearchable
 
-  constructor: ->
-    @_isSearchable = no
-    @_searchOptions = {}
-    @_specialObjects = {}
-
+  #
+  # Sets search options.
+  #
+  # If search options are not empty then sets #isSearchable to true.
+  #
+  # @param options [Object] search options
+  #
   setSearchOptions: (options) ->
-    @_isSearchable = yes
+    @_isSearchable = options?
     @_searchOptions = options
 
 
