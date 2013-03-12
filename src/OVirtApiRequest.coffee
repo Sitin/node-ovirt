@@ -2,7 +2,6 @@
 
 
 request = require 'request'
-xml2js = require 'xml2js'
 _ = require 'lodash'
 
 
