@@ -404,7 +404,7 @@ describe 'OVirtResponseHydrator', ->
         expect(hydrator._makeCollectionsSearchable)
           .to.be.called.with 'collections', 'searchOptions'
 
-      it "should loop over related sspecial objects if existed and add them " +
+      it "should loop over related special objects if existed and add them " +
       "to corresponding collections", ->
         hydrator = do getCollectionsHydrator
         requestHydration hydrator
