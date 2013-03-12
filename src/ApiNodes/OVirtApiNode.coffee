@@ -7,15 +7,6 @@ ApiNodes = {}
 Mixins = require __dirname + '/../Mixins/'
 
 
-RESTRICTED_KEYS = [
-  'actions'
-  'attributes'
-  'collections'
-  'properties'
-  'resourceLinks'
-]
-
-
 #
 # API node level
 # ---------------
@@ -41,6 +32,7 @@ RESTRICTED_KEYS = [
 # @include Mixins.PropertyDistributor
 #
 OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
+  # Included mixins
   @include Mixins.PropertyDistributor
 
   # Hack that forces Codo to see properties
@@ -52,6 +44,19 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #
   @API_NODE_TYPES:
     {}
+
+  #
+  # List of the system properties
+  #
+  @RESTRICTED_KEYS: [
+    '$actions'
+    '$attributes'
+    '$collections'
+    '$connection'
+    '$owner'
+    '$properties'
+    '$resourceLinks'
+  ]
 
   #
   # @property [Object<ApiNodes.OVirtAction>]
@@ -165,7 +170,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     delete @[key] for key of oldProperties
     return unless typeof properties is 'object'
 
-    for key, value of properties when key not in RESTRICTED_KEYS
+    for key, value of properties when key not in OVirtApiNode.RESTRICTED_KEYS
       @consumeProperty value
       @[key] = value
 
@@ -181,7 +186,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     delete @[key] for key of @_actions
     return unless typeof actions is 'object'
 
-    for key, value of actions when key not in RESTRICTED_KEYS
+    for key, value of actions when key not in OVirtApiNode.RESTRICTED_KEYS
       @addAction key, value
 
   #
@@ -197,7 +202,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     delete @[key] for key of @_resourceLinks
     return unless typeof resourceLinks is 'object'
 
-    for key, value of resourceLinks when key not in RESTRICTED_KEYS
+    for key, value of resourceLinks when key not in OVirtApiNode.RESTRICTED_KEYS
       @addResourceLink key, value
 
   #
