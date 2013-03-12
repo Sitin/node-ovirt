@@ -58,6 +58,15 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     '$resourceLinks'
   ]
 
+  # Defaults
+  _$actions: {}
+  _$attributes: {}
+  _$collections: {}
+  _$connection: null
+  _$owner: null
+  _$properties: {}
+  _$resourceLinks: {}
+
   #
   # @property [Object<ApiNodes.OVirtAction>]
   #   actions that belongs to current API node
@@ -152,15 +161,6 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     @_$resourceLinks = resourceLinks
 
   constructor: (options = {}) ->
-    # Set instance defaults
-    @_$actions = {}
-    @_$attributes = {}
-    @_$collections = {}
-    @_$connection = null
-    @_$owner = null
-    @_$properties = {}
-    @_$resourceLinks = {}
-
     # Setup properties
     @setupExistedProperties options
 
