@@ -12,7 +12,7 @@ Mixins.ApiNodeTargetOwner =
   #
   # Sets current target.
   #
-  # If target is a function the it considered as a constructor of the response
+  # If target is a function then it considered as a constructor of the response
   # subject.
   #
   # If target is a string then it tries convert it to API node constructor
