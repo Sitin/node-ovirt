@@ -2,6 +2,8 @@
 
 
 {OVirtApi} = require __dirname + '/ApiNodes/'
+{CoffeeMix} = require 'coffee-mix'
+Mixins = require __dirname + '/Mixins/'
 
 
 #
@@ -9,7 +11,13 @@
 # oVirt instance.
 # The root API resource is available as an .api property.
 #
-class OVirtConnection
+class OVirtConnection extends CoffeeMix
+  # Included Mixins
+  @include Mixins.PropertyDistributor
+
+  # CoffeeMix property helpers
+  get = => @get arguments...
+  set = => @set arguments...
 
   # Defaults.
   _protocol: 'https'
@@ -20,8 +28,6 @@ class OVirtConnection
 
   # This one is used to inject oVirt root resource class as a dependency.
   _OVirtApi: OVirtApi
-
-  get = (props) => @::__defineGetter__ name, getter for name, getter of props
 
   #
   # @property [OVirtApi] oVirt API root resource

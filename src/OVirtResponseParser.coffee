@@ -17,9 +17,9 @@ class OVirtResponseParser extends CoffeeMix
   @include Mixins.PropertyDistributor
   @include Mixins.ApiNodeTargetOwner
 
-  # Hack that forces Codo to see properties
-  get = @get
-  set = @set
+  # CoffeeMix property helpers
+  get = => @get arguments...
+  set = => @set arguments...
 
   # Defaults
   _target: null

@@ -6,9 +6,9 @@ ApiNodes =
 
 
 OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
-  # Hack that forces Codo to see properties
-  get = @get
-  set = @set
+  # CoffeeMix property helpers
+  get = => @get arguments...
+  set = => @set arguments...
 
   #
   # @property [Object] search options

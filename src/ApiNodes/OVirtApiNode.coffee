@@ -35,9 +35,9 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   # Included mixins
   @include Mixins.PropertyDistributor
 
-  # Hack that forces Codo to see properties
-  get = @get
-  set = @set
+  # CoffeeMix property helpers
+  get = => @get arguments...
+  set = => @set arguments...
 
   #
   # Each OVirtApiNode child adds themself to this hash.
