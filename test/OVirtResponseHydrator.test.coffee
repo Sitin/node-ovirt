@@ -760,57 +760,6 @@ describe 'OVirtResponseHydrator', ->
         .to.be.undefined
 
 
-  describe "#getRootElementName", ->
-    hydrator = do getHydrator.withSpies
-
-    it "should simply return the name of the hash's root key", ->
-      expect(hydrator.getRootElementName spam: Spam: 'SPAM').to.be.equal 'spam'
-
-    it "should return undefined for hashes without single root element", ->
-      expect(hydrator.getRootElementName spam: 'SPAM', eggs: 'SPAM')
-        .to.be.undefined
-
-    it "should return undefined for empty hashes", ->
-      expect(hydrator.getRootElementName {}).to.be.undefined
-
-    it "should use instance hash property if no parameter specified", ->
-      hydrator.hash = spam: Spam: 'SPAM'
-      expect(do hydrator.getRootElementName).to.be.equal 'spam'
-
-    it "shouldn't expand a hash that contains just one array property", ->
-      hydrator.hash = spam: ['SPAM']
-      expect(do hydrator.getRootElementName).to.be.undefined
-
-    it "should work with non-objects", ->
-      hydrator.hash = null
-      expect(-> hydrator.getRootElementName null).to.not.throw Error
-      expect(hydrator.getRootElementName null).to.be.undefined
-      expect(-> hydrator.getRootElementName "not an object").to.not.throw Error
-      expect(hydrator.getRootElementName "not an object").to.be.undefined
-
-
-  describe "#unfolded", ->
-    hydrator = do getHydrator.withSpies
-
-    it "should return value of the hash root element", ->
-      hash = spam: Spam: 'SPAM'
-      expect(hydrator.unfolded hash).to.be.equal hash.spam
-
-    it "should return a hash itself if there no root element", ->
-      hash = spam: 'SPAM', eggs: 'SPAM'
-      expect(hydrator.unfolded hash).to.be.equal hash
-
-    it "should use instance hash property if no parameter specified", ->
-      hydrator.hash = hash = spam: Spam: 'SPAM'
-      expect(do hydrator.unfolded).to.be.equal hash.spam
-
-    it "should work with non-objects", ->
-      hydrator.hash = null
-      expect(-> hydrator.unfolded null).to.not.throw Error
-      expect(hydrator.unfolded null).to.be.undefined
-      expect(-> hydrator.unfolded "not an object").to.not.throw Error
-
-
   describe "Detection of different node types", ->
 
 
@@ -1429,24 +1378,6 @@ describe 'OVirtResponseHydrator', ->
       emptyHash = {}
       expect(hydrator._hasAttributes hash).to.be.false
       expect(hydrator._hasAttributes emptyHash).to.be.false
-
-
-  describe "#_getElementChildren", ->
-    hydrator = do getHydrator.withSpies
-
-    it "should return undefined for non-objects and arrays", ->
-      expect(hydrator._getElementChildren "SPAAAM!").to.be.undefined
-      expect(hydrator._getElementChildren []).to.be.undefined
-
-    it "should return an object for any passed object", ->
-      expect(hydrator._getElementChildren {}).to.be.an.object
-
-    it "should return children elements if existed", ->
-      children = ham: "with": sausages: "and": "SPAM"
-      hash = _.clone children
-      hash[ATTRKEY] = eggs: "SPAM"
-      expect(hydrator._getElementChildren children).to.be.deep.equal children
-      expect(hydrator._getElementChildren hash).to.be.deep.equal children
 
 
   describe "#_mergeAttributes", ->
