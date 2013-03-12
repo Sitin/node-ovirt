@@ -27,7 +27,7 @@ class OVirtConnection
   # @property [OVirtApi] oVirt API root resource
   #
   get api: ->
-    @_api = new @_OVirtApi @ unless @_api
+    @_api = new @_OVirtApi $connection: @ unless @_api
     @_api
 
   #
