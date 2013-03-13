@@ -22,7 +22,11 @@ if not module.parent
     connection = new lib.OVirtConnection require './private.json'
     connection.connect (error, api) ->
       console.log error if error
-      inspect api unless error
+      unless error
+        inspect api
+        api.vms.findAll (error, vms) ->
+          console.log error if error
+          inspect vms unless error
 
   dumpFileHash = (response, target = 'api') ->
     parser = new lib.OVirtResponseParser

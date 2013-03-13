@@ -1,11 +1,15 @@
 "use strict"
 
 
+{Mixins} = require 'coffee-mix'
 ApiNodes =
   OVirtApiNode: require __dirname + '/OVirtApiNode'
 
 
 OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
+  # Included Mixins
+  @include Mixins.Outgrowthable
+
   # CoffeeMix property helpers
   get = => @get arguments...
   set = => @set arguments...
@@ -44,6 +48,10 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   setSearchOptions: (options) ->
     @_isSearchable = options?
     @_searchOptions = options
+
+  findAll: (callback) ->
+    target = do @$outgrow
+    @$connection.performRequest target, uri: @href, callback
 
 
 ApiNodes.OVirtApiNode.API_NODE_TYPES.collection = OVirtCollection
