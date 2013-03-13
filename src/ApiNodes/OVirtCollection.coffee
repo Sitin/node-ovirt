@@ -2,6 +2,7 @@
 
 
 {Mixins} = require 'coffee-mix'
+Fiber = require 'fibers'
 ApiNodes =
   OVirtApiNode: require __dirname + '/OVirtApiNode'
 
@@ -50,9 +51,14 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
     @_searchOptions = options
 
   findAll: (callback) ->
-    target = do @$outgrow
-    @$connection.performRequest target, uri: @href, callback
+    fiber = Fiber.current
 
+    target = do @$outgrow
+    @$connection.performRequest target, uri: @href, (err, entries) ->
+      fiber.run(entries) if fiber?
+      callback err, entries if callback?
+
+    do Fiber.yield if fiber?
 
 ApiNodes.OVirtApiNode.API_NODE_TYPES.collection = OVirtCollection
 

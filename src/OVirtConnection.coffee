@@ -2,6 +2,7 @@
 
 
 _ = require 'lodash'
+Fiber = require 'fibers'
 
 OVirtApiRequest = require __dirname + '/OVirtApiRequest'
 OVirtResponseParser = require __dirname + '/OVirtResponseParser'
@@ -85,7 +86,13 @@ class OVirtConnection extends CoffeeMix
   # @param callback [Function]
   #
   connect: (callback) ->
-    @performRequest @api, callback
+    fiber = Fiber.current
+
+    @performRequest @api, (error, api) ->
+      fiber.run api if fiber?
+      callback error, api if callback?
+
+    do Fiber.yield if fiber?
 
   #
   # Performs request to oVirt REST API.

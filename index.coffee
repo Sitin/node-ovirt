@@ -2,6 +2,7 @@
 
 
 lib = require __dirname + '/lib/'
+Fiber = require 'fibers'
 
 
 if not module.parent
@@ -19,14 +20,12 @@ if not module.parent
     fs.readFileSync "#{__dirname}/test/responses/#{name}.xml"
 
   dumpHydratedRequest = ->
-    connection = new lib.OVirtConnection require './private.json'
-    connection.connect (error, api) ->
-      console.log error if error
-      unless error
-        inspect api
-        api.vms.findAll (error, vms) ->
-          console.log error if error
-          inspect vms unless error
+    fiber = Fiber ->
+      connection = new lib.OVirtConnection require './private.json'
+      api = do connection.connect
+      inspect api
+      inspect do api.vms.findAll
+    do fiber.run
 
   dumpFileHash = (response, target = 'api') ->
     parser = new lib.OVirtResponseParser
