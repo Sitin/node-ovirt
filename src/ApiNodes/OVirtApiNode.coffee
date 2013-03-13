@@ -240,7 +240,6 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #
   addResourceLink: (name, resourceLink) ->
     resourceLink.$owner = @
-    resourceLink.name = name
     @.__defineGetter__ name, resourceLink.resolve
 
   #

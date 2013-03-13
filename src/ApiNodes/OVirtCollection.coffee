@@ -2,13 +2,12 @@
 
 
 querystring = require 'querystring'
-
 _ = require 'lodash'
 CoffeeMix = require 'coffee-mix'
 
-Mixins = require __dirname + '/../Mixins/'
 ApiNodes =
   OVirtApiNode: require __dirname + '/OVirtApiNode'
+Mixins = require __dirname + '/../Mixins/'
 
 
 OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode

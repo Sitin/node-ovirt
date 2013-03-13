@@ -389,8 +389,10 @@ class OVirtResponseHydrator
   # @return [OVirtResource] hydrated resource link
   #
   hydrateResourceLink: (xpath, node) ->
-    resourceLink = new OVirtResourceLink
     name = path.basename xpath
+    attributes = @_getAttributes node
+    _.merge attributes, name: name
+    resourceLink = new OVirtResourceLink $attributes: attributes
     parentXpath = path.dirname xpath
     @registerIn @_resourceLinks, parentXpath, name, resourceLink
 

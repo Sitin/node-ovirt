@@ -25,10 +25,12 @@ if not module.parent
       connection = new lib.OVirtConnection require './private.json'
       api =  do connection.connect
       vms = api.vms.findAll name: 'db-vm2'
-      nics = vms[0].nics.getAll()
-      statistics = nics[0].statistics.getAll()
+      vm = vms[0]
+      nics = vm.nics.getAll()
+      nic = nics[0]
+      cluster = nic.vm.cluster
 
-      inspect statistics
+      inspect cluster.$attributes
     do fiber.run
 
   dumpFileHash = (response, target = 'api') ->
