@@ -84,23 +84,38 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
         .replace /{query}/, querystring.stringify criteria, '&', '%3D'
 
     target = do @$outgrow
-    @$connection.performRequest target, uri: uri, (error, entries) ->
+    @$connection.performRequest target, uri: uri, (error, collection) =>
       # We want raw result in case of error
       unless error?
         # Properties are what we need
-        entries = entries.$properties
-
-        # Unfold root element
-        if Object.keys(entries).length is 1
-          entries = entries[Object.keys(entries)[0]]
-
-        # Empty array should represent epmty set
-        entries = [] if _.isEmpty entries
-
-        # Even singleton objects should be in array
-        entries = [entries] unless _.isArray entries
+        entries = @_formatCollectionEntries collection
 
       callback error, entries if callback?
+
+  #
+  # Formats collections entries.
+  #
+  # @param collection [ApiNodes.OVirtCollection]
+  #
+  # @return [Array] array of entries
+  #
+  # @private
+  #
+  _formatCollectionEntries: (collection) ->
+    # Properties are what we need
+    entries = collection.$properties
+
+    # Unfold root element
+    if Object.keys(entries).length is 1
+      entries = entries[Object.keys(entries)[0]]
+
+    # Empty array should represent epmty set
+    entries = [] if _.isEmpty entries
+
+    # Even singleton objects should be in array
+    entries = [entries] unless _.isArray entries
+
+    entries
 
 ApiNodes.OVirtApiNode.API_NODE_TYPES.collection = OVirtCollection
 

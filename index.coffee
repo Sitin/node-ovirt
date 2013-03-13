@@ -3,6 +3,7 @@
 
 lib = require __dirname + '/lib/'
 Fiber = require 'fibers'
+_ = require 'lodash'
 
 
 if not module.parent
@@ -23,8 +24,11 @@ if not module.parent
     fiber = Fiber ->
       connection = new lib.OVirtConnection require './private.json'
       api =  do connection.connect
-      vms = api.vms.findAll name: 'proxy'
-      inspect vms
+      vms = api.vms.findAll name: 'db-vm2'
+      nics = vms[0].nics.getAll()
+      statistics = nics[0].statistics.getAll()
+
+      inspect statistics
     do fiber.run
 
   dumpFileHash = (response, target = 'api') ->
