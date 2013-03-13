@@ -22,7 +22,9 @@ if not module.parent
   dumpHydratedRequest = ->
     fiber = Fiber ->
       connection = new lib.OVirtConnection require './private.json'
-      inspect connection.connect().vms.getAll()
+      api =  do connection.connect
+      vms = api.vms.findAll name: 'proxy'
+      inspect vms
     do fiber.run
 
   dumpFileHash = (response, target = 'api') ->

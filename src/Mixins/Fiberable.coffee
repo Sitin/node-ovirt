@@ -57,6 +57,12 @@ Mixins.Fiberable =
       ctx = @
       fiber = Fiber.current
 
+      # Fix paramteters if callback wasn't specified
+      if _.isEmpty(params) and not _.isUndefined callback
+        if not _.isFunction callback
+          params = [callback]
+          callback = undefined
+
       fiberizedCallback = (error, results...) ->
         # Fiberized behaviour
         if fiber?
