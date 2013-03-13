@@ -1,7 +1,8 @@
 "use strict"
 
 
-{Mixins} = require 'coffee-mix'
+CoffeeMix = require 'coffee-mix'
+Mixins = require __dirname + '/../Mixins/'
 Fiber = require 'fibers'
 ApiNodes =
   OVirtApiNode: require __dirname + '/OVirtApiNode'
@@ -9,7 +10,8 @@ ApiNodes =
 
 OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   # Included Mixins
-  @include Mixins.Outgrowthable
+  @include Mixins.Fiberable, ['getAll']
+  @include CoffeeMix.Mixins.Outgrowthable
 
   # CoffeeMix property helpers
   get = => @get arguments...
@@ -50,15 +52,18 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
     @_isSearchable = options?
     @_searchOptions = options
 
-  findAll: (callback) ->
-    fiber = Fiber.current
-
+  #
+  # Retrieves all collection objects.
+  #
+  # @note This method returns meaningfull results only inside of a fiber.
+  #
+  # @param callback [Function]
+  #
+  # @return [Array<ApiNodes.OVirtApiNodes>] retrieved objects
+  #
+  getAll: (callback) ->
     target = do @$outgrow
-    @$connection.performRequest target, uri: @href, (err, entries) ->
-      fiber.run(entries) if fiber?
-      callback err, entries if callback?
-
-    do Fiber.yield if fiber?
+    @$connection.performRequest target, uri: @href, callback
 
 ApiNodes.OVirtApiNode.API_NODE_TYPES.collection = OVirtCollection
 

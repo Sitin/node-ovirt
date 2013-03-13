@@ -2,7 +2,6 @@
 
 
 _ = require 'lodash'
-Fiber = require 'fibers'
 
 OVirtApiRequest = require __dirname + '/OVirtApiRequest'
 OVirtResponseParser = require __dirname + '/OVirtResponseParser'
@@ -18,6 +17,7 @@ Mixins = require __dirname + '/Mixins/'
 #
 class OVirtConnection extends CoffeeMix
   # Included Mixins
+  @include Mixins.Fiberable, ['connect']
   @include Mixins.PropertyDistributor
 
   # CoffeeMix property helpers
@@ -83,16 +83,14 @@ class OVirtConnection extends CoffeeMix
   #
   # Retrieves oVirt API {ApiNodes.OVirtApi root node}.
   #
+  # @note This method returns meaningfull results only inside of a fiber.
+  #
   # @param callback [Function]
   #
+  # @return [ApiNodes.OVirtApi] oVirt API root node
+  #
   connect: (callback) ->
-    fiber = Fiber.current
-
-    @performRequest @api, (error, api) ->
-      fiber.run api if fiber?
-      callback error, api if callback?
-
-    do Fiber.yield if fiber?
+    @performRequest @api, callback
 
   #
   # Performs request to oVirt REST API.
