@@ -329,8 +329,10 @@ class OVirtResponseHydrator
   #
   hydrateCollectionLink: (xpath, node) ->
     attributes = @_getAttributes node
-    collection = new OVirtCollection attributes
+    collection = new OVirtCollection $attributes: attributes
+
     parentXpath = path.dirname xpath
+
     @registerIn @_collections,
       parentXpath, 'instances', attributes.rel,
       collection
@@ -349,6 +351,7 @@ class OVirtResponseHydrator
     searchOptions = @_getAttributes node
     name = path.dirname searchOptions.rel
     parentXpath = path.dirname xpath
+
     @registerIn @_collections,
       parentXpath, 'searchOptions', name,
       searchOptions
@@ -365,10 +368,12 @@ class OVirtResponseHydrator
   #
   hydrateSpecialObject: (xpath, node) ->
     attributes = @_getAttributes node
-    specialObject = new OVirtResourceLink
+    specialObject = new OVirtResourceLink $attributes: attributes
+
     collection = path.dirname attributes.rel
     name = path.basename attributes.rel
     ownerXpath = path.dirname path.dirname xpath
+
     @registerIn @_collections,
       ownerXpath, 'specialObjects', collection, name,
       specialObject

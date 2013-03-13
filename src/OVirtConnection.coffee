@@ -1,6 +1,10 @@
 "use strict"
 
 
+_ = require 'lodash'
+
+OVirtApiRequest = require __dirname + '/OVirtApiRequest'
+OVirtResponseParser = require __dirname + '/OVirtResponseParser'
 {OVirtApi} = require __dirname + '/ApiNodes/'
 {CoffeeMix} = require 'coffee-mix'
 Mixins = require __dirname + '/Mixins/'
@@ -74,6 +78,55 @@ class OVirtConnection extends CoffeeMix
   constructor: (options) ->
     # Setup privates
     @setupPrivateProperties options
+
+  #
+  # Retrieves oVirt API {ApiNodes.OVirtApi root node}.
+  #
+  # @param callback [Function]
+  #
+  connect: (callback) ->
+    @performRequest @api, callback
+
+  #
+  # Performs request to oVirt REST API.
+  #
+  # @overload performRequest(target, callback)
+  #   @param target [ApiNodes.OVirtApiNode] request target
+  #   @param callback [Function]
+  #
+  # @overload performRequest(target, options, callback)
+  #   @param target [ApiNodes.OVirtApiNode] request target
+  #   @param options [Object]
+  #   @param callback [Function]
+  #
+  performRequest: (target, options, callback) ->
+    # Check for overloadings
+    if _.isFunction options
+      callback = options
+      options = {}
+
+    # Construnct options
+    _.defaults options, uri: @uri
+    options.connection = @
+
+    request = new OVirtApiRequest options
+
+    request.call (error, xml) =>
+      unless error
+        @parseResponse target, xml, callback
+      else
+        callback error
+
+  #
+  # Parses response
+  #
+  # @param target [ApiNodes.OVirtApiNode] request target
+  # @param xml [Buffer, String]
+  # @param callback [Function]
+  #
+  parseResponse: (target, xml, callback) ->
+    parser = new OVirtResponseParser target: target, response: xml
+    parser.parse callback
 
 
 module.exports = OVirtConnection

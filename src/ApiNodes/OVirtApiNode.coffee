@@ -72,6 +72,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   actions that belongs to current API node
   #
   get $actions: -> @_$actions
+  set $actions: (actions) -> setActions actions
   #
   # Sets API node actions.
   #
@@ -86,6 +87,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   attributes that belongs to current API node
   #
   get $attributes: -> @_$attributes
+  set $attributes: (attributes) -> @setAttributes attributes
   #
   # Sets API node attributes.
   #
@@ -100,6 +102,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   collections that belongs to current API level
   #
   get $collections: -> @_$collections
+  set $collections: (collections) -> setCollections collections
   #
   # Sets API node collections.
   #
@@ -137,6 +140,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   properties that belongs to current API node
   #
   get $properties: -> @_$properties
+  set $properties: (properties) -> setProperties properties
   #
   # Sets API node properties.
   #
@@ -151,6 +155,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   resource links that belongs to current API node
   #
   get $resourceLinks: -> @_$resourceLinks
+  set $resourceLinks: (resourceLinks) -> setResourceLinks resourceLinks
   #
   # Sets API node resource links.
   #
