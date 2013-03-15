@@ -408,7 +408,7 @@ class OVirtResponseHydrator
   #
   hydrateAction: (xpath, node) ->
     attributes = @_getAttributes node
-    action = new OVirtAction
+    action = new OVirtAction $attributes: attributes
     ownerXpath = path.dirname path.dirname xpath
     name = attributes.rel
     @registerIn @_actions, ownerXpath, name, action
