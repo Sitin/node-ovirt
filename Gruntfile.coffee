@@ -31,8 +31,12 @@ module.exports = (grunt) ->
           'index.js': 'index.coffee'
       tests:
         expand:  yes
-        src: options.testPath + '/**/*.coffee'
+        src: options.testPath + '/**/*.test.coffee'
         ext: '.test.js'
+      funcTests:
+        expand:  yes
+        src: options.testPath + '/**/*.func.coffee'
+        ext: '.func.js'
 
     mochaTest:
       files: ["#{options.testPath}/**/*.test.js"]
@@ -48,8 +52,11 @@ module.exports = (grunt) ->
         files: [options.coffeePath + '/**/*.coffee', 'index.coffee']
         tasks: ['compile:main', 'compile:index', 'test']
       tests:
-        files: [options.testPath + '**/*.coffee']
+        files: [options.testPath + '**/*.test.coffee']
         tasks: ['compile:tests', 'test']
+      funcTests:
+        files: [options.testPath + '**/*.func.coffee']
+        tasks: ['compile:funcTests', 'bgShell:run']
       testStuff:
         files: [options.testPath + 'responses/*']
         tasks: ['test']
@@ -62,6 +69,7 @@ module.exports = (grunt) ->
         "index.js"
       ]
       tests: "test/**/*.test.js"
+      funcTests: "test/**/*.func.js"
 
     bgShell:
       run:
@@ -91,13 +99,16 @@ module.exports = (grunt) ->
   grunt.registerTask 'codo', ['bgShell:codo']
 
   # Test task.
-  grunt.registerTask 'test', ['mochaTest', 'clean:tests']
+  grunt.registerTask 'test', ['mochaTest']
+
+  # Build clean task
+  grunt.registerTask 'cleanup', ['clean:tests', 'clean:funcTests']
 
   # Compile task.
   grunt.registerTask 'compile', ['coffeelint', 'coffee']
 
   # Default task.
-  grunt.registerTask 'default', ['clean', 'compile', 'test', 'codo']
+  grunt.registerTask 'default', ['clean', 'compile', 'test', 'cleanup', 'codo']
 
   # Publishing task.
   grunt.registerTask 'publish', ['default']

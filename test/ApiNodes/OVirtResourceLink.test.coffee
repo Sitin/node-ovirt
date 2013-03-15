@@ -29,10 +29,14 @@ describe 'OVirtResourceLink', ->
 
   describe "#resolve", ->
 
-    it "should return resource object instance", ->
+    it "should perform a request to oVirt API", ->
       link = do getResourceLink
-      expect(do link.resolve).to.be.instanceOf OVirtResource
+      link.$connection = performRequest: spy = chai.spy ->
+      do link.resolve
+      expect(spy).to.have.been.called.once
 
     it "should be binded to an instance", ->
-      node = do getResourceLink
-      expect(do node.resolve.call).to.be.deep.equal do node.resolve
+      link = do getResourceLink
+      link.$connection = performRequest: spy = chai.spy ->
+      do link.resolve.call
+      expect(spy).to.have.been.called.once
