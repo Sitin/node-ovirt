@@ -9,11 +9,11 @@ chai.use spies
 # Utilities:
 _ = require 'lodash'
 
-disposer = require '../index'
+ovirt = require '../index'
 lib = require '../lib/'
 
 
 describe 'Node.js oVirt driver as a module', ->
 
   it "should export lib contents", ->
-    expect(disposer).to.be.deep.equal lib
+    expect(ovirt).to.be.deep.equal lib
