@@ -15,10 +15,14 @@ class OVirtApiRequest extends CoffeeMix
   get = => @get arguments...
   set = => @set arguments...
 
+  # Constants
+  SUCCESS_CODES: [200, 400]
+
   # Defaults
   _connection: null
   _method: 'get'
   _uri: null
+  _body: null
 
   get protocol: -> @connection.protocol
   get host: -> @connection.host
@@ -27,6 +31,7 @@ class OVirtApiRequest extends CoffeeMix
   get connection: -> @_connection
   get method: -> @_method
   get uri: -> if @_uri? then @_uri else @connection.uri
+  get body: -> @_body
 
   constructor: (options) ->
     # Setup privates
@@ -36,14 +41,14 @@ class OVirtApiRequest extends CoffeeMix
     'Basic ' + new Buffer(@username + ":" + @password).toString "base64"
 
   request: (options, callback) ->
-    request options, (error, response, body) ->
-      if not error and response.statusCode is 200
+    request options, (error, response, body) =>
+      if not error and response.statusCode in @SUCCESS_CODES
         callback error, body
       else
         if error
           callback error
         else
-          callback response.statusCode
+          callback response.statusCode, body
 
   call: (params, callback) ->
     # When params wasn't specified
@@ -55,17 +60,20 @@ class OVirtApiRequest extends CoffeeMix
 
     # Set defaults from instance state
     _.defaults params,
-               method: 'get'
+               method: @method
                protocol: @protocol
                uri: @uri
                host: @host
+               body: @body
 
     # Construct request options
     options =
       url: "#{params.protocol}://#{params.host}/#{params.uri}"
       method: params.method
+      body: params.body
       headers:
         'Authorization': do @getAuthHeader
+        'Content-Type': 'application/xml'
 
     @request options, callback
 

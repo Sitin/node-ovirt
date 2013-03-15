@@ -24,10 +24,18 @@ dumpHydratedRequest = ->
     api =  do connection.connect
     vms = api.vms.findAll name: 'db-vm2'
     vm = vms[0]
+
+    inspect vm.status.state
+    result = vm.stop()
+    inspect result.$properties if result?
+
+    vms = api.vms.findAll name: 'db-vm2'
+    vm = vms[0]
+    inspect vm.status.state
+
     nics = vm.nics.getAll()
     nic = nics[0]
     cluster = nic.vm.cluster
-
     inspect cluster.$attributes
   do fiber.run
 

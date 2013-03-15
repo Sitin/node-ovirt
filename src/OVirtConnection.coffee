@@ -7,6 +7,7 @@ OVirtApiRequest = require __dirname + '/OVirtApiRequest'
 OVirtResponseParser = require __dirname + '/OVirtResponseParser'
 {OVirtApi} = require __dirname + '/ApiNodes/'
 {CoffeeMix} = require 'coffee-mix'
+{Document} = require 'libxmljs'
 Mixins = require __dirname + '/Mixins/'
 
 
@@ -93,6 +94,37 @@ class OVirtConnection extends CoffeeMix
     @performRequest @api, callback
 
   #
+  # Performs actions over oVirt resource.
+  #
+  # @param target [ApiNodes.OVirtApiNode] action target
+  # @param action [ApiNodes.OVirtAction] action object
+  # @param callback [Function]
+  #
+  performAction: (target, action, callback) ->
+    bodyDoc = new Document
+    body = bodyDoc.node('action').toString()
+
+    options =
+      uri: action.href
+      method: 'post'
+      body: body
+
+    @performRequest target, options, (error, response) =>
+      if not error? and @isActionCompleted response
+        response = target.$owner
+      callback error, response
+
+  #
+  # Tests whether action was successfull.
+  #
+  # @param response [ApiNodes.OVirtApiNode] response node
+  #
+  # @return [Boolean]
+  #
+  isActionCompleted: (response) ->
+    response?.status?.state is 'complete'
+
+  #
   # Performs request to oVirt REST API.
   #
   # @overload performRequest(target, callback)
@@ -117,7 +149,7 @@ class OVirtConnection extends CoffeeMix
     request = new OVirtApiRequest options
 
     request.call (error, xml) =>
-      unless error
+      unless error?
         @parseResponse target, xml, callback
       else
         callback error
