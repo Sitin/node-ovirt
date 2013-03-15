@@ -1,7 +1,7 @@
 "use strict"
 
 
-lib = require __dirname + '/../'
+lib =  require '../lib'
 Fiber = require 'fibers'
 _ = require 'lodash'
 
@@ -9,18 +9,18 @@ fs = require 'fs'
 eyes = require 'eyes'
 inspect = eyes.inspector maxLength: no
 
-dumpRequestHash = ->
-  request = new lib.OVirtApiRequest require '../private.json'
-  request.call (error, result) ->
-    console.log error if error
-    inspect result
+libxmljs = require 'libxmljs'
+
+secureOptions = require '../private.json'
+
 
 loadResponse = (name) ->
   fs.readFileSync "#{__dirname}/responses/#{name}.xml"
 
+
 dumpHydratedRequest = ->
   fiber = Fiber ->
-    connection = new lib.OVirtConnection require '../private.json'
+    connection = new lib.OVirtConnection secureOptions
     api =  do connection.connect
     vms = api.vms.findAll name: 'db-vm2'
     vm = vms[0]
@@ -31,28 +31,9 @@ dumpHydratedRequest = ->
     inspect cluster.$attributes
   do fiber.run
 
-dumpFileHash = (response, target = 'api') ->
-  parser = new lib.OVirtResponseParser
-    response: loadResponse response
-    target: target
-  parser._parser.options.validator = null
-  parser.parseXML (error, result) ->
-    console.log error if error
-    inspect result
-
-dumpHydratedHash = (response, target = 'api') ->
-  parser = new lib.OVirtResponseParser
-    response: loadResponse response
-    target: target
-  parser.parse (error, result) ->
-    console.log error if error
-    inspect parser._hydrator
-    inspect parser.target
 
 playWithXmlDom = (file = 'api') ->
   xml = loadResponse file
-
-  libxmljs = require 'libxmljs'
   libxmlDoc = libxmljs.parseXml xml
 
   collections = libxmlDoc.find '//*[not(name()="special_objects")]/link[@href and @rel and not(contains(@rel, "/search"))]'
@@ -74,13 +55,11 @@ playWithXmlDom = (file = 'api') ->
     inspect rel
     console.log collection.toString()
 
-#    inspect entry.attr('rel').value() for entry in libxmlDoc.find '//special_objects/link[@href and @rel]'
-#    inspect entry.attr('rel').value() for entry in libxmlDoc.find '//link[@href and @rel and not(contains(@rel, "/search"))]'
-#    inspect entry.name() for entry in libxmlDoc.find '/*//*[@href and @id]'
+    inspect entry.attr('rel').value() for entry in libxmlDoc.find '//special_objects/link[@href and @rel]'
+    inspect entry.name() for entry in libxmlDoc.find '/*//*[@href and @id]'
+
+#    inspect entry for entry in libxmlDoc.find '//link[@href and @rel and not(contains(@rel, "/search"))]'
 
 
-
-#  dumpFileHash 'api'
-#  dumpHydratedHash 'vms.ID'
-#  do dumpHydratedRequest
-do playWithXmlDom
+do dumpHydratedRequest
+#do playWithXmlDom
