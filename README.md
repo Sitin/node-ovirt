@@ -1,3 +1,8 @@
+Warning
+=======
+This is a very early alpha that supports only crawling, searching and action
+performing.
+
 OK. Here are the Node.js to oVirt driver specs.
 
 Connection
