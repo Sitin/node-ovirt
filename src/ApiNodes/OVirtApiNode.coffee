@@ -74,7 +74,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   actions that belongs to current API node
   #
   get $actions: -> @_$actions
-  set $actions: (actions) -> setActions actions
+  set $actions: (actions) -> @setActions actions
   #
   # Sets API node actions.
   #
