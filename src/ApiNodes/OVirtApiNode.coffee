@@ -33,6 +33,8 @@ Mixins = require __dirname + '/../Mixins/'
 #
 OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   # Included mixins
+# Included Mixins
+  @include Mixins.Fiberable, ['update']
   @include Mixins.PropertyDistributor
 
   # CoffeeMix property helpers
@@ -102,7 +104,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   collections that belongs to current API level
   #
   get $collections: -> @_$collections
-  set $collections: (collections) -> setCollections collections
+  set $collections: (collections) -> @setCollections collections
   #
   # Sets API node collections.
   #
@@ -140,7 +142,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   properties that belongs to current API node
   #
   get $properties: -> @_$properties
-  set $properties: (properties) -> setProperties properties
+  set $properties: (properties) -> @setProperties properties
   #
   # Sets API node properties.
   #
@@ -155,7 +157,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #   resource links that belongs to current API node
   #
   get $resourceLinks: -> @_$resourceLinks
-  set $resourceLinks: (resourceLinks) -> setResourceLinks resourceLinks
+  set $resourceLinks: (resourceLinks) -> @setResourceLinks resourceLinks
   #
   # Sets API node resource links.
   #
@@ -258,6 +260,29 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
       value.$owner = @ if value instanceof OVirtApiNode
 
     value
+
+  #
+  # Updates node to current state.
+  #
+  # @note This method returns meaningfull results only inside of a fiber.
+  #
+  # @param callback [Function]
+  #
+  # @return [ApiNodes.OVirtResourceLink] current node
+  #
+  update: (callback) ->
+    if @href?
+      do @clear
+      @$connection.performRequest @, uri: @href, callback
+
+  #
+  # Clears everything but attributes.
+  #
+  # @return [ApiNodes.OVirtResourceLink] current node
+  #
+  clear: ->
+    @[section] = {} for section in ['$actions', '$collections', '$properties', '$resourceLincs']
+    @
 
 
 OVirtApiNode.API_NODE_TYPES.node = OVirtApiNode
