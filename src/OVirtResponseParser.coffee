@@ -2,6 +2,7 @@
 
 # Tools.
 xml2js = require 'xml2js'
+libxmljs = require 'libxmljs'
 
 # Dependencies.
 config = require __dirname + '/config'
@@ -68,8 +69,15 @@ class OVirtResponseParser extends CoffeeMix
   # @param callback [Function] callback function
   #
   parse: (callback) ->
+    do @attachDocument
     @parseXML (error) =>
       callback error, @target
+
+  #
+  # Attaches XML document model to target.
+  #
+  attachDocument: ->
+    @target.$xmlDocument = libxmljs.parseXml @response
 
   #
   # Asynchroniously parses XML contained in the #response to the hash.
