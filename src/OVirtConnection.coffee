@@ -100,6 +100,8 @@ class OVirtConnection extends CoffeeMix
   # @param action [ApiNodes.OVirtAction] action object
   # @param callback [Function]
   #
+  # @return [ApiNodes.OVirtApiNode] current node or failure report
+  #
   performAction: (target, action, callback) ->
     bodyDoc = new Document
     body = bodyDoc.node('action').toString()
