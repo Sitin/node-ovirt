@@ -33,7 +33,6 @@ Mixins = require __dirname + '/../Mixins/'
 #
 OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   # Included mixins
-# Included Mixins
   @include Mixins.Fiberable, ['update']
   @include Mixins.PropertyDistributor
 
