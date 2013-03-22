@@ -33,7 +33,7 @@ dumpHydratedRequest = ->
     inspect vm.status.state
 
   addVm = (api, name) ->
-    templates = api.templates.findAll name: 'template_http'
+    templates = api.templates.findAll name: 'prealloc_template'
     template = templates[0].update()
 
     clusters = api.clusters.findAll name: 'local_cluster'
@@ -57,7 +57,12 @@ dumpHydratedRequest = ->
     startStop vms[0]
 
     newVm = addVm api, 'custom_vm_1'
-    inspect newVm?.$properties
+    if newVm?
+      console.log '---- VM creation report ----'
+      inspect newVm.$properties
+      console.log '----------- Nics -----------'
+      inspect nic.$properties for nic in newVm.nics.getAll()
+
 
   do fiber.run
 
