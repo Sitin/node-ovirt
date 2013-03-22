@@ -19,24 +19,46 @@ loadResponse = (name) ->
 
 
 dumpHydratedRequest = ->
-  fiber = Fiber ->
-    connection = new lib.OVirtConnection secureOptions
-    api =  do connection.connect
-    vms = api.vms.findAll name: 'db-vm2'
-    vm = vms[0]
-
+  startStop = (vm) ->
     inspect vm.status.state
-    result = vm.stop()
+
+    if vm.status.state is 'down'
+      result = vm.start()
+    else
+      result = vm.stop()
+
     inspect result.$properties if result?
 
-    vms = api.vms.findAll name: 'db-vm2'
-    vm = vms[0]
+    vm.update()
     inspect vm.status.state
 
-    nics = vm.nics.getAll()
-    nic = nics[0]
-    cluster = nic.vm.cluster
-    inspect cluster.$attributes
+  addVm = (api, name) ->
+    templates = api.templates.findAll name: 'template_http'
+    template = templates[0].update()
+
+    clusters = api.clusters.findAll name: 'local_cluster'
+    cluster = clusters[0].update()
+
+    vm = api.vms.add name: name, cluster, template
+
+    if not vm? or vm.isError
+      console.log 'Error while creating VM'
+      inspect vm.$properties if vm?
+      return null
+
+    vm
+
+  fiber = Fiber ->
+
+    connection = new lib.OVirtConnection secureOptions
+    api =  do connection.connect
+
+    vms = api.vms.findAll name: 'db-vm2'
+    startStop vms[0]
+
+    newVm = addVm api, 'custom_vm_1'
+    inspect newVm?.$properties
+
   do fiber.run
 
 

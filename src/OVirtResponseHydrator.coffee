@@ -329,9 +329,12 @@ class OVirtResponseHydrator
   #
   hydrateCollectionLink: (xpath, node) ->
     attributes = @_getAttributes node
-    collection = new OVirtCollection $attributes: attributes
 
     parentXpath = path.dirname xpath
+    name = path.basename attributes.rel
+
+    collection = new OVirtCollection $attributes: attributes
+    collection.name = name
 
     @registerIn @_collections,
       parentXpath, 'instances', attributes.rel,

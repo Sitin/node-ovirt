@@ -21,11 +21,14 @@ Mixins.Fiberable =
   included: (methods) ->
     return unless methods?
 
+    defineSetter = (ctx, name) ->
+      ctx.__defineSetter__ name, (fn) ->
+        delete ctx[name]
+        ctx[name] = fn
+        ctx._$fiberize name, fn
+
     for name in methods
-      @__defineSetter__ name, (fn) ->
-        delete @[name]
-        @[name] = fn
-        @_$fiberize name, fn
+      defineSetter @, name
 
   #
   # Fiberizes specified methods.
@@ -58,9 +61,9 @@ Mixins.Fiberable =
       fiber = Fiber.current
 
       # Fix paramteters if callback wasn't specified
-      if _.isEmpty(params) and not _.isUndefined callback
-        if not _.isFunction callback
-          params = [callback]
+      unless _.isFunction callback
+        unless _.isUndefined callback
+          params.push callback
           callback = undefined
 
       fiberizedCallback = (error, results...) ->

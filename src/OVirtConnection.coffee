@@ -5,9 +5,10 @@ _ = require 'lodash'
 
 OVirtApiRequest = require __dirname + '/OVirtApiRequest'
 OVirtResponseParser = require __dirname + '/OVirtResponseParser'
-{OVirtApi} = require __dirname + '/ApiNodes/'
+{OVirtApi, OVirtErrorNode} = require __dirname + '/ApiNodes/'
 {CoffeeMix} = require 'coffee-mix'
 {Document} = require 'libxmljs'
+Errors = require __dirname + '/Errors/'
 Mixins = require __dirname + '/Mixins/'
 
 
@@ -100,7 +101,8 @@ class OVirtConnection extends CoffeeMix
   # @param action [ApiNodes.OVirtAction] action object
   # @param callback [Function]
   #
-  # @return [ApiNodes.OVirtApiNode] current node or failure report
+  # @return [ApiNodes.OVirtApiNodem ApiNodes.OVirtApiNode] current node or
+  #   failure report
   #
   performAction: (target, action, callback) ->
     bodyDoc = new Document
@@ -111,10 +113,32 @@ class OVirtConnection extends CoffeeMix
       method: 'post'
       body: body
 
-    @performRequest target, options, (error, response) =>
-      if not error? and @isActionCompleted response
-        response = target.$owner
-      callback error, response
+    @performRequest target, options, (error, body) =>
+      if not error? and @isActionCompleted body
+        body = target.$owner
+
+      callback error, body
+
+
+  #
+  # Performs add request to `href` with specified `body` and puts result to
+  # target node.
+  #
+  # @param target [ApiNodes.OVirtApiNode] resource target
+  # @param href [String] href to request
+  # @param body [String] data to add
+  # @param callback [Function]
+  #
+  # @return [ApiNodes.OVirtApiNode, ApiNodes.OVirtErrorNode] current node or
+  #   failure report
+  #
+  add: (target, href, body, callback) ->
+    options =
+      uri: href
+      method: 'post'
+      body: body
+
+    @performRequest target, options, callback
 
   #
   # Tests whether action was successfull.
@@ -151,10 +175,15 @@ class OVirtConnection extends CoffeeMix
     request = new OVirtApiRequest options
 
     request.call (error, xml) =>
-      unless error?
+      # Set target to error node if server returns error.
+      if error instanceof Errors.OVirtError
+        target = new OVirtErrorNode
+        error = null
+
+      if not error?
         @parseResponse target, xml, callback
       else
-        callback error
+        callback error, xml
 
   #
   # Parses response

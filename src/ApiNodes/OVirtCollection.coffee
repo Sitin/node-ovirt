@@ -7,12 +7,15 @@ CoffeeMix = require 'coffee-mix'
 
 ApiNodes =
   OVirtApiNode: require __dirname + '/OVirtApiNode'
+  OVirtResource: require __dirname + '/OVirtResource'
 Mixins = require __dirname + '/../Mixins/'
+
+{Document, Element} = require 'libxmljs'
 
 
 OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   # Included Mixins
-  @include Mixins.Fiberable, ['findAll']
+  @include Mixins.Fiberable, ['add', 'findAll']
   @include CoffeeMix.Mixins.Outgrowthable
 
   # CoffeeMix property helpers
@@ -69,7 +72,7 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   #
   # Retrieves all collection objects that matches criteria.
   #
-  # @note This method returns meaningfull results only inside of a fiber.
+  # @note This method returns meaningfull resul ts only inside of a fiber.
   #
   # @param callback [Function]
   #
@@ -90,6 +93,30 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
         entries = @_formatCollectionEntries collection
 
       callback error, entries if callback?
+
+  #
+  # Adds resource to collection.
+  #
+  # @note This method returns meaningfull results only inside of a fiber.
+  #
+  # @param properties [Object] object properties
+  # @param apiNodes... [ApiNodes.OVirtApiNode] API nodes
+  # @param callback [Function]
+  #
+  # @return [ApiNodes.OVirtApiNode]
+  #
+  add: (properties, apiNodes..., callback) ->
+    type = @name.substring 0, @name.length - 1
+
+    doc = new Document
+    root = doc.node type
+    root.node name, value for name, value of properties
+    for node in apiNodes
+      root.addChild node.$xmlDocument.root()
+
+    target = new ApiNodes.OVirtResource $owner: @
+
+    @$connection.add target, @href, doc.toString(), callback
 
   #
   # Formats collections entries.

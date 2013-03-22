@@ -5,6 +5,7 @@ request = require 'request'
 _ = require 'lodash'
 {CoffeeMix} = require 'coffee-mix'
 Mixins = require __dirname + '/Mixins/'
+Errors = require __dirname + '/Errors/'
 
 
 class OVirtApiRequest extends CoffeeMix
@@ -16,7 +17,7 @@ class OVirtApiRequest extends CoffeeMix
   set = => @set arguments...
 
   # Constants
-  SUCCESS_CODES: [200, 400]
+  SUCCESS_CODES: [200, 202]
 
   # Defaults
   _connection: null
@@ -42,13 +43,10 @@ class OVirtApiRequest extends CoffeeMix
 
   request: (options, callback) ->
     request options, (error, response, body) =>
-      if not error and response.statusCode in @SUCCESS_CODES
-        callback error, body
-      else
-        if error
-          callback error
-        else
-          callback response.statusCode, body
+      if not error? and response.statusCode not in @SUCCESS_CODES
+        error = new Errors.OperationError response.statusCode
+
+      callback error, body
 
   call: (params, callback) ->
     # When params wasn't specified
