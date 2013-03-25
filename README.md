@@ -4,16 +4,17 @@ This is a very early alpha that supports only crawling, searching and action
 performing.
 
 OK. Here are the Node.js to oVirt driver specs.
+================================================
 
 Connection
-========
+-----------
 1. We need one entry point object that represents an oVirt instance.
 2. We want to specify "connection" parameters to that object in constructor.
 3. Once this object is constructed we want to retrieve an API root resource
    object (via the lazy getter).
 
 API root
-========
+---------
 4. Such call produces a special object - an API root resource.
 5. Once API root object initialized we could get oVirt main properties
    withing dedicated method (getProperties).
@@ -24,7 +25,7 @@ API root
    with getters.
 
 Collection level
-========
+-----------------
 9. Collection getter lazy-loads oVirt collection with corresponding API call.
 10. Each collection is an instance of oVirt collection class.
 11. Every collection instance knows it's owner resource.
@@ -38,7 +39,7 @@ Collection level
 17. Collections could be requested to create blank resource object.
 
 Resource level
-========
+---------------
 18. Retrieved resource should behave as an API root except it has a link to
     it's collection.
 19. Resources could be retrieved, created, updated and deleted.
@@ -48,7 +49,7 @@ Resource level
 22. Blank resources are always unsaved and also marked as "new".
 
 Resource actions
-========
+-----------------
 23. Resources could have an actions.
 24. Actions are methods that causes API calls which could change the
     resource state.
@@ -56,7 +57,7 @@ Resource actions
     .getActions() (which is a getter for .actions property).
 
 API node level
-========
+---------------
 26. Collections and resources (both regular and the root one) are considered
     as API nodes.
 27. API nodes doesn't call API during construction but could be refreshed.
@@ -76,7 +77,7 @@ API node level
     request object, configurates it and executes.
 
 API request
-========
+------------
 37. Has a link to connection to retrieve it's parameters.
 38. Accepts API node and an action or operation to perform.
 39. Determines request method which depend on requested operation.
@@ -94,7 +95,7 @@ License
 ========
 Copyright (C) 2013 Mikhail Zyatin
 https://github.com/Sitin/
-With contributions by several individuals:
+with contributions by several individuals:
 https://github.com/Sitin/node-ovirt/graphs/contributors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
