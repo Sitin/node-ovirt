@@ -79,9 +79,8 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
         .replace /{query}/, querystring.stringify criteria, '&', '%3D'
 
     target = do @$outgrow
-    try
-      collection = @$connection.performRequest target, uri: uri
-      entries = @_formatCollectionEntries collection
+    collection = @$connection.performRequest target, uri: uri
+    entries = @_formatCollectionEntries collection
 
     entries
 

@@ -16,12 +16,11 @@ OVirtResourseLink = class ApiNodes.OVirtResourseLink extends ApiNodes.OVirtApiNo
     target = new ApiNodes.OVirtResource $owner: @
     name = @$attributes.name
 
-    try
-      resource = @$connection.performRequest target, uri: @href
-      delete @$owner[name]
-      @$owner[name] = resource
+    resource = @$connection.performRequest target, uri: @href
+    delete @$owner[name]
+    @$owner[name] = resource
 
-    @[name]
+    resource
 
 
 ApiNodes.OVirtApiNode.API_NODE_TYPES.resourceLink = OVirtResourseLink

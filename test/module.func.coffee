@@ -21,14 +21,18 @@ dumpHydratedRequest = ->
   startStop = (vm) ->
     inspect vm.status.state
 
-    if vm.status.state is 'down'
-      result = vm.start()
-    else
-      result = vm.stop()
+    try
+      if vm.status.state is 'down'
+        result = vm.start()
+      else
+        result = vm.stop()
 
-    inspect result.$properties if result?
+      inspect result.$properties
+      vm.update()
+    catch error
+      console.log 'Error while strarting/stopping VM'
+      inspect error.$properties
 
-    vm.update()
     inspect vm.status.state
 
   addVm = (api, name) ->
@@ -38,18 +42,18 @@ dumpHydratedRequest = ->
     clusters = api.clusters.findAll name: 'local_cluster'
     cluster = clusters[0].update()
 
-    vm = api.vms.add name: name, cluster, template
-
-    if not vm? or vm.isError
+    try
+      vm = api.vms.add name: name, cluster, template
+    catch error
       console.log 'Error while creating VM'
-      inspect vm.$properties if vm?
+      inspect error.$properties
       return null
 
     vm
 
 
   connection = new lib.OVirtConnection secureOptions
-  connection.connect (error, api) ->
+  connection.connect (api) ->
     vms = api.vms.findAll name: 'db-vm2'
     startStop vms[0]
 
