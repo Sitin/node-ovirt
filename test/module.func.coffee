@@ -31,7 +31,7 @@ dumpHydratedRequest = ->
       vm.update()
     catch error
       console.log 'Error while strarting/stopping VM'
-      inspect error.$properties
+      inspect error.response.$properties
 
     inspect vm.status.state
 
@@ -46,7 +46,7 @@ dumpHydratedRequest = ->
       vm = api.vms.add name: name, cluster, template
     catch error
       console.log 'Error while creating VM'
-      inspect error.$properties
+      inspect error.response.$properties
       return null
 
     vm
@@ -57,7 +57,7 @@ dumpHydratedRequest = ->
     vms = api.vms.findAll name: 'db-vm2'
     startStop vms[0]
 
-    newVm = addVm api, 'custom_vm_1'
+    newVm = addVm api, 'custom-vm-1'
     if newVm?
       console.log '---- VM creation report ----'
       inspect newVm.$properties

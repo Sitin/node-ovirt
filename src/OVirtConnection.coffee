@@ -181,10 +181,9 @@ class OVirtConnection extends CoffeeMix
       if not error?
         @parseResponse target, xml, callback
       else if error instanceof Errors.OVirtError
-        target = new OVirtErrorNode
-        @parseResponse target, xml, (error, result) ->
-          error = result unless error
-          callback error
+        error.response = new OVirtErrorNode
+        @parseResponse error.response, xml, (parseError) ->
+          callback parseError or error
       else
         callback error, xml
 
