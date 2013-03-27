@@ -182,8 +182,11 @@ class OVirtConnection extends CoffeeMix
         @parseResponse target, xml, callback
       else if error instanceof Errors.OVirtError
         error.response = new OVirtErrorNode
-        @parseResponse error.response, xml, (parseError) ->
-          callback parseError or error
+        error.message = xml
+        @parseResponse error.response, xml, (parseError, response) ->
+          callback parseError if parseError
+          error.message = response.detail if response?.detail?
+          callback error
       else
         callback error, xml
 
