@@ -2,7 +2,6 @@
 
 
 lib =  require '../lib'
-Fiber = require 'fibers'
 _ = require 'lodash'
 
 fs = require 'fs'
@@ -48,11 +47,9 @@ dumpHydratedRequest = ->
 
     vm
 
-  fiber = Fiber ->
 
-    connection = new lib.OVirtConnection secureOptions
-    api =  do connection.connect
-
+  connection = new lib.OVirtConnection secureOptions
+  connection.connect (error, api) ->
     vms = api.vms.findAll name: 'db-vm2'
     startStop vms[0]
 
@@ -62,9 +59,6 @@ dumpHydratedRequest = ->
       inspect newVm.$properties
       console.log '----------- Nics -----------'
       inspect nic.$properties for nic in newVm.nics.getAll()
-
-
-  do fiber.run
 
 
 playWithXmlDom = (file = 'api') ->

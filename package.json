@@ -25,6 +25,7 @@
         "deep-freeze": "~0.0.1",
         "coffee-mix":  "~0.0.7",
         "fibers":      "~1.0.0",
+        "sync":        "~0.2.2",
         "libxmljs":    "~0.7.1"
     },
     "devDependencies": {

@@ -2,6 +2,7 @@
 
 
 _ = require 'lodash'
+Sync = require 'sync'
 
 OVirtApiRequest = require __dirname + '/OVirtApiRequest'
 OVirtResponseParser = require __dirname + '/OVirtResponseParser'
@@ -19,7 +20,6 @@ Mixins = require __dirname + '/Mixins/'
 #
 class OVirtConnection extends CoffeeMix
   # Included Mixins
-  @include Mixins.Fiberable, ['connect']
   @include Mixins.PropertyDistributor
 
   # CoffeeMix property helpers
@@ -85,14 +85,24 @@ class OVirtConnection extends CoffeeMix
   #
   # Retrieves oVirt API {ApiNodes.OVirtApi root node}.
   #
-  # @note This method returns meaningfull results only inside of a fiber.
+  # @param worker [Function] function that will be executed in context of fiber
+  # @param callback [Function] optional callback
   #
-  # @param callback [Function]
+  # @return [OVirtConnection] current instance
   #
-  # @return [ApiNodes.OVirtApi] oVirt API root node
-  #
-  connect: (callback) ->
-    @performRequest @api, callback
+  connect: (worker, callback) ->
+    Sync =>
+      error = null
+
+      try
+        api = @performRequest @api
+      catch error
+
+      worker? error, api
+
+    , callback
+
+    @
 
   #
   # Performs actions over oVirt resource.
@@ -113,11 +123,15 @@ class OVirtConnection extends CoffeeMix
       method: 'post'
       body: body
 
-    @performRequest target, options, (error, body) =>
-      if not error? and @isActionCompleted body
-        body = target.$owner
+    try
+      result = @performRequest target, options
+      if @isActionCompleted result
+        result = target.$owner
+    catch error
 
-      callback error, body
+    callback? error, result
+
+    result
 
 
   #
@@ -162,14 +176,16 @@ class OVirtConnection extends CoffeeMix
   #   @param options [Object]
   #   @param callback [Function]
   #
-  performRequest: (target, options, callback) ->
+  performRequestAsync: (target, options, callback) ->
     # Check for overloadings
     if _.isFunction options
       callback = options
       options = {}
+    else
+      options = {} unless options?
 
     # Construnct options
-    _.defaults options, uri: @uri
+    _.defaults {}, options, uri: @uri
     options.connection = @
 
     request = new OVirtApiRequest options
@@ -184,6 +200,17 @@ class OVirtConnection extends CoffeeMix
         @parseResponse target, xml, callback
       else
         callback error, xml
+
+  #
+  # Performs request to oVirt REST API.
+  #
+  # @param target [ApiNodes.OVirtApiNode] request target
+  # @param options [Object]
+  #
+  # @return [ApiNodes.OVirtApiNode]
+  #
+  performRequest: (target, options) ->
+    @performRequestAsync.sync @, target, options
 
   #
   # Parses response

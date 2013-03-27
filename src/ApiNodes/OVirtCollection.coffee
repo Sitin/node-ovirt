@@ -1,21 +1,20 @@
 "use strict"
 
 
-querystring = require 'querystring'
 _ = require 'lodash'
+querystring = require 'querystring'
+
 CoffeeMix = require 'coffee-mix'
 
 ApiNodes =
   OVirtApiNode: require __dirname + '/OVirtApiNode'
   OVirtResource: require __dirname + '/OVirtResource'
-Mixins = require __dirname + '/../Mixins/'
 
 {Document, Element} = require 'libxmljs'
 
 
 OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   # Included Mixins
-  @include Mixins.Fiberable, ['add', 'findAll']
   @include CoffeeMix.Mixins.Outgrowthable
 
   # CoffeeMix property helpers
@@ -60,25 +59,19 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   #
   # Retrieves all collection objects.
   #
-  # @note This method returns meaningfull results only inside of a fiber.
-  #
-  # @param callback [Function]
-  #
   # @return [Array<ApiNodes.OVirtApiNode>]
   #
-  getAll: (callback) ->
-    @findAll null, callback
+  getAll: ->
+    @findAll()
 
   #
   # Retrieves all collection objects that matches criteria.
   #
-  # @note This method returns meaningfull resul ts only inside of a fiber.
-  #
-  # @param callback [Function]
+  # @param criteria [Object] search criteria
   #
   # @return [Array<ApiNodes.OVirtApiNode>]
   #
-  findAll: (criteria, callback) ->
+  findAll: (criteria) ->
     uri = @href
 
     if @isSearchable and not _.isEmpty criteria
@@ -86,26 +79,21 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
         .replace /{query}/, querystring.stringify criteria, '&', '%3D'
 
     target = do @$outgrow
-    @$connection.performRequest target, uri: uri, (error, collection) =>
-      # We want raw result in case of error
-      unless error?
-        # Properties are what we need
-        entries = @_formatCollectionEntries collection
+    try
+      collection = @$connection.performRequest target, uri: uri
+      entries = @_formatCollectionEntries collection
 
-      callback error, entries if callback?
+    entries
 
   #
   # Adds resource to collection.
   #
-  # @note This method returns meaningfull results only inside of a fiber.
-  #
   # @param properties [Object] object properties
   # @param apiNodes... [ApiNodes.OVirtApiNode] API nodes
-  # @param callback [Function]
   #
-  # @return [ApiNodes.OVirtApiNode]
+  # @return [ApiNodes.OVirtApiNode] created node
   #
-  add: (properties, apiNodes..., callback) ->
+  add: (properties, apiNodes...) ->
     type = @name.substring 0, @name.length - 1
 
     doc = new Document
@@ -116,7 +104,7 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
 
     target = new ApiNodes.OVirtResource $owner: @
 
-    @$connection.add target, @href, doc.toString(), callback
+    @$connection.add target, @href, doc.toString()
 
   #
   # Formats collections entries.

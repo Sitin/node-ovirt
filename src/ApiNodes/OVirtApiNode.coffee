@@ -33,7 +33,6 @@ Mixins = require __dirname + '/../Mixins/'
 #
 OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   # Included mixins
-  @include Mixins.Fiberable, ['update']
   @include Mixins.PropertyDistributor
 
   # CoffeeMix property helpers
@@ -241,7 +240,7 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #
   addResourceLink: (name, resourceLink) ->
     resourceLink.$owner = @
-    @.__defineGetter__ name, resourceLink.resolve
+    @[name] = resourceLink.resolve
 
   #
   # Sets current node as a property owner if property is an API node.
@@ -263,16 +262,14 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
   #
   # Updates node to current state.
   #
-  # @note This method returns meaningfull results only inside of a fiber.
-  #
-  # @param callback [Function]
-  #
   # @return [ApiNodes.OVirtResourceLink] current node
   #
-  update: (callback) ->
+  update: ->
     if @href?
       do @clear
-      @$connection.performRequest @, uri: @href, callback
+      @$connection.performRequest @, uri: @href
+
+    @
 
   #
   # Clears everything but attributes.
