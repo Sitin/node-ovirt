@@ -3,6 +3,7 @@
 
 lib =  require '../lib'
 _ = require 'lodash'
+Sync = require 'sync'
 
 fs = require 'fs'
 eyes = require 'eyes'
@@ -51,6 +52,17 @@ dumpHydratedRequest = ->
 
     vm
 
+  deleteVm = (vm) ->
+    console.log '---------- Delete ----------'
+
+    Sync.sleep 5000
+
+    try
+      removed = vm.remove()
+      inspect removed: removed
+    catch error
+      inspect error
+
 
   connection = new lib.OVirtConnection secureOptions
   connection.connect (api) ->
@@ -60,9 +72,12 @@ dumpHydratedRequest = ->
     newVm = addVm api, 'custom-vm-1'
     if newVm?
       console.log '---- VM creation report ----'
+      inspect newVm.$attributes
       inspect newVm.$properties
       console.log '----------- Nics -----------'
       inspect nic.$properties for nic in newVm.nics.getAll()
+
+    deleteVm newVm
 
 
 playWithXmlDom = (file = 'api') ->

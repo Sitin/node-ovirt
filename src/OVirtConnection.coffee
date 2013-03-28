@@ -121,7 +121,6 @@ class OVirtConnection extends CoffeeMix
 
     result
 
-
   #
   # Performs add request to `href` with specified `body` and puts result to
   # target node.
@@ -137,6 +136,24 @@ class OVirtConnection extends CoffeeMix
     options =
       uri: href
       method: 'post'
+      body: body
+
+    @performRequest target, options
+
+  #
+  # Performs delete request to `href`.
+  #
+  # @param href [String] href to request
+  #
+  # @return [Boolean]
+  #
+  remove: (target, href) ->
+    bodyDoc = new Document
+    body = bodyDoc.node('action').toString()
+
+    options =
+      uri: href
+      method: 'delete'
       body: body
 
     @performRequest target, options
@@ -209,8 +226,11 @@ class OVirtConnection extends CoffeeMix
   # @param callback [Function]
   #
   parseResponse: (target, xml, callback) ->
-    parser = new OVirtResponseParser target: target, response: xml
-    parser.parse callback
+    unless _.isEmpty xml
+      parser = new OVirtResponseParser target: target, response: xml
+      parser.parse callback
+    else
+      callback null, target
 
 
 module.exports = OVirtConnection

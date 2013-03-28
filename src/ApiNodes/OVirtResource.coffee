@@ -7,10 +7,16 @@ ApiNodes =
 
 OVirtResourse = class ApiNodes.OVirtResourse extends ApiNodes.OVirtApiNode
   #
-  # @property [OVirtCollection]
-  #   oVirt collection to which the resource is belongs to
+  # Removes the resource.
   #
-  collection: undefined
+  # @return [Boolean]
+  #
+  remove: ->
+    target = new ApiNodes.OVirtApiNode
+    @$connection.remove target, @href
+    @clear()
+
+    yes
 
 
 ApiNodes.OVirtApiNode.API_NODE_TYPES.resource = OVirtResourse
