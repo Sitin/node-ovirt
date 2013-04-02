@@ -98,6 +98,14 @@ class OVirtConnection extends CoffeeMix
     @
 
   #
+  # Wrapper for Sync's sleep().
+  #
+  # @param ms [Integer] milliseconds to sleep
+  #
+  sleep: (ms) ->
+    Sync.sleep ms
+
+  #
   # Performs actions over oVirt resource.
   #
   # @param target [ApiNodes.OVirtApiNode] action target
