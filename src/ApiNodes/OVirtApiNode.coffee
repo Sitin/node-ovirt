@@ -278,6 +278,21 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
     @[section] = {} for section in ['$actions', '$collections', '$properties', '$resourceLincs']
     @
 
+  #
+  # Performs operation over the resource in fiber context.
+  #
+  # @param worker [Function] function that will be executed in context of fiber
+  # @param callback [Function] optional callback
+  #
+  # @return [OVirtConnection] current instance
+  #
+  processSync: (worker, callback) ->
+    Sync =>
+      worker? @
+    , callback
+
+    @
+
 
 OVirtApiNode.API_NODE_TYPES.node = OVirtApiNode
 

@@ -1,7 +1,7 @@
 {
     "name":            "ovirt",
     "description":     "A Node.js driver for oVirt REST API",
-    "version":         "0.0.1-alpha-7",
+    "version":         "0.0.1-alpha-8",
     "keywords":        ["oVirt", "ovirt", "rest", "api"],
     "homepage":        "https://github.com/Sitin/node-ovirt",
     "author":          "Mikhail Zyatin <mikhail.zyatin@gmail.com> (https://twitter.com/vivisjatin/)",
