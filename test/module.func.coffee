@@ -20,6 +20,8 @@ loadResponse = (name) ->
 
 dumpHydratedRequest = ->
   startStop = (vm) ->
+    console.log '------ Start/stop VM -------'
+
     inspect vm.status.state
 
     try
@@ -66,8 +68,15 @@ dumpHydratedRequest = ->
 
   connection = new lib.OVirtConnection secureOptions
   connection.connect (api) ->
-    vms = api.vms.findAll name: 'db-vm2'
-    startStop vms[0]
+    console.log '-------- VM search ---------'
+
+    unless api.vms.getOneById 'wrong id'
+      console.log "Can't find resource with wrong ID."
+
+    vm = api.vms.findOne name: 'db-vm2'
+    vm = api.vms.getOneById vm.id
+
+    startStop vm
 
     newVm = addVm api, 'custom-vm-1'
     if newVm?

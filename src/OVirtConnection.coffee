@@ -228,7 +228,10 @@ class OVirtConnection extends CoffeeMix
   parseResponse: (target, xml, callback) ->
     unless _.isEmpty xml
       parser = new OVirtResponseParser target: target, response: xml
-      parser.parse callback
+      try
+        parser.parse callback
+      catch error
+        callback error
     else
       callback null, target
 

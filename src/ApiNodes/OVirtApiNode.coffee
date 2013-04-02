@@ -269,8 +269,6 @@ OVirtApiNode = class ApiNodes.OVirtApiNode extends CoffeeMix
       do @clear
       @$connection.performRequest @, uri: @href
 
-    @
-
   #
   # Clears everything but attributes.
   #

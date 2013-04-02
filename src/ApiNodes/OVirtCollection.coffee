@@ -8,6 +8,7 @@ CoffeeMix = require 'coffee-mix'
 
 ApiNodes =
   OVirtApiNode: require __dirname + '/OVirtApiNode'
+  OVirtErrorNode: require __dirname + '/OVirtErrorNode'
   OVirtResource: require __dirname + '/OVirtResource'
 
 {Document, Element} = require 'libxmljs'
@@ -63,6 +64,36 @@ OVirtCollection = class ApiNodes.OVirtCollection extends ApiNodes.OVirtApiNode
   #
   getAll: ->
     @findAll()
+
+  #
+  # Retrieves resource by id.
+  #
+  # @param id [String]
+  #
+  # @return [ApiNodes.OVirtResource]
+  #
+  getOneById: (id) ->
+    resource = new ApiNodes.OVirtResource
+      $attributes:
+        href: "#{@href}/#{id}"
+      $owner: @
+
+    try
+      resource = resource.update()
+      unless resource instanceof ApiNodes.OVirtErrorNode
+        resource
+
+  #
+  # Retrieves one resource from collection.
+  #
+  # @param criteria [Object] search criteria
+  #
+  # @return [ApiNodes.OVirtResource]
+  #
+  findOne: (criteria) ->
+    entries = @findAll criteria
+
+    entries[0] if entries?[0]?
 
   #
   # Retrieves all collection objects that matches criteria.
