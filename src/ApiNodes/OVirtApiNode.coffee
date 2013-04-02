@@ -1,8 +1,11 @@
 "use strict"
 
 
-{CoffeeMix} = require 'coffee-mix'
 _ = require 'lodash'
+Sync = require 'sync'
+
+{CoffeeMix} = require 'coffee-mix'
+
 ApiNodes = {}
 Mixins = require __dirname + '/../Mixins/'
 
